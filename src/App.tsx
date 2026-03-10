@@ -9,7 +9,7 @@ import Main from './pages/main.tsx'
 
 function App() {
   return (
-    <div>
+    <div className="min-h-screen bg-black text-white">
       <Header />
 
       <main>
