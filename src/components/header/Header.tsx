@@ -1,17 +1,34 @@
 import type { FC } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 
-const header: FC = () => {
+const Header: FC = () => {
+  const [visible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const handler = () => setVisible(true)
+    window.addEventListener('hero-ready', handler)
+
+    return () => {
+      window.removeEventListener('hero-ready', handler)
+    }
+  }, [])
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 flex justify-center text-white">
-      <nav className="mx-auto flex items-center gap-8 px-4 py-3">
-        <div className="text-sm font-semibold uppercase tracking-widest">
-          PickupService
+    <motion.header
+      className="fixed inset-x-0 top-5 z-50 flex justify-center text-white"
+      initial={{ opacity: 0, y: -10 }}
+      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
+      transition={{ duration: 0.6, ease: 'easeOut' }}
+    >
+      <nav className="mx-auto flex w-full max-w-6xl items-center justify-center gap-[10px]">
+
+        <div className="glass-header header-block text-[16px] font-semibold uppercase tracking-widest">
+          <Link to="/">PickupService</Link>
         </div>
-        <ul className="flex items-center gap-4 text-sm">
-          <li>
-            <Link to="/">Главная</Link>
-          </li>
+
+        <ul className="glass-header header-block flex items-center gap-[10px] text-[16px]">
           <li>
             <Link to="/service">Сервис</Link>
           </li>
@@ -25,9 +42,10 @@ const header: FC = () => {
             <Link to="/booking">Записаться</Link>
           </li>
         </ul>
+
       </nav>
-    </header>
+    </motion.header>
   )
 }
 
-export default header
+export default Header

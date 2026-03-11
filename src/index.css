@@ -1,2 +1,23 @@
 @import 'tailwindcss';
 
+.glass-header {
+  background: rgba(255, 255, 255, 0.1);
+  pointer-events: auto;
+  transition: background 0.4s var(--ease, ease);
+  backdrop-filter: blur(0.1rem);
+  box-shadow:
+    inset 0 0 0.8rem #ffffff05,
+    inset 0 0 0.2rem #fff3;
+  backface-visibility: hidden;
+}
+
+.header-block {
+  height: 4rem;
+  margin: 0 0.15rem;
+  border-radius: 0.2rem;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+
