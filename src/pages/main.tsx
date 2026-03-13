@@ -1,6 +1,6 @@
 import type { FC } from 'react'
 import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion, useScroll, useTransform, type MotionStyle } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { Mouse } from 'lucide-react'
 import herovid from '../assets/vid/hero.webm'
 
@@ -19,52 +19,47 @@ const MainPage: FC = () => {
     offset: ['start start', 'end end'],
   })
 
-  const textY = useTransform(scrollYProgress, [0, 0.35], [80, 0])
-  const textOpacity = useTransform(scrollYProgress, [0.05, 0.25], [0, 1])
-  const firstBlockY = useTransform(scrollYProgress, [0, 1], [300, -300])
-  const secondBlockY = useTransform(scrollYProgress, [0, 1], [380, -380])
-  const firstBlockOpacity = useTransform(
-    scrollYProgress,
-    [0.1, 0.25, 0.75, 0.9],
-    [0, 1, 1, 0],
-  )
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 150, // Меньше жесткость — плавнее движение
+    damping: 35,    // Оптимальное затухание, чтобы не было скольжения
+    restDelta: 0.001
+  })
 
-  const secondBlockOpacity = useTransform(
-    scrollYProgress,
-    [0.25, 0.45, 0.65, 0.85],
-    [0, 1, 1, 0],
-  )
+  const textY = useTransform(smoothProgress, [0, 0.35], [80, 0])
+  const textOpacity = useTransform(smoothProgress, [0.05, 0.2, 0.8, 0.95], [0, 1, 1, 0])
+  const firstBlockY = useTransform(smoothProgress, [0, 1], [400, -400])
+  const secondBlockY = useTransform(smoothProgress, [0, 1], [500, -500])
+  
+  const firstBlockOpacity = useTransform(smoothProgress, [0.1, 0.3, 0.7, 0.9], [0, 1, 1, 0])
+  const secondBlockOpacity = useTransform(smoothProgress, [0.3, 0.5, 0.6, 0.8], [0, 1, 1, 0])
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-    video.currentTime = 0
-    void video.play()
+    document.body.style.overflow = 'hidden'
+    if (videoRef.current) {
+      videoRef.current.loop = false
+      videoRef.current.play()
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [])
 
-  useEffect(() => {
-    if (!isVideoReady) return
-
-    const timeout = window.setTimeout(() => {
-      setShowContent(true)
-      window.dispatchEvent(new Event('hero-ready'))
-    }, 1000)
-
-    return () => window.clearTimeout(timeout)
-  }, [isVideoReady])
+  const handleVideoEnd = () => {
+    setShowContent(true)
+    document.body.style.overflow = ''
+    window.dispatchEvent(new Event('hero-ready'))
+  }
 
   useEffect(() => {
     if (!showContent) return
-
-    const id = window.setInterval(() => {
+    const id = setInterval(() => {
       setCurrentWordIndex((prev) => (prev + 1) % words.length)
     }, 2600)
-
-    return () => window.clearInterval(id)
+    return () => clearInterval(id)
   }, [showContent])
 
   return (
-    <div className="bg-black text-white">
+    <div className="bg-black text-white selection:bg-[#FF8201]">
       <section className="relative h-screen w-full overflow-hidden">
         <video
           ref={videoRef}
@@ -72,70 +67,84 @@ const MainPage: FC = () => {
           autoPlay
           muted
           playsInline
-          controls={false}
           onLoadedData={() => setIsVideoReady(true)}
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          onEnded={handleVideoEnd}
+          className={`absolute inset-0 z-0 h-full w-full object-cover transition-opacity duration-1000 ${
+            showContent ? 'opacity-60' : 'opacity-100'
+          }`}
         />
+        
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center">
+          <AnimatePresence>
+            {showContent && (
+              <motion.div
+                className="relative flex w-full items-center justify-between px-[35px] text-[64px] font-semibold tracking-tighter"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 1 }}
+              >
+                <div className="flex items-center gap-4 overflow-hidden">
+                  <motion.span
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    МЫ
+                  </motion.span>
+                  <span className="inline-flex h-[1.1em] items-center overflow-hidden">
+                    <AnimatePresence mode="wait">
+                      <motion.span
+                        key={currentWordIndex}
+                        initial={{ y: '100%' }}
+                        animate={{ y: '0%' }}
+                        exit={{ y: '-100%' }}
+                        transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
+                        className="text-white"
+                      >
+                        {words[currentWordIndex]}
+                      </motion.span>
+                    </AnimatePresence>
+                  </span>
+                </div>
+                <div className="overflow-hidden">
+                  <motion.span
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                  >
+                    ВНЕДОРОЖНИКИ
+                  </motion.span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        <div className="pointer-events-none absolute inset-x-0 bottom-10 z-10 flex justify-center">
           <motion.div
-            className="relative flex w-full items-center justify-between px-[35px] text-[64px] font-semibold"
+            className="glass-header flex items-center gap-2 px-5 py-2.5 text-[14px] border border-white/10"
             initial={{ opacity: 0, y: 20 }}
             animate={showContent ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-          >
-            <span className="leading-none">
-              МЫ{' '}
-              <span className="inline-flex h-[1em] items-center overflow-hidden align-baseline">
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={currentWordIndex}
-                    initial={{ y: '-100%' }}
-                    animate={{ y: '0%' }}
-                    exit={{ y: '100%' }}
-                    transition={{
-                      duration: 0.4,
-                      ease: [0.22, 0.61, 0.36, 1],
-                    }}
-                    className="inline-block whitespace-nowrap"
-                  >
-                    {words[currentWordIndex]}
-                  </motion.span>
-                </AnimatePresence>
-              </span>
-            </span>
-            <span>ВНЕДОРОЖНИКИ</span>
-          </motion.div>
-        </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex justify-center">
-          <motion.div
-            className="glass-header flex items-center gap-2 px-4 py-2 text-[14px]"
-            initial={{ opacity: 0, y: 10 }}
-            animate={showContent ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
-            transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
           >
             <motion.span
-              animate={{ y: [0, 5, 0] }}
-              transition={{ duration: 3, repeat: Infinity }}
+              animate={{ y: [0, 4, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             >
               <Mouse className="h-4 w-4" />
             </motion.span>
-            <span>прокрутите вниз, чтобы узнать больше</span>
+            <span className="opacity-80 uppercase tracking-widest text-[10px]">прокрутите вниз</span>
           </motion.div>
         </div>
       </section>
+
       <section
         ref={parallaxRef}
-        className="relative h-[220vh] w-full bg-[#f3f3f1]"
+        className="relative h-[400vh] w-full bg-[#f3f3f1]"
       >
-        <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6 text-black">
+        <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-10 text-black">
           <motion.div
-            style={{
-              y: textY,
-              opacity: textOpacity,
-              leadingTrim: 'both',
-              textEdge: 'cap',
-            } as MotionStyle & { leadingTrim: string; textEdge: string }}
-            className="relative z-10 w-[80%] max-w-full text-center text-[96px] font-medium italic tracking-wide leading-[100px]"
+            style={{ y: textY, opacity: textOpacity }}
+            className="relative z-5 w-full max-w-[1200px] text-center text-[96px] font-medium italic tracking-tighter leading-[0.9]"
           >
             <span>Собираем и обслуживаем </span>
             <span className="text-[#FF8201]">японские </span>
@@ -143,18 +152,21 @@ const MainPage: FC = () => {
           </motion.div>
           <motion.div
             style={{ y: firstBlockY, opacity: firstBlockOpacity }}
-            className="absolute left-[280px] top-1/2 z-20 max-w-xs -translate-y-1/2 glass-header text-[20px] font-normal not-italic leading-normal text-[#FF8201]"
+            className="absolute z-10 left-[10%] top-1/2 -translate-y-1/2 glass-header px-8 py-5 text-[20px] text-[#FF8201] shadow-xl"
           >
             ПИКАПСЕРВИС
           </motion.div>
           <motion.div
             style={{ y: secondBlockY, opacity: secondBlockOpacity }}
-            className="absolute right-[280px] top-1/2 z-20 max-w-sm -translate-y-1/2 glass-header text-[20px] font-normal not-italic leading-normal"
+            className="absolute z-10 right-[10%] top-1/2 -translate-y-1/2 glass-header max-w-[400px] px-10 py-10 text-[18px] shadow-xl leading-relaxed"
           >
-            It is a long established fact that a reader will be distracted by the
-            readable content of a page when looking at its layout.
+            It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop 
           </motion.div>
         </div>
+      </section>
+
+      <section className="h-screen bg-[#f3f3f1] flex items-center justify-center border-t border-white/5 text-[#272727]">
+          <h2 className="text-[80px] font-bold tracking-tighter uppercase " >ПРОЕКТЫ</h2>
       </section>
     </div>
   )

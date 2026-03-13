@@ -1,10 +1,21 @@
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 const Header: FC = () => {
   const [visible, setVisible] = useState(false)
+  const { scrollY } = useScroll()
+
+  // Изменяем цвет текста: 
+  // от 0 до 80vh — белый
+  // от 100vh до 480vh (конец второй секции) — темный #272727
+  // после 500vh (третья черная секция) — снова белый
+  const textColor = useTransform(
+    scrollY,
+    [0, window.innerHeight * 0.8, window.innerHeight, window.innerHeight * 4.8, window.innerHeight * 5],
+    ["#ffffff", "#ffffff", "#272727", "#272727", "#ffffff"]
+  )
 
   useEffect(() => {
     const handler = () => setVisible(true)
@@ -17,13 +28,14 @@ const Header: FC = () => {
 
   return (
     <motion.header
-      className="fixed inset-x-0 top-5 z-50 flex justify-center text-white"
+      className="fixed inset-x-0 top-5 z-[999] flex justify-center"
       initial={{ opacity: 0, y: -10 }}
       animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
+      style={{ color: textColor }}
     >
       <nav className="mx-auto flex w-full max-w-6xl items-center justify-center gap-[10px]">
-
+        
         <div className="glass-header header-block text-[16px] font-semibold uppercase tracking-widest">
           <Link to="/">PickupService</Link>
         </div>
