@@ -1,21 +1,11 @@
 import type { FC } from 'react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 
 const Header: FC = () => {
   const [visible, setVisible] = useState(false)
-  const { scrollY } = useScroll()
-
-  // Изменяем цвет текста: 
-  // от 0 до 80vh — белый
-  // от 100vh до 480vh (конец второй секции) — темный #272727
-  // после 500vh (третья черная секция) — снова белый
-  const textColor = useTransform(
-    scrollY,
-    [0, window.innerHeight * 0.8, window.innerHeight, window.innerHeight * 4.8, window.innerHeight * 5],
-    ["#ffffff", "#ffffff", "#272727", "#272727", "#ffffff"]
-  )
+  const [isDarkBackground, setIsDarkBackground] = useState(true)
 
   useEffect(() => {
     const handler = () => setVisible(true)
@@ -26,13 +16,58 @@ const Header: FC = () => {
     }
   }, [])
 
+  useEffect(() => {
+    const getBackgroundColor = (el: HTMLElement | null): string | null => {
+      while (el) {
+        const style = window.getComputedStyle(el)
+        const bg = style.backgroundColor
+        if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
+          return bg
+        }
+        el = el.parentElement
+      }
+      return null
+    }
+
+    const isDarkColor = (color: string): boolean => {
+      const match = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+      if (!match) return true
+      const r = parseInt(match[1], 10)
+      const g = parseInt(match[2], 10)
+      const b = parseInt(match[3], 10)
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+      return luminance < 0.5
+    }
+
+    const updateBackground = () => {
+      const header = document.querySelector('header')
+      if (!header) return
+      const rect = header.getBoundingClientRect()
+      const x = window.innerWidth / 2
+      const y = rect.bottom + 1
+      const target = document.elementFromPoint(x, y) as HTMLElement | null
+      const bg = getBackgroundColor(target)
+      if (!bg) return
+      setIsDarkBackground(isDarkColor(bg))
+    }
+
+    updateBackground()
+    window.addEventListener('scroll', updateBackground)
+    window.addEventListener('resize', updateBackground)
+    return () => {
+      window.removeEventListener('scroll', updateBackground)
+      window.removeEventListener('resize', updateBackground)
+    }
+  }, [])
+
   return (
     <motion.header
-      className="fixed inset-x-0 top-5 z-[999] flex justify-center"
+      className={`fixed inset-x-0 top-5 z-[999] flex justify-center ${
+        isDarkBackground ? 'text-white' : 'text-black'
+      }`}
       initial={{ opacity: 0, y: -10 }}
       animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
-      style={{ color: textColor }}
     >
       <nav className="mx-auto flex w-full max-w-6xl items-center justify-center gap-[10px]">
         
