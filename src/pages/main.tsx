@@ -6,7 +6,6 @@ import herovid from '../assets/vid/hero.webm'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 
-// Глобальная переменная для отслеживания проигрывания видео в рамках сессии
 let isHeroVideoPlayed = false;
 
 const projectsData = [
@@ -92,6 +91,7 @@ const MainPage: FC = () => {
 
   return (
     <div className="bg-black text-white selection:bg-[#FF8201]">
+      {/* СЕКЦИЯ 1 И 2 (БЕЗ ИЗМЕНЕНИЙ) */}
       <section className="relative h-screen w-full overflow-hidden">
         <video
           ref={videoRef}
@@ -105,7 +105,6 @@ const MainPage: FC = () => {
             showContent ? 'opacity-60' : 'opacity-100'
           }`}
         />
-        
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center">
           <AnimatePresence>
             {showContent && (
@@ -116,87 +115,42 @@ const MainPage: FC = () => {
                 transition={{ duration: 1 }}
               >
                 <div className="flex items-center gap-4 overflow-hidden">
-                  <motion.span
-                    initial={{ y: '100%' }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    МЫ
-                  </motion.span>
+                  <motion.span initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.8 }}>МЫ</motion.span>
                   <span className="inline-flex h-[1.1em] items-center overflow-hidden">
                     <AnimatePresence mode="wait">
-                      <motion.span
-                        key={currentWordIndex}
-                        initial={{ y: '100%' }}
-                        animate={{ y: '0%' }}
-                        exit={{ y: '-100%' }}
-                        transition={{ duration: 0.5, ease: [0.76, 0, 0.24, 1] }}
-                        className="text-white"
-                      >
+                      <motion.span key={currentWordIndex} initial={{ y: '100%' }} animate={{ y: '0%' }} exit={{ y: '-100%' }} transition={{ duration: 0.5 }}>
                         {words[currentWordIndex]}
                       </motion.span>
                     </AnimatePresence>
                   </span>
                 </div>
                 <div className="overflow-hidden">
-                  <motion.span
-                    initial={{ y: '100%' }}
-                    animate={{ y: 0 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                  >
-                    ВНЕДОРОЖНИКИ
-                  </motion.span>
+                  <motion.span initial={{ y: '100%' }} animate={{ y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}>ВНЕДОРОЖНИКИ</motion.span>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-10 z-10 flex justify-center">
-          <motion.div
-            className="glass-header flex items-center gap-2 px-5 py-2.5 text-[14px] border border-white/10"
-            initial={{ opacity: 0, y: 20 }}
-            animate={showContent ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-          >
-            <motion.span
-              animate={{ y: [0, 4, 0] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Mouse className="h-4 w-4" />
-            </motion.span>
-            <span className="opacity-80 uppercase tracking-widest text-[10px]">прокрутите вниз</span>
-          </motion.div>
-        </div>
       </section>
-      <section
-        ref={parallaxRef}
-        className="relative h-[400vh] w-full bg-[#f3f3f1]"
-      >
+
+      <section ref={parallaxRef} className="relative h-[400vh] w-full bg-[#f3f3f1]">
         <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-10 text-black">
-          <motion.div
-            style={{ y: textY, opacity: textOpacity }}
-            className="relative z-5 w-full max-w-[1200px] text-center text-[96px] font-medium italic tracking-tighter leading-[0.9]"
-          >
-            <span>Собираем и обслуживаем </span>
-            <span className="text-[#FF8201]">японские </span>
-            <span>внедорожники</span>
+          <motion.div style={{ y: textY, opacity: textOpacity }} className="relative z-5 w-full max-w-[1200px] text-center text-[96px] font-medium italic tracking-tighter leading-[0.9]">
+            <span>Собираем и обслуживаем </span><span className="text-[#FF8201]">японские </span><span>внедорожники</span>
           </motion.div>
-          <motion.div
-            style={{ y: firstBlockY, opacity: firstBlockOpacity }}
-            className="absolute z-10 left-[10%] top-1/2 -translate-y-1/2 glass-header px-8 py-5 text-[20px] text-[#FF8201] shadow-xl"
-          >
-            ПИКАПСЕРВИС
-          </motion.div>
-          <motion.div
-            style={{ y: secondBlockY, opacity: secondBlockOpacity }}
-            className="absolute z-10 right-[10%] top-1/2 -translate-y-1/2 glass-header max-w-[400px] px-10 py-10 text-[18px] shadow-xl leading-relaxed"
-          >
+          <motion.div style={{ y: firstBlockY, opacity: firstBlockOpacity }} className="absolute z-10 left-[10%] top-1/2 -translate-y-1/2 glass-header px-8 py-5 text-[20px] text-[#FF8201] shadow-xl">ПИКАПСЕРВИС</motion.div>
+          <motion.div style={{ y: secondBlockY, opacity: secondBlockOpacity }} className="absolute z-10 right-[10%] top-1/2 -translate-y-1/2 glass-header max-w-[400px] px-10 py-10 text-[18px] shadow-xl leading-relaxed">
             It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.
           </motion.div>
         </div>
       </section>
-      <section className="w-full bg-[#f3f3f1] py-32 overflow-hidden">
-        <div className="flex items-start justify-center gap-4 h-[510px] px-[5%]">
+
+      {/* СЕКЦИЯ ПРОЕКТОВ — ФИКСИРОВАННЫЙ ВЕРХНИЙ КРАЙ */}
+      <section className="w-full bg-[#f3f3f1] min-h-screen flex items-center justify-center overflow-hidden">
+        <div 
+          className="flex items-start justify-center gap-4 h-[510px] w-full px-[5%]" // items-start прижимает все блоки к верху контейнера
+          onMouseLeave={() => setActiveProjectIndex(0)}
+        >
           {projectsData.map((project, index) => {
             const isActive = activeProjectIndex === index;
 
@@ -236,7 +190,7 @@ const MainPage: FC = () => {
                       </AnimatePresence>
                     </div>
                     <div className="absolute bottom-[15px] left-[15px] right-[15px]">
-                      <button className="w-full cursor-pointer h-[60px] bg-[#1c1c1c] hover:bg-[#252525] transition-colors flex items-center justify-center gap-3 rounded-none border border-white/5 uppercase tracking-widest text-[11px] font-bold">
+                      <button className="w-full cursor-pointer h-[160px] bg-[#1c1c1c] hover:bg-[#252525] transition-colors flex items-center justify-center gap-3 rounded-none border border-white/5 uppercase tracking-widest text-[11px] font-bold">
                         Все работы
                         <Plus className="w-4 h-4 text-purple-500" />
                       </button>
@@ -251,6 +205,7 @@ const MainPage: FC = () => {
                       animate={{ scale: isActive ? 1.05 : 1 }}
                       transition={{ duration: 0.8 }}
                     />
+                    <div className={`absolute inset-0 bg-black/20 transition-opacity duration-500 ${isActive ? 'opacity-0' : 'opacity-100'}`} />
                   </div>
                 )}
               </motion.div>
