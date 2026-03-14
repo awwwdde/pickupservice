@@ -1,5 +1,14 @@
 @import 'tailwindcss';
 
+::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  -ms-overflow-style: none; /* IE и Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
 .glass-header {
   background: rgba(255, 255, 255, 0.1);
   pointer-events: auto;
