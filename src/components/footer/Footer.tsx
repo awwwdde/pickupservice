@@ -58,7 +58,7 @@ const Footer: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-[#1c1c1c] border border-white/5 p-8 mb-8 group transition-colors hover:bg-[#252525]"
+              className="w-full bg-[#1c1c1c] border border-white/5 p-8 mb-8 group transition-colors hover:bg-[#252525] cursor-pointer"
             >
               <div className="flex items-center justify-between text-gray-400 group-hover:text-white">
                 <span className="uppercase tracking-[0.2em] text-sm">Запишитесь к нам</span>
