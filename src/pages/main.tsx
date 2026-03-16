@@ -26,7 +26,7 @@ const projectsData = [
   {
     id: 0,
     title: 'Наши Проекты',
-    description: 'Бескомпромиссный подход к делу. Изучите наше портфолио по подготовке и ремонту японских внедорожников.',
+    description: 'Бескомпромиссный подход к делу. Изучите наше портфолио по подготовке и ремонту внедорожников.',
     type: 'info',
     image: null
   },
@@ -163,7 +163,7 @@ const MainPage: FC = () => {
       <section ref={parallaxRef} className="relative h-[300vh] bg-[#f3f3f1]">
         <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden text-black px-10">
           <div className="text-center text-[96px] font-medium italic tracking-tighter leading-[0.9]">
-            Собираем и обслуживаем <span className="text-[#FF8201]">японские</span> внедорожники
+            Собираем и обслуживаем <span className="text-[#FF8201]">внедорожники</span> 
           </div>
           <motion.div style={{ y: firstBlockY }} className="absolute left-[8%] glass-header px-10 py-6 text-[22px] text-[#FF8201] font-bold shadow-2xl">
             ПИКАПСЕРВИС

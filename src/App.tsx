@@ -7,6 +7,7 @@ import Project from './pages/project.tsx'
 import Booking from './pages/booking.tsx'
 import Main from './pages/main.tsx'
 import Scrollbar from './components/scrollbar/Scrollbar.tsx'
+import Footer from './components/footer/Footer.tsx'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/booking" element={<Booking />} />
         </Routes>
       </main>
+      <Footer />
     </div>
   )
 }
