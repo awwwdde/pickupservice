@@ -18,8 +18,8 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-[#0a0a0a] text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden font-sans w-full">
-      <div className="max-w-7xl mx-auto">
+    <footer className="bg-[#0B0B0B] text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden font-sans w-[95%] mx-auto">
+      <div className="max-w-10xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-12 mb-20">
           <div>
             <h3 className="text-xl mb-6 font-medium">Быстрый доступ сайта</h3>
@@ -58,7 +58,7 @@ const Footer: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="w-full bg-[#1c1c1c] border border-white/5 p-8 mb-8 group transition-colors hover:bg-[#252525]"
+              className="w-full bg-[#1c1c1c] border border-white/5 p-8 mb-8 group transition-colors hover:bg-[#252525] cursor-pointer"
             >
               <div className="flex items-center justify-between text-gray-400 group-hover:text-white">
                 <span className="uppercase tracking-[0.2em] text-sm">Запишитесь к нам</span>
@@ -92,7 +92,7 @@ const Footer: React.FC = () => {
           initial={{ y: 100 }}
           whileInView={{ y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-[10vw] md:text-[10vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
+          className="text-[12vw] md:text-[12vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
           style={{ letterSpacing: '-0.05em' }}
         >
           ПикапСервис
