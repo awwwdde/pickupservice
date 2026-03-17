@@ -8,7 +8,7 @@ import {
   useSpring,
   useMotionValueEvent
 } from 'framer-motion'
-import { Mouse, Plus } from 'lucide-react'
+import { Mouse, Plus, ArrowRight } from 'lucide-react'
 import Lenis from 'lenis'
 
 import herovid from '../assets/vid/hero.webm'
@@ -16,6 +16,10 @@ import image1 from '../assets/img/image1.png'
 import image2 from '../assets/img/image2.png'
 import image3 from '../assets/img/image3.png'
 import image4 from '../assets/img/images4.png'
+
+import { ServiceCard } from '../components/accordeoncard/ServiceCard'
+import { TestimonialCard } from '../components/reviewcard/TestimonialCard'
+import { InputField } from '../components/inputfields/InputField'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
@@ -36,18 +40,58 @@ const projectsData = [
   { id: 4, image: image4 }
 ]
 
+const servicesData = [
+  {
+    title: 'Модифицируем внедорожники',
+    subtitle: 'Индивидуальные проекты, переоборудование салона, установка дополнительного света, спальников и экспедиционных багажников.',
+    image: image1
+  },
+  {
+    title: 'Техническое обслуживание',
+    subtitle: 'Комплексное ТО, глубокая диагностика ходовой части и двигателя, замена масел и фильтров для японских внедорожников.',
+    image: image2
+  },
+  {
+    title: 'Ремонт внедорожников',
+    subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
+    image: image3
+  }
+]
+
+const testimonialsData = [
+  {
+    quote: "Ребята из Пикапсервис превратили мой обычный крузак в настоящего монстра бездорожья. Качество сварных швов и внимание к деталям просто поражают. Прошел Кольский полуостров без единой поломки.",
+    name: "Алексей Смирнов",
+    car: "Toyota Land Cruiser 200"
+  },
+  {
+    quote: "Идеальная работа с подвеской. Машина перестала 'козлить' на грейдере, а энергоемкость теперь позволяет не сбрасывать газ там, где остальные ползут. Лучший сервис для подготовки.",
+    name: "Дмитрий Волков",
+    car: "Nissan Patrol Y61"
+  },
+  {
+    quote: "Делали полный ребилд салона и устанавливали спальник с органайзером. Теперь в экспедициях сплю как дома, все вещи на своих местах. Очень грамотный инженерный подход.",
+    name: "Михаил Захаров",
+    car: "Toyota Hilux"
+  }
+]
+
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 const MainPage: FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const parallaxRef = useRef<HTMLDivElement | null>(null)
   const aboutRef = useRef<HTMLDivElement | null>(null)
+  const testimonialsRef = useRef<HTMLDivElement | null>(null)
 
   const [showContent, setShowContent] = useState(isHeroVideoPlayed)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [activeProjectIndex, setActiveProjectIndex] = useState(0)
   const [aboutImageIndex, setAboutImageIndex] = useState(0)
+  
+  const [activeServiceIndex, setActiveServiceIndex] = useState(0)
 
+  // Настройка Lenis
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
     if (!isHeroVideoPlayed) lenis.stop()
@@ -63,12 +107,18 @@ const MainPage: FC = () => {
     }
   }, [])
 
+  // Скролл-анимации
   const { scrollYProgress } = useScroll({ target: parallaxRef, offset: ['start start', 'end end'] })
   const { scrollYProgress: aboutProgress } = useScroll({ target: aboutRef, offset: ['start start', 'end end'] })
+  const { scrollYProgress: testimonialsProgress } = useScroll({ target: testimonialsRef }) // Без смещений, чтобы скролл работал по всей высоте блока
 
   const springConfig = { stiffness: 50, damping: 20, mass: 1 }
   const smoothScroll = useSpring(scrollYProgress, springConfig)
   const smoothAbout = useSpring(aboutProgress, springConfig)
+  
+  // Здесь мы не используем Spring, так как Lenis уже делает скролл плавным. 
+  // Лишний Spring сделает горизонтальный скролл "желейным".
+  const testimonialsX = useTransform(testimonialsProgress, [0, 1], ["5%", "-65%"])
 
   const firstBlockY = useTransform(smoothScroll, [0, 1], ['60vh', '-60vh'])
   const secondBlockY = useTransform(smoothScroll, [0, 1], ['80vh', '-80vh'])
@@ -80,6 +130,7 @@ const MainPage: FC = () => {
     setAboutImageIndex(Math.round(latest))
   })
 
+  // Видеоплеер
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -99,6 +150,7 @@ const MainPage: FC = () => {
     window.dispatchEvent(new Event('hero-ready'))
   }
 
+  // Смена слов
   useEffect(() => {
     if (!showContent) return
     const id = setInterval(() => setCurrentWordIndex(p => (p + 1) % words.length), 2600)
@@ -162,7 +214,7 @@ const MainPage: FC = () => {
       {/* SECTION 2: PARALLAX */}
       <section ref={parallaxRef} className="relative h-[300vh] bg-[#f3f3f1]">
         <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden text-black px-10">
-          <div className="text-center text-[96px] font-medium italic tracking-tighter leading-[0.9]">
+          <div className="text-center text-[96px] font-bold italic tracking-tighter leading-[0.9] uppercase">
             Собираем и обслуживаем <span className="text-[#FF8201]">внедорожники</span> 
           </div>
           <motion.div style={{ y: firstBlockY }} className="absolute left-[8%] glass-header px-10 py-6 text-[22px] text-[#FF8201] font-bold shadow-2xl">
@@ -222,7 +274,7 @@ const MainPage: FC = () => {
           </div>
 
           <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-[1100px]">
-            <div className="relative w-[1100px] h-[600px] overflow-hidden shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] bg-neutral-200">
+            <div className="relative w-[1100px] h-[600px] overflow-hidden">
               {aboutImages.map((img, i) => (
                 <motion.img
                   key={i} src={img}
@@ -252,7 +304,89 @@ const MainPage: FC = () => {
         </div>
       </section>
 
-      <section className="h-screen w-full bg-black flex items-center justify-center text-xs tracking-[2em] text-white/10 uppercase">
+      {/* SECTION 5: SERVICES */}
+      <section className="bg-[#f3f3f1] py-32 w-full flex flex-col items-center">
+        <div className="w-[90%] mb-12 flex flex-col gap-4">
+          <h2 className="text-6xl font-regular uppercase tracking-tighter text-[#FF8201] ">Чем мы занимаемся</h2>
+        </div>
+        <div className="w-[90%] flex flex-col border-t border-black/10">
+          {servicesData.map((service, index) => (
+            <ServiceCard
+              key={index}
+              index={index}
+              title={service.title}
+              subtitle={service.subtitle}
+              image={service.image}
+              isActive={activeServiceIndex === index}
+              onClick={() => setActiveServiceIndex(index)}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 6: TESTIMONIALS (Horizontal Scroll Carousel) */}
+      <section ref={testimonialsRef} className="relative h-[300vh] bg-black">
+        {/* Sticky контейнер держит блок на экране, пока мы скроллим 300vh */}
+        <div className="sticky top-0 flex h-screen w-full flex-col justify-center overflow-hidden">
+          
+          <div className="mb-16 px-[5%]">
+            <h2 className="text-4xl font-black uppercase tracking-tighter md:text-6xl text-white">
+              Несколько слов <br/><span className="text-[#FF8201]">от наших клиентов</span>
+            </h2>
+          </div>
+
+          {/* Движущаяся лента */}
+          <motion.div style={{ x: testimonialsX }} className="flex gap-10 px-[5%] w-max">
+            {testimonialsData.map((testimonial, i) => (
+              <TestimonialCard 
+                key={i}
+                quote={testimonial.quote}
+                name={testimonial.name}
+                car={testimonial.car}
+              />
+            ))}
+          </motion.div>
+          
+        </div>
+      </section>
+
+      {/* SECTION 7: CONTACT FORM */}
+      <section className="relative flex w-full flex-col items-center bg-black py-32 border-t border-white/10">
+        <div className="flex w-[90%] max-w-[1100px] flex-col">
+          <motion.h3 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-100px" }}
+            transition={{ duration: 0.6, ease }}
+            className="mb-16 text-3xl font-bold uppercase tracking-tighter text-[#FF8201] md:text-5xl"
+          >
+            Оставьте заявку и мы вам позвоним
+          </motion.h3>
+          
+          <form className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center">
+            <div className="flex w-full flex-1 gap-10 flex-col md:flex-row">
+              <InputField label="Ваше Имя" type="text" required />
+              <InputField label="Телефон" type="tel" required />
+            </div>
+            
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-100px" }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.4 }}
+              className="group flex h-[80px] w-[300px] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white mt-10 md:mt-0"
+            >
+              Отправить заявку
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
+            </motion.button>
+          </form>
+        </div>
+      </section>
+
+
+      <section className="h-[50vh] w-full bg-[#111] flex items-center justify-center text-xs tracking-[2em] text-white/10 uppercase">
         Pickup Service 2026
       </section>
     </div>

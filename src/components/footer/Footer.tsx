@@ -18,8 +18,8 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-[#0a0a0a] text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden font-sans w-full">
-      <div className="max-w-7xl mx-auto">
+    <footer className="bg-[#0a0a0a] text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden font-sans w-[90%] mx-auto">
+      <div className="max-w-10xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-12 mb-20">
           <div>
             <h3 className="text-xl mb-6 font-medium">Быстрый доступ сайта</h3>
@@ -56,8 +56,8 @@ const Footer: React.FC = () => {
           <div className="hidden lg:block"></div>
           <div className="flex flex-col items-start md:items-end lg:items-start">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1 }}
+              whileTap={{ scale: 1 }}
               className="w-full bg-[#1c1c1c] border border-white/5 p-8 mb-8 group transition-colors hover:bg-[#252525] cursor-pointer"
             >
               <div className="flex items-center justify-between text-gray-400 group-hover:text-white">
@@ -92,7 +92,7 @@ const Footer: React.FC = () => {
           initial={{ y: 100 }}
           whileInView={{ y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-[10vw] md:text-[10vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
+          className="text-[11vw] md:text-[11vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
           style={{ letterSpacing: '-0.05em' }}
         >
           ПикапСервис
@@ -100,8 +100,10 @@ const Footer: React.FC = () => {
       </div>
 
       <div className="mt-10 pt-8 border-t border-white/5 flex justify-between text-[10px] uppercase tracking-widest text-gray-600">
-        <p>© {currentYear} PICKUP SERVICE</p>
-        <p>Design by BitLuna</p>
+        <p>© {currentYear} ПИКАПСЕРВИС. ВСЕ ПРАВА ЗАЩИЩЕНЫ</p>
+        <p>Design by 
+          <a href="https://bitluna.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors"> BitLuna </a>
+        </p>
       </div>
     </footer>
   );
