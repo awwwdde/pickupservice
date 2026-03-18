@@ -350,7 +350,7 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 7: CONTACT FORM */}
-      <section className="relative flex w-full flex-col items-center bg-black py-32 border-t border-white/10">
+      <section className="relative flex w-full flex-col items-center bg-[#020202] py-32 border-t border-white/10">
         <div className="flex w-[90%] max-w-[1100px] flex-col">
           <motion.h3 
             initial={{ opacity: 0, y: 20 }}
@@ -377,7 +377,7 @@ const MainPage: FC = () => {
         </div>
       </section>
 
-      <footer className="h-[50vh] w-full bg-[#111] flex items-center justify-center text-xs tracking-[2em] text-white/10 uppercase">
+      <footer className="h-[50vh] w-full bg-[#020202] flex items-center justify-center text-xs tracking-[2em] text-white/10 uppercase">
         Pickup Service 2026
       </footer>
     </div>
