@@ -4,17 +4,11 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 const Header: FC = () => {
-  const [visible, setVisible] = useState(false)
+  // 1. Устанавливаем true по умолчанию, чтобы хедер был виден сразу
+  const [visible, setVisible] = useState(true)
   const [isDarkBackground, setIsDarkBackground] = useState(true)
 
-  useEffect(() => {
-    const handler = () => setVisible(true)
-    window.addEventListener('hero-ready', handler)
-
-    return () => {
-      window.removeEventListener('hero-ready', handler)
-    }
-  }, [])
+  // Блок с hero-ready удален, так как хедер теперь виден всегда
 
   useEffect(() => {
     const getBackgroundColor = (el: HTMLElement | null): string | null => {
@@ -65,8 +59,9 @@ const Header: FC = () => {
       className={`fixed inset-x-0 top-5 z-[999] flex justify-center ${
         isDarkBackground ? 'text-white' : 'text-black'
       }`}
-      initial={{ opacity: 0, y: -10 }}
-      animate={visible ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
+      // Хедер теперь анимируется сразу при появлении компонента
+      initial={{ opacity: 1, y: 0 }} 
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}
     >
       <nav className="mx-auto flex w-full max-w-6xl items-center justify-center gap-[10px]">
