@@ -29,11 +29,10 @@ const ProjectsPage: FC = () => {
   const trackRef = useRef<HTMLDivElement>(null);
   const [xRange, setXRange] = useState(0);
 
-  // Инициализация Lenis
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
-      lerp: 0.2, 
+      lerp: 0.1, 
       smoothWheel: true,
     });
 
@@ -66,16 +65,23 @@ const ProjectsPage: FC = () => {
   const x = useTransform(scrollYProgress, [0, 1], [0, -xRange]);
 
   return (
-    <main className="bg-[#0a0a0a] text-white antialiased">
-      {/* Header */}
-      <header className="w-[90%] mx-auto pt-40 pb-20">
-        <h1 className="text-[11vw] font-bold uppercase tracking-tighter leading-[0.75]">
-          Наши<br />
-          <span className="text-neutral-600 italic">Проекты</span>
-        </h1>
+    <main className="bg-[#020202] text-white antialiased selection:bg-white selection:text-black">
+      
+      {/* 1. HEADER С АНИМАЦИЕЙ КАК В КОНТАКТАХ */}
+      <header className="w-[90%] mx-auto pt-40 pb-20 border-b border-white/10">
+        <motion.div
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <h1 className="text-[11vw] font-bold uppercase tracking-tighter leading-[0.75]">
+            Наши <br />
+            <span className="text-neutral-500 italic font-light tracking-tight">Проекты.</span>
+          </h1>
+        </motion.div>
       </header>
 
-      {/* СЕКЦИЯ 1: ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ (PINNED) */}
+      {/* 2. ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
       <section ref={horizontalRef} className="relative h-[400vh]">
         <div className="sticky top-0 h-screen flex items-center overflow-hidden">
           <motion.div 
@@ -87,65 +93,61 @@ const ProjectsPage: FC = () => {
               <Link 
                 key={project.id} 
                 to={`/portfolio/${project.id}`}
-                className="relative flex-shrink-0 w-[80vw] md:w-[65vw] h-full overflow-hidden"
+                className="relative flex-shrink-0 w-[80vw] md:w-[65vw] h-full overflow-hidden group"
               >
                 <img 
                   src={project.image} 
                   alt={project.title} 
-                  className="w-full h-full object-cover grayscale-[0.3]" 
+                  className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out" 
                 />
-                <div className="absolute inset-x-0 bottom-0 p-8 md:p-12">
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent backdrop-blur-[4px] mask-gradient" />
-                   <div className="relative z-10 flex justify-between items-end">
+                <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 z-10">
+                   <div className="relative flex justify-between items-end">
                       <div className="max-w-md">
-                        <p className="font-mono text-[10px] uppercase tracking-widest mb-3 opacity-60">Избранные проекты</p>
+                        <p className="font-mono text-[10px] uppercase tracking-widest mb-3 opacity-60">// Избранный кейс</p>
                         <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter leading-none">{project.title}</h2>
                       </div>
-                      <div className="text-right">
+                      <div className="text-right hidden md:block">
                         <span className="font-mono text-xs uppercase border border-white/20 px-3 py-1 rounded-full">{project.model}</span>
                       </div>
                    </div>
                 </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
               </Link>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* СЕКЦИЯ 2: АСИММЕТРИЧНАЯ СЕТКА */}
+      {/* 3. АСИММЕТРИЧНАЯ СЕТКА (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
       <section className="w-[90%] mx-auto py-60">
         <div className="flex justify-between items-end mb-32 border-b border-white/10 pb-10">
           <h2 className="text-5xl font-bold uppercase tracking-tighter">Все проекты</h2>
-          <span className="font-mono text-sm opacity-40">/ Всего 12 проектов</span>
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-30">/ Total: 07</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-32 md:gap-x-20">
           {otherProjects.map((project, index) => (
-            <motion.div
+            <div
               key={project.id}
-              initial={{ opacity: 0, y: 100 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-20%" }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-              className={`relative aspect-[4/5] ${index % 2 !== 0 ? 'md:mt-48' : ''}`}
+              className={`relative aspect-[4/5] group overflow-hidden ${index % 2 !== 0 ? 'md:mt-48' : ''}`}
             >
               <Link to={`/portfolio/${project.id}`} className="block w-full h-full relative">
                 <img 
                   src={project.image} 
                   alt={project.title} 
-                  className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-1000" 
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 ease-out" 
                 />
-                <div className="absolute bottom-0 left-0 w-full p-8 bg-black/20 backdrop-blur-xl">
+                <div className="absolute bottom-0 left-0 w-full p-8 bg-black/40 backdrop-blur-md border-t border-white/10">
                   <div className="flex flex-col">
-                    <h3 className="text-2xl font-bold uppercase tracking-tight">{project.title}</h3>
+                    <h3 className="text-2xl font-bold uppercase tracking-tight group-hover:italic transition-all duration-300">{project.title}</h3>
                     <div className="flex justify-between items-center mt-4">
                        <p className="font-mono text-[10px] opacity-60 uppercase">{project.model}</p>
-                       <span className="text-xs">→</span>
+                       <span className="text-xs group-hover:translate-x-2 transition-transform duration-300">→</span>
                     </div>
                   </div>
                 </div>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
       </section>

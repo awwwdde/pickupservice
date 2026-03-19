@@ -8,8 +8,6 @@ const Header: FC = () => {
   const [visible, setVisible] = useState(true)
   const [isDarkBackground, setIsDarkBackground] = useState(true)
 
-  // Блок с hero-ready удален, так как хедер теперь виден всегда
-
   useEffect(() => {
     const getBackgroundColor = (el: HTMLElement | null): string | null => {
       while (el) {
@@ -59,7 +57,6 @@ const Header: FC = () => {
       className={`fixed inset-x-0 top-5 z-[999] flex justify-center ${
         isDarkBackground ? 'text-white' : 'text-black'
       }`}
-      // Хедер теперь анимируется сразу при появлении компонента
       initial={{ opacity: 1, y: 0 }} 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: 'easeOut' }}

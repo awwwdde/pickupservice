@@ -8,12 +8,14 @@ import Booking from './pages/booking.tsx'
 import Main from './pages/main.tsx'
 import Scrollbar from './components/scrollbar/Scrollbar.tsx'
 import Footer from './components/footer/Footer.tsx'
+import ScrollTop from './components/utils/scrolltop.tsx'
 
 function App() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Header />
       <Scrollbar />
+      <ScrollTop/>
       <main>
         <Routes>
           <Route path="/" element={<Main />} />

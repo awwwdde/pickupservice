@@ -24,7 +24,6 @@ import { InputField } from '../components/inputfields/InputField'
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
 
-// Глобальный флаг для отслеживания проигрывания в рамках сессии
 let isHeroVideoPlayed = typeof window !== 'undefined' && window.location.pathname !== '/'
 
 const projectsData = [
@@ -135,8 +134,6 @@ const MainPage: FC = () => {
       // Прямая загрузка главной: играем видео
       video.play().catch(console.error)
     } else {
-      // Если видео уже "проигрывалось" ранее или загрузка не с главной:
-      // Ждем загрузки метаданных, чтобы узнать длительность и перемотать в конец
       const setToLastFrame = () => {
         video.currentTime = video.duration
         video.pause()
@@ -345,13 +342,15 @@ const MainPage: FC = () => {
                 car={testimonial.car}
               />
             ))}
+            <a href="maps.yandex.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors text-[6vh]"> все отзывы </a>
           </motion.div>
+          
         </div>
       </section>
 
       {/* SECTION 7: CONTACT FORM */}
       <section className="relative flex w-full flex-col items-center bg-[#020202] py-32 border-t border-white/10">
-        <div className="flex w-[90%] max-w-[1100px] flex-col">
+        <div className="flex w-[90%] flex-col">
           <motion.h3 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -376,10 +375,6 @@ const MainPage: FC = () => {
           </form>
         </div>
       </section>
-
-      <footer className="h-[50vh] w-full bg-[#020202] flex items-center justify-center text-xs tracking-[2em] text-white/10 uppercase">
-        Pickup Service 2026
-      </footer>
     </div>
   )
 }
