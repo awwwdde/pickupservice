@@ -17,6 +17,8 @@ import image2 from '../assets/img/image2.png'
 import image3 from '../assets/img/image3.png'
 import image4 from '../assets/img/images4.png'
 
+
+
 import { ServiceCard } from '../components/accordeoncard/ServiceCard'
 import { TestimonialCard } from '../components/reviewcard/TestimonialCard'
 import { InputField } from '../components/inputfields/InputField'
@@ -163,6 +165,11 @@ const MainPage: FC = () => {
       
       {/* SECTION 1: HERO */}
       <section className="relative h-screen w-full overflow-hidden">
+        <img
+          src={image1}
+          className="absolute inset-0 h-full w-full object-cover opacity-10 pointer-events-none"
+          alt=""
+        />
         <video
           ref={videoRef}
           src={herovid}
@@ -173,7 +180,7 @@ const MainPage: FC = () => {
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${isVideoFinished ? 'opacity-60' : 'opacity-100'}`}
         />
         
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[35px]">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[min(35px,6vw)]">
           <motion.div 
             className="flex w-full items-center justify-between text-[clamp(32px,6vw,64px)] font-semibold tracking-tighter uppercase" 
             initial={{ opacity: 0, y: 10 }} 
@@ -218,14 +225,20 @@ const MainPage: FC = () => {
 
       {/* SECTION 2: PARALLAX */}
       <section ref={parallaxRef} className="relative h-[300vh] bg-[#f3f3f1]">
-        <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden text-black px-10">
+        <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden text-black px-6 sm:px-10 relative">
           <div className="text-center text-[96px] font-bold italic tracking-tighter leading-[0.9] uppercase">
             Собираем и обслуживаем <span className="text-[#FF8201]">внедорожники</span> 
           </div>
-          <motion.div style={{ y: firstBlockY }} className="absolute left-[8%] glass-header px-10 py-6 text-[22px] text-[#FF8201] font-bold shadow-2xl">
+          <motion.div
+            style={{ y: firstBlockY }}
+            className="absolute left-[8%] glass-header px-6 sm:px-10 py-4 sm:py-6 text-[min(22px,4vw)] text-[#FF8201] font-bold shadow-2xl"
+          >
             ПИКАПСЕРВИС
           </motion.div>
-          <motion.div style={{ y: secondBlockY }} className="absolute right-[8%] glass-header max-w-[400px] p-10 text-[18px] shadow-2xl leading-relaxed text-black/70">
+          <motion.div
+            style={{ y: secondBlockY }}
+            className="absolute right-[8%] glass-header max-w-[min(400px,90vw)] p-6 sm:p-10 text-[min(18px,3.8vw)] shadow-2xl leading-relaxed text-black/70"
+          >
             Бескомпромиссная подготовка к экспедициям и трофи-рейдам. Ваша уверенность в каждом километре пути.
           </motion.div>
         </div>
@@ -233,7 +246,7 @@ const MainPage: FC = () => {
 
       {/* SECTION 3: PROJECTS */}
       <section className="bg-[#f3f3f1] py-32 flex justify-center">
-        <div className="flex items-end gap-5 h-[550px] w-full px-[5%]" onMouseLeave={() => setActiveProjectIndex(0)}>
+        <div className="flex items-end gap-5 h-[min(550px,70vh)] w-full px-[5%]" onMouseLeave={() => setActiveProjectIndex(0)}>
           {projectsData.map((p, i) => (
             <motion.div
               key={i} layout
@@ -254,7 +267,7 @@ const MainPage: FC = () => {
                     )}
                   </AnimatePresence>
                   <div className="absolute bottom-[15px] left-[15px] right-[15px]">
-                    <button className="w-full cursor-pointer h-[100px] bg-[#1c1c1c] hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-white/5 uppercase tracking-widest text-[11px] font-bold">
+                    <button className="w-full cursor-pointer h-[min(100px,12vh)] bg-[#1c1c1c] hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-white/5 uppercase tracking-widest text-[11px] font-bold">
                       ВСЕ РАБОТЫ <Plus className="w-4 h-4" />
                     </button>
                   </div>
@@ -276,8 +289,8 @@ const MainPage: FC = () => {
               <div className="text-[#FF8201]">МЫ?</div>
             </div>
           </div>
-          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-[1100px]">
-            <div className="relative w-[1100px] h-[600px] overflow-hidden">
+          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-[min(1100px,100%)]">
+            <div className="relative w-[min(1100px,100%)] h-[min(600px,80vh)] overflow-hidden">
               {aboutImages.map((img, i) => (
                 <motion.img
                   key={i} src={img}
@@ -295,8 +308,8 @@ const MainPage: FC = () => {
                   Опыт, надежность и японское качество в каждой детали.
                 </p>
               </div>
-              <div className="w-[300px]">
-                 <button className="w-full h-[100px] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-black/5 uppercase tracking-widest text-[11px] font-bold">
+              <div className="w-[min(300px,90vw)]">
+                 <button className="w-full h-[min(100px,12vh)] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-black/5 uppercase tracking-widest text-[11px] font-bold">
                     УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
                  </button>
               </div>
@@ -367,7 +380,7 @@ const MainPage: FC = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group flex h-[80px] w-[300px] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
+              className="group flex h-[min(80px,10vh)] w-[min(300px,90vw)] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
             >
               Отправить заявку
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />

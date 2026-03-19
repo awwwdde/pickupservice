@@ -8,7 +8,7 @@ interface TestimonialCardProps {
 
 export const TestimonialCard: FC<TestimonialCardProps> = ({ quote, name, car }) => {
   return (
-    <div className="flex h-[380px] w-[90vw] max-w-[1100px] flex-shrink-0 flex-col items-center justify-center bg-white/10 px-10 text-center md:px-20 transition-colors hover:bg-white/15">
+    <div className="flex h-[min(380px,60vh)] w-[90vw] max-w-[1100px] flex-shrink-0 flex-col items-center justify-center bg-white/10 px-[min(40px,6vw)] text-center md:px-20 transition-colors hover:bg-white/15">
       <p className="font-serif text-2xl md:text-4xl italic leading-relaxed text-white">
         "{quote}"
       </p>

@@ -1,5 +1,5 @@
 import { type FC, useEffect, useRef, useState } from 'react'
-import { motion, useScroll, useMotionValueEvent, useTransform, cubicBezier, AnimatePresence } from 'framer-motion'
+import { motion, useScroll, useMotionValueEvent, useTransform, cubicBezier } from 'framer-motion'
 import Lenis from 'lenis'
 import { ArrowRight } from 'lucide-react'
 
@@ -11,6 +11,11 @@ const customEase = cubicBezier(0.19, 1, 0.22, 1)
 import image1 from '../assets/img/image1.png'
 import image2 from '../assets/img/image2.png'
 import image3 from '../assets/img/image3.png'
+import image5 from '../assets/img/image5.png'
+import image6 from '../assets/img/image6.png'
+import image7 from '../assets/img/image7.png'
+import image8 from '../assets/img/image8.png'
+import image9 from '../assets/img/image9.png'
 
 const servicesData = [
   {
@@ -29,6 +34,9 @@ const servicesData = [
     image: image3
   }
 ]
+
+const trackRow1 = [image5, image6, image7, image8, image9]
+const trackRow2 = [image9, image8, image7, image6, image5]
 
 // Обновленные анимации для текста: более резкое появление
 const titleLineVariants = {
@@ -115,7 +123,7 @@ const ServicePage: FC = () => {
             initial={{ scale: 1.2, opacity: 0 }}
             animate={{ scale: 1, opacity: 0.85 }} // Слегка затемняем саму картинку для контраста без мыльного блюра
             transition={{ duration: 2, ease: customEase }}
-            src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=2000" 
+            src={image5}
             className="h-full w-full object-cover"
             alt="Offroad workshop hero"
           />
@@ -207,27 +215,27 @@ const ServicePage: FC = () => {
       <section ref={imageTrackRef} className="bg-[#fcfcfc] pb-40 md:pb-52 overflow-hidden">
         <div className="flex flex-col gap-8 md:gap-12">
           <motion.div style={{ x: row1X }} className="flex gap-8 md:gap-12 whitespace-nowrap">
-            {[1, 2, 3, 4, 5].map((i) => (
+            {trackRow1.map((src, i) => (
               <div key={i} className="w-[60vw] md:w-[40vw] h-[40vh] md:h-[60vh] flex-shrink-0 overflow-hidden bg-neutral-200">
                 <motion.img 
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.8, ease: customEase }}
-                    src={`https://images.unsplash.com/photo-1542362567-b07e54358753?q=80&w=1200&sig=${i}`} 
+                    src={src}
                     className="w-full h-full object-cover" 
-                    alt="Offroad adventure colored 1"
+                    alt=""
                 />
               </div>
             ))}
           </motion.div>
           <motion.div style={{ x: row2X }} className="flex gap-8 md:gap-12 whitespace-nowrap">
-            {[5, 6, 7, 8, 9].map((i) => (
+            {trackRow2.map((src, i) => (
               <div key={i} className="w-[60vw] md:w-[40vw] h-[40vh] md:h-[60vh] flex-shrink-0 overflow-hidden bg-neutral-200">
                 <motion.img 
                     whileHover={{ scale: 1.05 }}
                     transition={{ duration: 0.8, ease: customEase }}
-                    src={`https://images.unsplash.com/photo-1553440569-bcc63803a83d?q=80&w=1200&sig=${i}`} 
+                    src={src}
                     className="w-full h-full object-cover" 
-                    alt="Offroad adventure colored 2"
+                    alt=""
                 />
               </div>
             ))}
@@ -276,12 +284,11 @@ const ServicePage: FC = () => {
                 <h3 className="text-5xl md:text-[5vw] font-black uppercase tracking-[-0.04em] text-black mb-6 leading-[0.85]">Готовы к проектам?</h3>
                 <p className="text-xl md:text-2xl text-neutral-500 max-w-2xl mx-auto font-medium tracking-tight">Оставьте заявку, и мы свяжемся с вами, чтобы обсудить подготовку вашего внедорожника.</p>
             </motion.div>
-            
           <motion.button
             whileHover="hover"
             initial="rest"
             animate="rest"
-            className="group relative flex h-[100px] md:h-[140px] w-full max-w-5xl cursor-pointer items-center justify-between overflow-hidden bg-black px-8 md:px-12"
+            className="group relative flex h-[min(100px,12vh)] md:h-[min(140px,16vh)] w-full max-w-5xl cursor-pointer items-center justify-between overflow-hidden bg-black px-8 md:px-12"
           >
             {/* Анимация заполнения кнопки при наведении */}
             <motion.div 

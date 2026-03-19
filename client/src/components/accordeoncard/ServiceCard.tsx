@@ -27,7 +27,8 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       onClick={onClick}
       initial={false}
       animate={{ 
-        height: isActive ? 400 : 120, 
+        // Подстраиваем высоту карточки под высоту экрана, чтобы на телефонах не было переполнения
+        height: isActive ? 'min(400px,60vh)' : 'min(120px,18vh)',
         backgroundColor: isActive ? "#ffffff" : "#f3f3f1" 
       }}
       transition={{ duration: 0.8, ease: customEase }}
@@ -57,7 +58,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       </motion.div>
       <motion.div 
         layout 
-        className="flex flex-1 flex-col justify-center px-10 z-10"
+        className="flex flex-1 flex-col justify-center px-6 sm:px-10 z-10"
       >
         <motion.h3 
           layout
@@ -82,7 +83,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       </motion.div>
       <motion.div 
         layout 
-        className="flex items-center justify-end pr-10 flex-shrink-0"
+        className="flex items-center justify-end pr-6 sm:pr-10 flex-shrink-0"
       >
         <motion.span 
           layout

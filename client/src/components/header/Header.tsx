@@ -4,8 +4,6 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 const Header: FC = () => {
-  // 1. Устанавливаем true по умолчанию, чтобы хедер был виден сразу
-  const [visible, setVisible] = useState(true)
   const [isDarkBackground, setIsDarkBackground] = useState(true)
 
   useEffect(() => {
@@ -54,32 +52,21 @@ const Header: FC = () => {
 
   return (
     <motion.header
-      className={`fixed inset-x-0 top-5 z-[999] flex justify-center ${
+      className={`fixed inset-x-0 top-3 sm:top-5 z-[999] flex justify-center px-3 ${
         isDarkBackground ? 'text-white' : 'text-black'
       }`}
-      initial={{ opacity: 1, y: 0 }} 
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: 'easeOut' }}
     >
-      <nav className="mx-auto flex w-full max-w-6xl items-center justify-center gap-[10px]">
-        
-        <div className="glass-header header-block text-[16px] font-semibold uppercase tracking-widest">
+      <nav className="mx-auto flex w-full max-w-6xl items-center justify-between sm:justify-center gap-2 sm:gap-[10px]">
+
+        <div className="glass-header header-block text-[12px] sm:text-[16px] font-semibold uppercase tracking-widest whitespace-nowrap">
           <Link to="/">PickupService</Link>
         </div>
 
-        <ul className="glass-header header-block flex items-center gap-[10px] text-[16px]">
-          <li>
-            <Link to="/service">Сервис</Link>
-          </li>
-          <li>
-            <Link to="/portfolio">Портфолио</Link>
-          </li>
-          <li>
-            <Link to="/contact">Контакты</Link>
-          </li>
-          <li>
-            <Link to="/booking">Записаться</Link>
-          </li>
+        <ul className="glass-header header-block flex items-center gap-3 sm:gap-[10px] text-[12px] sm:text-[16px] overflow-x-auto no-scrollbar px-2 sm:px-0">
+          <li><Link to="/service">Сервис</Link></li>
+          <li><Link to="/portfolio">Портфолио</Link></li>
+          <li><Link to="/contact">Контакты</Link></li>
+          <li><Link to="/booking">Записаться</Link></li>
         </ul>
 
       </nav>

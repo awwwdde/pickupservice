@@ -92,14 +92,14 @@ const Footer: React.FC = () => {
           initial={{ y: 100 }}
           whileInView={{ y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-[12vw] md:text-[12vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
+          className="text-[9vw] sm:text-[12vw] md:text-[12vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
           style={{ letterSpacing: '-0.05em' }}
         >
           ПикапСервис
         </motion.h1>
       </div>
 
-      <div className="mt-10 pt-8 border-t border-white/5 flex justify-between text-[10px] uppercase tracking-widest text-gray-600">
+      <div className="mt-10 pt-8 border-t border-white/5 flex justify-between text-[clamp(9px,1.2vw,10px)] uppercase tracking-widest text-gray-600">
         <p>© {currentYear} ПИКАПСЕРВИС. ВСЕ ПРАВА ЗАЩИЩЕНЫ</p>
         <p>Design by 
           <a href="https://bitluna.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors"> BitLuna </a>

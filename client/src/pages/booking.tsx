@@ -2,6 +2,11 @@ import { useState, useRef } from 'react'
 import type { FC } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InputField } from '../components/inputfields/InputField'
+import image5 from '../assets/img/image5.png'
+import image6 from '../assets/img/image6.png'
+import image7 from '../assets/img/image7.png'
+import image8 from '../assets/img/image8.png'
+import image9 from '../assets/img/image9.png'
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
@@ -15,11 +20,11 @@ const services = [
 
 // Список фото для эффекта
 const trailImages = [
-  "https://images.unsplash.com/photo-1542362567-b07e54358753?q=80&w=600",
-  "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?q=80&w=600",
-  "https://images.unsplash.com/photo-1553440569-bcc63803a83d?q=80&w=600",
-  "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=600",
-  "https://images.unsplash.com/photo-1609521263047-f8f205293f24?q=80&w=600"
+  image5,
+  image6,
+  image7,
+  image8,
+  image9
 ]
 
 interface TrailItem {
@@ -96,8 +101,10 @@ const BookingPage: FC = () => {
                   position: 'absolute',
                   left: item.x,
                   top: item.y,
-                  width: '200px',
-                  height: '250px',
+                  // Делаем трей адаптивным: на больших экранах сохраняем прежний размер,
+                  // на телефонах/телевизорах ограничиваем по viewport.
+                  width: 'min(200px, 40vw)',
+                  height: 'min(250px, 45vh)',
                   objectFit: 'cover',
                   transform: 'translate(-50%, -50%)', // Центрируем по мышке
                 }}

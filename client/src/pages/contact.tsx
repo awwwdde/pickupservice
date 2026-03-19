@@ -3,10 +3,11 @@ import type { FC } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Lenis from 'lenis';
 
+
 const ContactPage: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyTrackRef = useRef<HTMLDivElement>(null); 
-  const [mapKey, setMapKey] = useState(0);
+  const [mapKey] = useState(0);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -42,11 +43,12 @@ const ContactPage: FC = () => {
     <main ref={containerRef} className="bg-[#020202] text-white font-sans antialiased min-h-screen">
       
       {/* 1. HERO SECTION */}
-      <section className="w-[90%] mx-auto pt-40 pb-20 md:pb-32 border-b border-white/10">
+      <section className="w-[90%] mx-auto pt-40 pb-20 md:pb-32 border-b border-white/10 relative overflow-hidden">
         <motion.div
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-10"
         >
           <h1 className="text-[11vw] font-bold uppercase tracking-tighter leading-[0.85] mix-blend-difference">
             Найдите <br />
@@ -56,8 +58,8 @@ const ContactPage: FC = () => {
       </section>
 
       {/* 2. CONTACTS GRID */}
-      <section className="w-[90%] mx-auto py-20 md:py-32">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-0">
+      <section className="w-[90%] mx-auto py-20 md:py-32 relative overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-0 relative z-10">
           <div className="md:col-span-4 flex flex-col justify-between">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -110,7 +112,7 @@ const ContactPage: FC = () => {
           <div className="relative w-[90%] mx-auto h-[65vh] md:h-[70vh] bg-[#050505] border border-white/5 cursor-crosshair overflow-hidden">
             <motion.div 
               style={{ y: mapY, scale: mapScale }}
-              className="absolute inset-[-15%] w-[130%] h-[130%] grayscale invert contrast-[1.4] brightness-[0.35]"
+              className="absolute inset-[-15%] w-[130%] h-[130%] grayscale invert contrast-[1.4] brightness-[0.35] z-10"
             >
             <iframe
               key={mapKey}

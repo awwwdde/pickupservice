@@ -1,9 +1,14 @@
-import { type FC, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
-import { Plus, ArrowRight, ChevronRight } from 'lucide-react'
+import { type FC, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
 import Lenis from 'lenis'
 import { InputField } from '../components/inputfields/InputField'
+
+import image1 from '../assets/img/image1.png'
+import image2 from '../assets/img/image2.png'
+import image5 from '../assets/img/image5.png'
+import image6 from '../assets/img/image6.png'
+
 
 // --- КОНФИГУРАЦИЯ ПРОЕКТА (ДЛЯ БЭКЕНДА) ---
 const PROJECT_CONTENT = {
@@ -22,14 +27,12 @@ const PROJECT_CONTENT = {
 
   // Секция 3: Фотографии проекта 
   gallery: [
-    { url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=1200', size: 'large' },
-    { url: 'https://images.unsplash.com/photo-1606148281133-3119f868212e?q=80&w=1200', size: 'small' },
-    { url: 'https://images.unsplash.com/photo-1598551292182-48a52e391b1f?q=80&w=1200', size: 'small' },
-    { url: 'https://images.unsplash.com/photo-1503376760367-1b61b4d08ce1?q=80&w=1200', size: 'large' }
+    { url: image5, size: 'large' },
+    { url: image1, size: 'small' },
+    { url: image2, size: 'small' },
+    { url: image6, size: 'large' }
   ]
 }
-
-const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 const ProjectPage: FC = () => {
   useEffect(() => {
@@ -44,7 +47,7 @@ const ProjectPage: FC = () => {
       
       {/* 1. HERO SECTION */}
       <section className="relative h-[90vh] flex items-end pb-20 px-[5%] bg-black overflow-hidden">
-        <div className="absolute inset-0 opacity-50 grayscale">
+        <div className="absolute inset-0 opacity-50 ">
            <img src={PROJECT_CONTENT.gallery[0].url} className="w-full h-full object-cover" alt="" />
         </div>
         <div className="relative z-10 w-full">
@@ -97,7 +100,7 @@ const ProjectPage: FC = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
            {PROJECT_CONTENT.gallery.map((img, i) => (
-             <div key={i} className={`overflow-hidden grayscale bg-neutral-200 ${img.size === 'large' ? 'md:col-span-2' : 'md:col-span-1'}`}>
+             <div key={i} className={`overflow-hidden bg-neutral-200 ${img.size === 'large' ? 'md:col-span-2' : 'md:col-span-1'}`}>
                 <img 
                   src={img.url} 
                   className="w-full h-full object-cover aspect-video md:aspect-auto md:h-[70vh]" 

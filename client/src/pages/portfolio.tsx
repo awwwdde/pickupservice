@@ -4,6 +4,14 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import Lenis from 'lenis';
 import { Link } from 'react-router-dom';
 
+import image1 from '../assets/img/image1.png';
+import image2 from '../assets/img/image2.png';
+import image3 from '../assets/img/image3.png';
+import image4 from '../assets/img/images4.png';
+import image5 from '../assets/img/image5.png';
+import image6 from '../assets/img/image6.png';
+import image7 from '../assets/img/image7.png';
+
 interface Project {
   id: string;
   title: string;
@@ -12,16 +20,16 @@ interface Project {
 }
 
 const featuredProjects: Project[] = [
-  { id: 'f1', title: 'Carbon Edition', model: 'Porsche 911 GT3 RS', image: 'https://images.unsplash.com/photo-1503376760367-1b61b4d08ce1?q=80&w=1600' },
-  { id: 'f2', title: 'Overland Beast', model: 'Mitsubishi Pajero Sport', image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=1600' },
-  { id: 'f3', title: 'Night Crawler', model: 'Toyota LC 300', image: 'https://images.unsplash.com/photo-1598551292182-48a52e391b1f?q=80&w=1600' },
+  { id: 'f1', title: 'Carbon Edition', model: 'Porsche 911 GT3 RS', image: image1 },
+  { id: 'f2', title: 'Overland Beast', model: 'Mitsubishi Pajero Sport', image: image2 },
+  { id: 'f3', title: 'Night Crawler', model: 'Toyota LC 300', image: image3 },
 ];
 
 const otherProjects: Project[] = [
-  { id: '1', title: 'Urban Stealth', model: 'Audi RS6', image: 'https://images.unsplash.com/photo-1606148281133-3119f868212e?q=80&w=1000' },
-  { id: '2', title: 'Desert Storm', model: 'Toyota Hilux', image: 'https://images.unsplash.com/photo-1609521263047-f8f205293f24?q=80&w=1000' },
-  { id: '3', title: 'Race Ready', model: 'BMW M4 G82', image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?q=80&w=1000' },
-  { id: '4', title: 'Classic Restoration', model: 'Datsun 240Z', image: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1000' },
+  { id: '1', title: 'Urban Stealth', model: 'Audi RS6', image: image4 },
+  { id: '2', title: 'Desert Storm', model: 'Toyota Hilux', image: image5 },
+  { id: '3', title: 'Race Ready', model: 'BMW M4 G82', image: image6 },
+  { id: '4', title: 'Classic Restoration', model: 'Datsun 240Z', image: image7 },
 ];
 
 const ProjectsPage: FC = () => {
