@@ -59,6 +59,8 @@ const ServicePage: FC = () => {
   const imageTrackRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
 
+  const isMobileRef = useRef(false)
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.5,
@@ -74,6 +76,23 @@ const ServicePage: FC = () => {
     requestAnimationFrame(raf)
     
     return () => lenis.destroy()
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const apply = () => {
+      isMobileRef.current = mq.matches
+    }
+
+    apply()
+
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', apply)
+      return () => mq.removeEventListener('change', apply)
+    }
+
+    mq.addListener(apply)
+    return () => mq.removeListener(apply)
   }, [])
 
   const { scrollYProgress: heroScrollProgress } = useScroll({
@@ -101,6 +120,7 @@ const ServicePage: FC = () => {
   })
 
   useMotionValueEvent(stickyProgress, "change", (latest) => {
+    if (isMobileRef.current) return
     const index = Math.min(
       Math.floor(latest * servicesData.length),
       servicesData.length - 1
@@ -212,17 +232,18 @@ const ServicePage: FC = () => {
       </section>
 
       {/* SECTION 3: IMAGE TRACK */}
-      <section ref={imageTrackRef} className="bg-[#fcfcfc] pb-40 md:pb-52 overflow-hidden">
-        <div className="flex flex-col gap-8 md:gap-12">
+      <section ref={imageTrackRef} className="bg-[#fcfcfc] pb-24 md:pb-52 overflow-hidden">
+        {/* Desktop */}
+        <div className="hidden md:flex flex-col gap-8 md:gap-12">
           <motion.div style={{ x: row1X }} className="flex gap-8 md:gap-12 whitespace-nowrap">
             {trackRow1.map((src, i) => (
               <div key={i} className="w-[60vw] md:w-[40vw] h-[40vh] md:h-[60vh] flex-shrink-0 overflow-hidden bg-neutral-200">
-                <motion.img 
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.8, ease: customEase }}
-                    src={src}
-                    className="w-full h-full object-cover" 
-                    alt=""
+                <motion.img
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.8, ease: customEase }}
+                  src={src}
+                  className="w-full h-full object-cover"
+                  alt=""
                 />
               </div>
             ))}
@@ -230,32 +251,81 @@ const ServicePage: FC = () => {
           <motion.div style={{ x: row2X }} className="flex gap-8 md:gap-12 whitespace-nowrap">
             {trackRow2.map((src, i) => (
               <div key={i} className="w-[60vw] md:w-[40vw] h-[40vh] md:h-[60vh] flex-shrink-0 overflow-hidden bg-neutral-200">
-                <motion.img 
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.8, ease: customEase }}
-                    src={src}
-                    className="w-full h-full object-cover" 
-                    alt=""
+                <motion.img
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ duration: 0.8, ease: customEase }}
+                  src={src}
+                  className="w-full h-full object-cover"
+                  alt=""
                 />
               </div>
             ))}
           </motion.div>
         </div>
+
+        {/* Mobile: свайп-карусель */}
+        <div className="md:hidden">
+          <div className="overflow-x-auto snap-x snap-mandatory">
+            <div className="flex gap-4 w-max px-[6%] pb-4">
+              {trackRow1.map((src, i) => (
+                <div
+                  key={i}
+                  className="snap-start flex-none w-[80vw] max-w-[360px] h-[42vh] overflow-hidden bg-neutral-200"
+                >
+                  <motion.img
+                    whileTap={{ scale: 0.985 }}
+                    transition={{ duration: 0.4, ease: customEase }}
+                    src={src}
+                    className="w-full h-full object-cover"
+                    alt=""
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* SECTION 4: STICKY BLOCKS */}
-      <section ref={stickySectionRef} className="relative h-[300vh] bg-[#fcfcfc] text-black border-t border-neutral-200">
-        <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center overflow-hidden">
+      <section ref={stickySectionRef} className="relative bg-[#fcfcfc] text-black border-t border-neutral-200 md:h-[300vh]">
+        {/* Desktop */}
+        <div className="hidden md:flex sticky top-0 flex h-screen w-full flex-col items-center justify-center overflow-hidden">
           <div className="w-[90%] mb-12 md:mb-16 grid grid-cols-1 md:grid-cols-[1fr,auto] gap-4 items-end">
             <h2 className="text-6xl md:text-[5vw] font-black uppercase tracking-[-0.04em] text-black leading-[0.85]">
               Направления <br /> <span className="text-[#FF8201]">сервиса</span>
             </h2>
-             <div className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-neutral-400 mb-2">
-                [ 0{activeServiceIndex + 1} / 0{servicesData.length} ]
-             </div>
+            <div className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-neutral-400 mb-2">
+              [ 0{activeServiceIndex + 1} / 0{servicesData.length} ]
+            </div>
           </div>
 
           <div className="w-[90%] flex flex-col border-t border-black/10">
+            {servicesData.map((service, index) => (
+              <ServiceCard
+                key={index}
+                index={index}
+                title={service.title}
+                subtitle={service.subtitle}
+                image={service.image}
+                isActive={activeServiceIndex === index}
+                onClick={() => setActiveServiceIndex(index)}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Mobile */}
+        <div className="md:hidden w-full px-[6%] py-20">
+          <div className="mb-10">
+            <h2 className="text-4xl font-black uppercase tracking-[-0.04em] text-black leading-[0.95]">
+              Направления <br /> <span className="text-[#FF8201]">сервиса</span>
+            </h2>
+            <div className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-400 mt-4">
+              [ 0{activeServiceIndex + 1} / 0{servicesData.length} ]
+            </div>
+          </div>
+
+          <div className="flex flex-col border-t border-black/10">
             {servicesData.map((service, index) => (
               <ServiceCard
                 key={index}

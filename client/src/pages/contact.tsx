@@ -100,9 +100,33 @@ const ContactPage: FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Mobile: простая карта без HUD */}
+        <div className="md:hidden w-full px-[6%] py-20">
+          <div className="mb-8">
+            <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-600 block mb-2">Где мы находимся</span>
+            <h2 className="text-3xl font-bold uppercase tracking-tighter">Координаты</h2>
+          </div>
+
+          <div className="relative w-full h-[52vh] bg-[#050505] border border-white/5 overflow-hidden">
+            <iframe
+              key={mapKey}
+              title="map"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.371342371511!2d37.534411316046484!3d55.75581448055152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54bd6ed0f2c73%3A0x69687e1f40d86161!2z0JrRg9GC0YPQt9C-0LLRgdC60LjQuSDQv9GALdGCLiwgMzYsIE1vc2t2YSwgMTIxMTcw!5e0!3m2!1sru!2sru!4v1650000000000!5m2!1sru!2sru"
+              className="w-full h-full border-none opacity-90 pointer-events-auto"
+              allowFullScreen
+              loading="lazy"
+            />
+            <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(2,2,2,1)] pointer-events-none" />
+          </div>
+
+          <div className="mt-6 font-mono text-[10px] text-white/50 tracking-[0.3em] uppercase">
+            55.7558° N, 37.5366° E
+          </div>
+        </div>
       </section>
-      <section ref={stickyTrackRef} className="relative h-[180vh] w-full">
-        <div className="sticky top-0 h-screen w-full flex flex-col justify-center overflow-hidden">
+      <section ref={stickyTrackRef} className="relative md:h-[180vh] w-full">
+        <div className="hidden md:flex sticky top-0 h-screen w-full flex flex-col justify-center overflow-hidden">
           <div className="w-[90%] mx-auto flex justify-between items-end mb-8 relative z-30">
             <motion.div style={{ opacity: hudOpacity }}>
                <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-600 block mb-2">Где мы находимся</span>

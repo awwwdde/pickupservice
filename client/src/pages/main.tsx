@@ -85,14 +85,19 @@ const MainPage: FC = () => {
   const parallaxRef = useRef<HTMLDivElement | null>(null)
   const aboutRef = useRef<HTMLDivElement | null>(null)
   const testimonialsRef = useRef<HTMLDivElement | null>(null)
+  const aboutCarouselRef = useRef<HTMLDivElement | null>(null)
+  const testimonialsCarouselRef = useRef<HTMLDivElement | null>(null)
 
   // Контент виден всегда
   const [isVideoFinished, setIsVideoFinished] = useState(isHeroVideoPlayed)
   
+  const [isMobile, setIsMobile] = useState(false)
+  const isMobileRef = useRef(false)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [activeProjectIndex, setActiveProjectIndex] = useState(0)
   const [aboutImageIndex, setAboutImageIndex] = useState(0)
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
+  const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
@@ -106,6 +111,25 @@ const MainPage: FC = () => {
       cancelAnimationFrame(rafId)
       lenis.destroy()
     }
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)')
+    const apply = () => {
+      isMobileRef.current = mq.matches
+      setIsMobile(mq.matches)
+    }
+
+    apply()
+
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', apply)
+      return () => mq.removeEventListener('change', apply)
+    }
+
+    // Для старых реализаций
+    mq.addListener(apply)
+    return () => mq.removeListener(apply)
   }, [])
 
   // Скролл-анимации
@@ -124,8 +148,86 @@ const MainPage: FC = () => {
   const aboutIndexRaw = useTransform(smoothAbout, [0.2, 0.8], [0, aboutImages.length - 1])
 
   useMotionValueEvent(aboutIndexRaw, 'change', (latest) => {
+    if (isMobileRef.current) return
     setAboutImageIndex(Math.round(latest))
   })
+
+  // На mobile индексация задается скроллом swipe-галереи, а не scroll-driven анимациями.
+  useEffect(() => {
+    if (!isMobile) return
+    const container = aboutCarouselRef.current
+    if (!container) return
+
+    let rafId: number | null = null
+    const updateIndex = () => {
+      rafId = null
+      const slides = Array.from(container.querySelectorAll<HTMLElement>('[data-about-slide]'))
+      if (!slides.length) return
+
+      const containerLeft = container.getBoundingClientRect().left
+      let bestIndex = 0
+      let bestDist = Number.POSITIVE_INFINITY
+      slides.forEach((el, idx) => {
+        const dist = Math.abs(el.getBoundingClientRect().left - containerLeft)
+        if (dist < bestDist) {
+          bestDist = dist
+          bestIndex = idx
+        }
+      })
+      setAboutImageIndex(bestIndex)
+    }
+
+    const onScroll = () => {
+      if (rafId != null) return
+      rafId = requestAnimationFrame(updateIndex)
+    }
+
+    container.addEventListener('scroll', onScroll, { passive: true })
+    updateIndex()
+
+    return () => {
+      container.removeEventListener('scroll', onScroll)
+      if (rafId != null) cancelAnimationFrame(rafId)
+    }
+  }, [isMobile])
+
+  useEffect(() => {
+    if (!isMobile) return
+    const container = testimonialsCarouselRef.current
+    if (!container) return
+
+    let rafId: number | null = null
+    const updateIndex = () => {
+      rafId = null
+      const slides = Array.from(container.querySelectorAll<HTMLElement>('[data-testimonial-slide]'))
+      if (!slides.length) return
+
+      const containerLeft = container.getBoundingClientRect().left
+      let bestIndex = 0
+      let bestDist = Number.POSITIVE_INFINITY
+      slides.forEach((el, idx) => {
+        const dist = Math.abs(el.getBoundingClientRect().left - containerLeft)
+        if (dist < bestDist) {
+          bestDist = dist
+          bestIndex = idx
+        }
+      })
+      setActiveTestimonialIndex(bestIndex)
+    }
+
+    const onScroll = () => {
+      if (rafId != null) return
+      rafId = requestAnimationFrame(updateIndex)
+    }
+
+    container.addEventListener('scroll', onScroll, { passive: true })
+    updateIndex()
+
+    return () => {
+      container.removeEventListener('scroll', onScroll)
+      if (rafId != null) cancelAnimationFrame(rafId)
+    }
+  }, [isMobile])
 
   // Управление видео
   useEffect(() => {
@@ -246,7 +348,8 @@ const MainPage: FC = () => {
 
       {/* SECTION 3: PROJECTS */}
       <section className="bg-[#f3f3f1] py-32 flex justify-center">
-        <div className="flex items-end gap-5 h-[min(550px,70vh)] w-full px-[5%]" onMouseLeave={() => setActiveProjectIndex(0)}>
+        {/* Desktop/tablet */}
+        <div className="hidden md:flex items-end gap-5 h-[min(550px,70vh)] w-full px-[5%]" onMouseLeave={() => setActiveProjectIndex(0)}>
           {projectsData.map((p, i) => (
             <motion.div
               key={i} layout
@@ -273,16 +376,81 @@ const MainPage: FC = () => {
                   </div>
                 </div>
               ) : (
-                <img src={p.image || ''} className="w-full h-full object-cover opacity-80" />
+                <img src={p.image || ''} className="w-full h-full object-cover opacity-80" alt="" />
               )}
             </motion.div>
           ))}
         </div>
+
+        {/* Mobile: вертикальный accordion */}
+        <div className="md:hidden w-[90%] flex flex-col gap-0">
+          {projectsData.map((p, i) => {
+            const isActive = activeProjectIndex === i
+            return (
+              <motion.div
+                key={i}
+                layout
+                onClick={() => setActiveProjectIndex(i)}
+                initial={false}
+                animate={{
+                  height: isActive ? 'min(420px,58vh)' : 'min(135px,22vh)',
+                  backgroundColor: isActive ? '#ffffff' : '#0b0b0b'
+                }}
+                transition={{ duration: 0.65, ease }}
+                className="relative cursor-pointer overflow-hidden border-b border-black/10 shadow-2xl"
+              >
+                {p.type === 'info' ? (
+                  <div className="absolute inset-0 p-[18px] flex flex-col">
+                    <motion.h2
+                      className="font-serif leading-tight mb-3"
+                      animate={{
+                        fontSize: isActive ? '36px' : '26px',
+                        color: isActive ? '#000000' : '#ffffff'
+                      }}
+                    >
+                      {p.title}
+                    </motion.h2>
+                    <AnimatePresence>
+                      {isActive && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="flex flex-col h-full"
+                        >
+                          <p className="text-[#a0a0a0] text-[14px] leading-relaxed mt-2">
+                            {p.description}
+                          </p>
+                          <div className="mt-auto">
+                            <button className="w-full cursor-pointer h-[min(96px,12vh)] bg-[#1c1c1c] hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-white/5 uppercase tracking-widest text-[11px] font-bold">
+                              ВСЕ РАБОТЫ <Plus className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0">
+                    <img src={p.image || ''} className="w-full h-full object-cover opacity-85" alt="" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    <div className="absolute bottom-[14px] left-[14px]">
+                      <span className={`text-6xl font-black ${isActive ? 'text-[#FF8201]' : 'text-white/40'}`}>
+                        0{i + 1}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )
+          })}
+        </div>
       </section>
 
       {/* SECTION 4: ABOUT */}
-      <section ref={aboutRef} className="relative h-[300vh] bg-[#f3f3f1] text-black">
-        <div className="sticky top-0 h-screen w-full flex items-center justify-center px-[5%] overflow-hidden">
+      <section ref={aboutRef} className="relative bg-[#f3f3f1] text-black md:h-[300vh]">
+        {/* Desktop */}
+        <div className="hidden md:flex sticky top-0 h-screen w-full flex items-center justify-center px-[5%] overflow-hidden">
           <div className="absolute left-[5%] z-0">
             <div className="text-[12vw] font-black leading-[0.75] tracking-tighter uppercase">
               <div>КТО</div>
@@ -304,15 +472,68 @@ const MainPage: FC = () => {
               <div className="max-w-[500px]">
                 <h3 className="text-4xl font-bold tracking-tight uppercase mb-4">Инженерная эстетика оффроуда</h3>
                 <p className="text-black/60 text-lg leading-relaxed">
-                  Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. 
+                  Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
                   Опыт, надежность и японское качество в каждой детали.
                 </p>
               </div>
               <div className="w-[min(300px,90vw)]">
-                 <button className="w-full h-[min(100px,12vh)] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-black/5 uppercase tracking-widest text-[11px] font-bold">
-                    УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
-                 </button>
+                <button className="w-full h-[min(100px,12vh)] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-black/5 uppercase tracking-widest text-[11px] font-bold">
+                  УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
+                </button>
               </div>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Mobile */}
+        <div className="md:hidden w-full px-[6%] pt-24 pb-14">
+          <div className="flex items-end justify-between mb-10">
+            <div className="text-[14vw] font-black leading-[0.75] tracking-tighter uppercase">
+              <div>КТО</div>
+              <div className="text-[#FF8201]">МЫ?</div>
+            </div>
+          </div>
+
+          <div
+            ref={aboutCarouselRef}
+            className="overflow-x-auto snap-x snap-mandatory flex gap-4 pb-4 -mx-[6%] px-[6%]"
+          >
+            {aboutImages.map((img, i) => (
+              <div
+                key={i}
+                data-about-slide
+                className="snap-start flex-none w-[85vw] max-w-[360px] overflow-hidden bg-black/5"
+              >
+                <motion.img
+                  src={img}
+                  className="h-full w-full object-cover"
+                  initial={false}
+                  animate={{
+                    opacity: aboutImageIndex === i ? 1 : 0.65,
+                    scale: aboutImageIndex === i ? 1 : 1.05
+                  }}
+                  transition={{ duration: 0.35 }}
+                />
+              </div>
+            ))}
+          </div>
+
+          <motion.div
+            key={aboutImageIndex}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="mt-6 flex flex-col gap-4"
+          >
+            <h3 className="text-3xl font-bold tracking-tight uppercase mb-3">Инженерная эстетика оффроуда</h3>
+            <p className="text-black/60 text-base leading-relaxed">
+              Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
+              Опыт, надежность и японское качество в каждой детали.
+            </p>
+            <div className="w-full max-w-[320px] mt-2">
+              <button className="w-full h-[min(90px,12vh)] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-black/5 uppercase tracking-widest text-[11px] font-bold">
+                УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
+              </button>
             </div>
           </motion.div>
         </div>
@@ -339,25 +560,76 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 6: TESTIMONIALS */}
-      <section ref={testimonialsRef} className="relative h-[300vh] bg-[#020202]">
-        <div className="sticky top-0 flex h-screen w-full flex-col justify-center overflow-hidden">
+      <section ref={testimonialsRef} className="relative bg-[#020202] md:h-[300vh]">
+        {/* Desktop */}
+        <div className="hidden md:flex sticky top-0 flex h-screen w-full flex-col justify-center overflow-hidden">
           <div className="mb-16 px-[5%]">
             <h2 className="text-4xl font-black uppercase tracking-tighter md:text-6xl text-white">
-              Несколько слов <br/><span className="text-[#FF8201]">от наших клиентов</span>
+              Несколько слов <br /><span className="text-[#FF8201]">от наших клиентов</span>
             </h2>
           </div>
           <motion.div style={{ x: testimonialsX }} className="flex gap-10 px-[5%] w-max">
             {testimonialsData.map((testimonial, i) => (
-              <TestimonialCard 
+              <TestimonialCard
                 key={i}
                 quote={testimonial.quote}
                 name={testimonial.name}
                 car={testimonial.car}
               />
             ))}
-            <a href="maps.yandex.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors text-[6vh]"> все отзывы </a>
+            <a href="maps.yandex.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors text-[6vh]">
+              {' '}
+              все отзывы{' '}
+            </a>
           </motion.div>
-          
+        </div>
+
+        {/* Mobile */}
+        <div className="md:hidden w-full px-[6%] py-20">
+          <h2 className="text-3xl font-black uppercase tracking-tighter text-white">
+            Несколько слов <br />
+            <span className="text-[#FF8201]">от наших клиентов</span>
+          </h2>
+
+          <div
+            ref={testimonialsCarouselRef}
+            className="mt-10 overflow-x-auto snap-x snap-mandatory pb-4 -mx-[6%] px-[6%]"
+          >
+            <div className="flex gap-4 w-max">
+              {testimonialsData.map((testimonial, i) => (
+                <div
+                  key={i}
+                  data-testimonial-slide
+                  className="snap-start flex-none"
+                  style={{ width: 'min(85vw, 380px)' }}
+                >
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      scale: activeTestimonialIndex === i ? 1 : 0.98,
+                      opacity: activeTestimonialIndex === i ? 1 : 0.75
+                    }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <TestimonialCard
+                      quote={testimonial.quote}
+                      name={testimonial.name}
+                      car={testimonial.car}
+                    />
+                  </motion.div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <a
+            href="maps.yandex.ru"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-10 block text-white hover:text-gray-300 transition-colors text-base font-semibold"
+          >
+            все отзывы
+          </a>
         </div>
       </section>
 

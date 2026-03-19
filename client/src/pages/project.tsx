@@ -46,7 +46,7 @@ const ProjectPage: FC = () => {
     <div className="bg-[#f3f3f1] text-black selection:bg-[#FF8201] selection:text-white">
       
       {/* 1. HERO SECTION */}
-      <section className="relative h-[90vh] flex items-end pb-20 px-[5%] bg-black overflow-hidden">
+      <section className="relative h-[70vh] sm:h-[80vh] md:h-[90vh] flex items-end pb-12 md:pb-20 px-[5%] bg-black overflow-hidden">
         <div className="absolute inset-0 opacity-50 ">
            <img src={PROJECT_CONTENT.gallery[0].url} className="w-full h-full object-cover" alt="" />
         </div>
@@ -61,7 +61,7 @@ const ProjectPage: FC = () => {
       </section>
 
       {/* 2. DESCRIPTION SECTION */}
-      <section className="py-32 px-[5%] border-b border-black/5">
+      <section className="py-20 sm:py-24 md:py-32 px-[5%] border-b border-black/5">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           <div className="lg:col-span-4">
              <span className="font-mono text-[10px] uppercase tracking-widest text-black/40">Подробнее // 01</span>
@@ -75,16 +75,16 @@ const ProjectPage: FC = () => {
       </section>
 
       {/* 3. WORK STAGES — ОТДЕЛЬНАЯ СЕКЦИЯ (СПОКОЙНАЯ) */}
-      <section className="py-32 px-[5%] bg-white">
+      <section className="py-20 sm:py-24 md:py-32 px-[5%] bg-white">
         <div className="mb-20">
-           <h2 className="text-6xl font-black uppercase tracking-tighter">Этапы <span className="text-[#FF8201]">подготовки</span></h2>
+           <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter">Этапы <span className="text-[#FF8201]">подготовки</span></h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-black/10">
           {PROJECT_CONTENT.workStages.map((stage, i) => (
-            <div key={i} className="p-10 border-b lg:border-b-0 lg:border-r border-black/10 flex flex-col justify-between h-[350px]">
+            <div key={i} className="p-8 sm:p-10 border-b lg:border-b-0 lg:border-r border-black/10 flex flex-col justify-between h-[280px] sm:h-[320px] md:h-[350px]">
                <span className="font-mono text-xs text-[#FF8201]">0{i + 1} //</span>
                <div>
-                  <h3 className="text-2xl font-bold uppercase mb-4 tracking-tight">{stage.title}</h3>
+                  <h3 className="text-xl sm:text-2xl font-bold uppercase mb-4 tracking-tight">{stage.title}</h3>
                   <p className="text-black/50 text-sm leading-relaxed uppercase font-medium">{stage.detail}</p>
                </div>
             </div>
@@ -93,9 +93,9 @@ const ProjectPage: FC = () => {
       </section>
 
       {/* 4. FINAL GALLERY — В КОНЦЕ СТРАНИЦЫ */}
-      <section className="py-32 px-[5%] bg-[#f3f3f1]">
+      <section className="py-20 sm:py-24 md:py-32 px-[5%] bg-[#f3f3f1]">
         <div className="mb-20 flex justify-between items-end">
-           <h2 className="text-6xl font-black uppercase tracking-tighter leading-none">Результат <br /> <span className="text-black/20">в деталях</span></h2>
+           <h2 className="text-4xl sm:text-6xl font-black uppercase tracking-tighter leading-none">Результат <br /> <span className="text-black/20">в деталях</span></h2>
            <span className="font-mono text-xs text-black/40 uppercase tracking-widest hidden md:block">Прокрутите // 04</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -112,7 +112,7 @@ const ProjectPage: FC = () => {
       </section>
 
       {/* 5. CONTACT CTA — СТИЛЬ ГЛАВНОЙ */}
-      <section className="py-40 bg-black text-white flex flex-col items-center border-t border-white/5">
+      <section className="py-28 sm:py-32 md:py-40 bg-black text-white flex flex-col items-center border-t border-white/5">
         <div className="w-[90%] flex flex-col items-center text-center">
            <h3 className="text-[8vw] font-black uppercase tracking-tighter mb-16 leading-none">
              Ваш джип готов <br /> к <span className="text-[#FF8201]">превращению?</span>
@@ -125,7 +125,7 @@ const ProjectPage: FC = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="group flex h-[80px] w-[300px] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
+              className="group flex h-[80px] w-full max-w-[300px] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
             >
               Отправить заявку
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />

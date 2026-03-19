@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import type { FC } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InputField } from '../components/inputfields/InputField'
@@ -40,11 +40,33 @@ const BookingPage: FC = () => {
   })
   const [isFocused, setIsFocused] = useState(false)
 
+  const [enableTrail, setEnableTrail] = useState(false)
+
   // СОСТОЯНИЕ ДЛЯ ЭФФЕКТА МЫШИ
   const [trail, setTrail] = useState<TrailItem[]>([])
   const lastMousePos = useRef({ x: 0, y: 0 })
   const imageIndex = useRef(0)
   const headerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse)')
+    const apply = () => {
+      // На телефонах/планшетах трейл отключаем, чтобы не было дерганий и лишней нагрузки.
+      const nextEnable = !mq.matches
+      setEnableTrail(nextEnable)
+      if (!nextEnable) setTrail([])
+    }
+
+    apply()
+
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', apply)
+      return () => mq.removeEventListener('change', apply)
+    }
+
+    mq.addListener(apply)
+    return () => mq.removeListener(apply)
+  }, [])
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!headerRef.current) return
@@ -83,7 +105,7 @@ const BookingPage: FC = () => {
       {/* HEADER SECTION С ЭФФЕКТОМ ТРЕЙЛА */}
       <section 
         ref={headerRef}
-        onMouseMove={handleMouseMove}
+        onMouseMove={enableTrail ? handleMouseMove : undefined}
         className="relative w-full h-[80vh] flex items-center justify-center overflow-hidden border-b border-white/5"
       >
         {/* АНИМИРОВАННЫЙ СЛЕД ИЗ ФОТО */}

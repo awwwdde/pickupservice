@@ -90,50 +90,84 @@ const ProjectsPage: FC = () => {
       </header>
 
       {/* 2. ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
-      <section ref={horizontalRef} className="relative h-[400vh]">
-        <div className="sticky top-0 h-screen flex items-center overflow-hidden">
-          <motion.div 
+      <section ref={horizontalRef} className="relative md:h-[400vh]">
+        {/* Desktop */}
+        <div className="hidden md:sticky top-0 h-screen flex items-center overflow-hidden">
+          <motion.div
             ref={trackRef}
-            style={{ x }} 
+            style={{ x }}
             className="flex h-[70vh] px-[5vw] gap-8"
           >
             {featuredProjects.map((project) => (
-              <Link 
-                key={project.id} 
+              <Link
+                key={project.id}
                 to={`/portfolio/${project.id}`}
                 className="relative flex-shrink-0 w-[80vw] md:w-[65vw] h-full overflow-hidden group"
               >
-                <img 
-                  src={project.image} 
-                  alt={project.title} 
-                  className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out" 
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
                 />
                 <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 z-10">
-                   <div className="relative flex justify-between items-end">
-                      <div className="max-w-md">
-                        <p className="font-mono text-[10px] uppercase tracking-widest mb-3 opacity-60">// Избранный кейс</p>
-                        <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter leading-none">{project.title}</h2>
-                      </div>
-                      <div className="text-right hidden md:block">
-                        <span className="font-mono text-xs uppercase border border-white/20 px-3 py-1 rounded-full">{project.model}</span>
-                      </div>
-                   </div>
+                  <div className="relative flex justify-between items-end">
+                    <div className="max-w-md">
+                      <p className="font-mono text-[10px] uppercase tracking-widest mb-3 opacity-60">// Избранный кейс</p>
+                      <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter leading-none">{project.title}</h2>
+                    </div>
+                    <div className="text-right hidden md:block">
+                      <span className="font-mono text-xs uppercase border border-white/20 px-3 py-1 rounded-full">{project.model}</span>
+                    </div>
+                  </div>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
               </Link>
             ))}
           </motion.div>
         </div>
+
+        {/* Mobile: swipe + snap */}
+        <div className="md:hidden w-full overflow-x-auto snap-x snap-mandatory">
+          <div className="flex gap-4 w-max px-[6%] py-14">
+            {featuredProjects.map((project) => (
+              <Link
+                key={project.id}
+                to={`/portfolio/${project.id}`}
+                className="snap-start relative flex-none w-[85vw] max-w-[420px] h-[56vh] overflow-hidden group"
+              >
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full h-full object-cover grayscale-[0.25] group-hover:grayscale-0 transition-all duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
+                <div className="absolute inset-x-0 bottom-0 p-6 z-10">
+                  <div className="flex justify-between items-end">
+                    <div className="max-w-[70%]">
+                      <p className="font-mono text-[10px] uppercase tracking-widest mb-3 opacity-60">// Избранный кейс</p>
+                      <h2 className="text-3xl font-bold uppercase tracking-tighter leading-none">{project.title}</h2>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-mono text-xs uppercase border border-white/20 px-3 py-1 rounded-full whitespace-nowrap">
+                        {project.model}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* 3. АСИММЕТРИЧНАЯ СЕТКА (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
-      <section className="w-[90%] mx-auto py-60">
+      <section className="w-[90%] mx-auto py-24 md:py-60">
         <div className="flex justify-between items-end mb-32 border-b border-white/10 pb-10">
           <h2 className="text-5xl font-bold uppercase tracking-tighter">Все проекты</h2>
           <span className="font-mono text-[10px] uppercase tracking-widest opacity-30">/ Total: 07</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-32 md:gap-x-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-16 md:gap-y-32 md:gap-x-20">
           {otherProjects.map((project, index) => (
             <div
               key={project.id}
