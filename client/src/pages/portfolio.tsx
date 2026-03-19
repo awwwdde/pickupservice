@@ -92,7 +92,8 @@ const ProjectsPage: FC = () => {
       {/* 2. ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
       <section ref={horizontalRef} className="relative md:h-[400vh]">
         {/* Desktop */}
-        <div className="hidden md:sticky top-0 h-screen flex items-center overflow-hidden">
+        {/* ИСПРАВЛЕНИЕ: Заменили flex на md:flex, чтобы избежать конфликта с hidden на мобилках */}
+        <div className="hidden md:flex md:sticky top-0 h-screen items-center overflow-hidden">
           <motion.div
             ref={trackRef}
             style={{ x }}
@@ -102,12 +103,12 @@ const ProjectsPage: FC = () => {
               <Link
                 key={project.id}
                 to={`/portfolio/${project.id}`}
-                className="relative flex-shrink-0 w-[80vw] md:w-[65vw] h-full overflow-hidden group"
+                className="block relative flex-shrink-0 w-[80vw] md:w-[65vw] h-full overflow-hidden group"
               >
                 <img
                   src={project.image}
                   alt={project.title}
-                  className="w-full h-full object-cover grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
+                  className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
                 />
                 <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 z-10">
                   <div className="relative flex justify-between items-end">
@@ -133,12 +134,12 @@ const ProjectsPage: FC = () => {
               <Link
                 key={project.id}
                 to={`/portfolio/${project.id}`}
-                className="snap-start relative flex-none w-[85vw] max-w-[420px] h-[56vh] overflow-hidden group"
+                className="block snap-start relative flex-none w-[85vw] max-w-[420px] h-[56vh] overflow-hidden group"
               >
                 <img
                   src={project.image}
                   alt={project.title}
-                  className="w-full h-full object-cover grayscale-[0.25] group-hover:grayscale-0 transition-all duration-700 ease-out"
+                  className="w-full h-full object-cover grayscale-[25%] group-hover:grayscale-0 transition-all duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                 <div className="absolute inset-x-0 bottom-0 p-6 z-10">
