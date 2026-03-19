@@ -1,13 +1,135 @@
-import type { FC } from 'react'
+import { type FC, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { Plus, ArrowRight, ChevronRight } from 'lucide-react'
+import Lenis from 'lenis'
+import { InputField } from '../components/inputfields/InputField'
+
+// --- КОНФИГУРАЦИЯ ПРОЕКТА (ДЛЯ БЭКЕНДА) ---
+const PROJECT_CONTENT = {
+  id: "chimera",
+  title: "PROJECT CHIMERA",
+  subtitle: "TOYOTA HILUX ADVENTURE / 2026",
+  description: "Комплексная подготовка экспедиционного автомобиля. Основная задача — создание надежной платформы для длительных автономных поездок по пересеченной местности с сохранением заводского комфорта.",
+  
+  // Секция 2: Технические этапы 
+  workStages: [
+    { title: "Проектирование", detail: "Разработка 3D-модели силового каркаса и расчет развесовки по осям." },
+    { title: "Подвеска", detail: "Установка усиленных рычагов и амортизаторов с выносными бачками." },
+    { title: "Защита", detail: "Монтаж алюминиевой защиты днища и силовых порогов." },
+    { title: "Электрика", detail: "Инсталляция системы двух АКБ и дополнительного освещения." }
+  ],
+
+  // Секция 3: Фотографии проекта 
+  gallery: [
+    { url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=1200', size: 'large' },
+    { url: 'https://images.unsplash.com/photo-1606148281133-3119f868212e?q=80&w=1200', size: 'small' },
+    { url: 'https://images.unsplash.com/photo-1598551292182-48a52e391b1f?q=80&w=1200', size: 'small' },
+    { url: 'https://images.unsplash.com/photo-1503376760367-1b61b4d08ce1?q=80&w=1200', size: 'large' }
+  ]
+}
+
+const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 const ProjectPage: FC = () => {
-  const { id } = useParams()
+  useEffect(() => {
+    const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
+    const raf = (time: number) => { lenis.raf(time); requestAnimationFrame(raf) }
+    requestAnimationFrame(raf)
+    return () => lenis.destroy()
+  }, [])
 
   return (
-    <div>
-      <h1>Страница проекта</h1>
-      <p>ID проекта: {id}</p>
+    <div className="bg-[#f3f3f1] text-black selection:bg-[#FF8201] selection:text-white">
+      
+      {/* 1. HERO SECTION */}
+      <section className="relative h-[90vh] flex items-end pb-20 px-[5%] bg-black overflow-hidden">
+        <div className="absolute inset-0 opacity-50 grayscale">
+           <img src={PROJECT_CONTENT.gallery[0].url} className="w-full h-full object-cover" alt="" />
+        </div>
+        <div className="relative z-10 w-full">
+           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="font-mono text-[#FF8201] tracking-[0.5em] text-xs uppercase mb-6">
+             {PROJECT_CONTENT.subtitle}
+           </motion.p>
+           <h1 className="text-[12vw] font-black text-white leading-[0.8] tracking-tighter uppercase">
+             {PROJECT_CONTENT.id}
+           </h1>
+        </div>
+      </section>
+
+      {/* 2. DESCRIPTION SECTION */}
+      <section className="py-32 px-[5%] border-b border-black/5">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          <div className="lg:col-span-4">
+             <span className="font-mono text-[10px] uppercase tracking-widest text-black/40">Подробнее // 01</span>
+          </div>
+          <div className="lg:col-span-8">
+             <p className="text-3xl md:text-5xl font-medium leading-tight tracking-tight">
+               {PROJECT_CONTENT.description}
+             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. WORK STAGES — ОТДЕЛЬНАЯ СЕКЦИЯ (СПОКОЙНАЯ) */}
+      <section className="py-32 px-[5%] bg-white">
+        <div className="mb-20">
+           <h2 className="text-6xl font-black uppercase tracking-tighter">Этапы <span className="text-[#FF8201]">подготовки</span></h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 border-t border-black/10">
+          {PROJECT_CONTENT.workStages.map((stage, i) => (
+            <div key={i} className="p-10 border-b lg:border-b-0 lg:border-r border-black/10 flex flex-col justify-between h-[350px]">
+               <span className="font-mono text-xs text-[#FF8201]">0{i + 1} //</span>
+               <div>
+                  <h3 className="text-2xl font-bold uppercase mb-4 tracking-tight">{stage.title}</h3>
+                  <p className="text-black/50 text-sm leading-relaxed uppercase font-medium">{stage.detail}</p>
+               </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. FINAL GALLERY — В КОНЦЕ СТРАНИЦЫ */}
+      <section className="py-32 px-[5%] bg-[#f3f3f1]">
+        <div className="mb-20 flex justify-between items-end">
+           <h2 className="text-6xl font-black uppercase tracking-tighter leading-none">Результат <br /> <span className="text-black/20">в деталях</span></h2>
+           <span className="font-mono text-xs text-black/40 uppercase tracking-widest hidden md:block">Прокрутите // 04</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+           {PROJECT_CONTENT.gallery.map((img, i) => (
+             <div key={i} className={`overflow-hidden grayscale bg-neutral-200 ${img.size === 'large' ? 'md:col-span-2' : 'md:col-span-1'}`}>
+                <img 
+                  src={img.url} 
+                  className="w-full h-full object-cover aspect-video md:aspect-auto md:h-[70vh]" 
+                  alt="" 
+                />
+             </div>
+           ))}
+        </div>
+      </section>
+
+      {/* 5. CONTACT CTA — СТИЛЬ ГЛАВНОЙ */}
+      <section className="py-40 bg-black text-white flex flex-col items-center border-t border-white/5">
+        <div className="w-[90%] flex flex-col items-center text-center">
+           <h3 className="text-[8vw] font-black uppercase tracking-tighter mb-16 leading-none">
+             Ваш джип готов <br /> к <span className="text-[#FF8201]">превращению?</span>
+           </h3>
+           <form className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center">
+            <div className="flex w-full flex-1 gap-10 flex-col md:flex-row">
+              <InputField label="Ваше Имя" type="text" required />
+              <InputField label="Телефон" type="tel" required />
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="group flex h-[80px] w-[300px] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
+            >
+              Отправить заявку
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
+            </motion.button>
+          </form>
+        </div>
+      </section>
     </div>
   )
 }
