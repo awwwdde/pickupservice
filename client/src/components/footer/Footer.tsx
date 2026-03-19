@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
   ];
 
   return (
-    <footer className="bg-[#0a0a0a] text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden font-sans w-[90%] mx-auto">
+    <footer className="bg-[#0a0a0a] text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden font-sans">
       <div className="max-w-10xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-12 mb-20">
           <div>
@@ -92,7 +92,7 @@ const Footer: React.FC = () => {
           initial={{ y: 100 }}
           whileInView={{ y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="text-[11vw] md:text-[11vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
+          className="text-[12vw] md:text-[12vw] font-black leading-none tracking-tighter text-white text-center whitespace-nowrap uppercase italic"
           style={{ letterSpacing: '-0.05em' }}
         >
           ПикапСервис
