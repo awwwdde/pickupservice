@@ -1,3 +1,5 @@
-# https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+
+Host: pickupservicetest.netlify.app
+Sitemap: https://pickupservicetest.netlify.app/sitemap.xml
