@@ -22,6 +22,7 @@ import image4 from '../assets/img/images4.png'
 import { ServiceCard } from '../components/accordeoncard/ServiceCard'
 import { TestimonialCard } from '../components/reviewcard/TestimonialCard'
 import { InputField } from '../components/inputfields/InputField'
+import { fetchAccordionItems, fetchProjects } from '../api/backend'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
@@ -98,6 +99,8 @@ const MainPage: FC = () => {
   const [aboutImageIndex, setAboutImageIndex] = useState(0)
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
+  const [dynamicProjects, setDynamicProjects] = useState(projectsData)
+  const [dynamicServices, setDynamicServices] = useState(servicesData)
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
@@ -262,6 +265,42 @@ const MainPage: FC = () => {
     return () => clearInterval(id)
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+
+    fetchProjects()
+      .then((items) => {
+        if (cancelled || !items.length) return
+        const mapped = items.slice(0, 4).map((item, idx) => ({
+          id: idx + 1,
+          image: item.image
+        }))
+        setDynamicProjects([projectsData[0], ...mapped])
+      })
+      .catch(() => {
+        // Фолбэк — локальные картинки.
+      })
+
+    fetchAccordionItems()
+      .then((items) => {
+        if (cancelled || !items.length) return
+        setDynamicServices(
+          items.map((item) => ({
+            title: item.title,
+            subtitle: item.description,
+            image: item.image
+          }))
+        )
+      })
+      .catch(() => {
+        // Фолбэк — локальные карточки.
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div className="bg-black text-white selection:bg-[#FF8201]">
       
@@ -350,7 +389,7 @@ const MainPage: FC = () => {
       <section className="bg-[#f3f3f1] py-32 flex justify-center">
         {/* Desktop/tablet */}
         <div className="hidden md:flex items-end gap-5 h-[min(550px,70vh)] w-full px-[5%]" onMouseLeave={() => setActiveProjectIndex(0)}>
-          {projectsData.map((p, i) => (
+          {dynamicProjects.map((p, i) => (
             <motion.div
               key={i} layout
               onMouseEnter={() => setActiveProjectIndex(i)}
@@ -384,7 +423,7 @@ const MainPage: FC = () => {
 
         {/* Mobile: вертикальный accordion */}
         <div className="md:hidden w-[90%] flex flex-col gap-0">
-          {projectsData.map((p, i) => {
+          {dynamicProjects.map((p, i) => {
             const isActive = activeProjectIndex === i
             return (
               <motion.div
@@ -545,7 +584,7 @@ const MainPage: FC = () => {
           <h2 className="text-6xl font-regular uppercase tracking-tighter text-[#FF8201] ">Чем мы занимаемся</h2>
         </div>
         <div className="w-[90%] flex flex-col border-t border-black/10">
-          {servicesData.map((service, index) => (
+          {dynamicServices.map((service, index) => (
             <ServiceCard
               key={index}
               index={index}

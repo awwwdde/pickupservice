@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Lenis from 'lenis';
 import { Link } from 'react-router-dom';
+import { fetchProjects } from '../api/backend';
 
 import image1 from '../assets/img/image1.png';
 import image2 from '../assets/img/image2.png';
@@ -36,6 +37,8 @@ const ProjectsPage: FC = () => {
   const horizontalRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [xRange, setXRange] = useState(0);
+  const [featured, setFeatured] = useState<Project[]>(featuredProjects);
+  const [others, setOthers] = useState<Project[]>(otherProjects);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -50,6 +53,28 @@ const ProjectsPage: FC = () => {
     }
     requestAnimationFrame(raf);
     return () => lenis.destroy();
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchProjects()
+      .then((items) => {
+        if (cancelled || !items.length) return;
+        const mapped: Project[] = items.map((item) => ({
+          id: String(item.id),
+          title: item.title,
+          model: item.vehicle || item.category || 'Проект',
+          image: item.image
+        }));
+        setFeatured(mapped.slice(0, 3));
+        setOthers(mapped.slice(3).length ? mapped.slice(3) : mapped);
+      })
+      .catch(() => {
+        // Фолбэк оставляем из локальных данных.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -99,7 +124,7 @@ const ProjectsPage: FC = () => {
             style={{ x }}
             className="flex h-[70vh] px-[5vw] gap-8"
           >
-            {featuredProjects.map((project) => (
+            {featured.map((project) => (
               <Link
                 key={project.id}
                 to={`/portfolio/${project.id}`}
@@ -130,7 +155,7 @@ const ProjectsPage: FC = () => {
         {/* Mobile: swipe + snap */}
         <div className="md:hidden w-full overflow-x-auto snap-x snap-mandatory">
           <div className="flex gap-4 w-max px-[6%] py-14">
-            {featuredProjects.map((project) => (
+            {featured.map((project) => (
               <Link
                 key={project.id}
                 to={`/portfolio/${project.id}`}
@@ -169,7 +194,7 @@ const ProjectsPage: FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-16 md:gap-y-32 md:gap-x-20">
-          {otherProjects.map((project, index) => (
+          {others.map((project, index) => (
             <div
               key={project.id}
               className={`relative aspect-[4/5] group overflow-hidden ${index % 2 !== 0 ? 'md:mt-48' : ''}`}

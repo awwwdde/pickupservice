@@ -4,6 +4,7 @@ import Lenis from 'lenis'
 import { ArrowRight } from 'lucide-react'
 
 import { ServiceCard } from '../components/accordeoncard/ServiceCard' 
+import { fetchAccordionItems, type ApiAccordionItem } from '../api/backend'
 
 // Более "дорогой" easing — быстрый старт, ооочень плавный финиш
 const customEase = cubicBezier(0.19, 1, 0.22, 1)
@@ -55,6 +56,7 @@ const titleLineVariants = {
 
 const ServicePage: FC = () => {
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
+  const [serviceItems, setServiceItems] = useState(servicesData)
   const stickySectionRef = useRef<HTMLDivElement>(null)
   const imageTrackRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
@@ -76,6 +78,28 @@ const ServicePage: FC = () => {
     requestAnimationFrame(raf)
     
     return () => lenis.destroy()
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchAccordionItems()
+      .then((items: ApiAccordionItem[]) => {
+        if (cancelled || !items.length) return
+        setServiceItems(
+          items.map((item) => ({
+            title: item.title,
+            subtitle: item.description,
+            image: item.image
+          }))
+        )
+      })
+      .catch(() => {
+        // Фолбэк уже задан в servicesData.
+      })
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   useEffect(() => {
@@ -121,9 +145,10 @@ const ServicePage: FC = () => {
 
   useMotionValueEvent(stickyProgress, "change", (latest) => {
     if (isMobileRef.current) return
+    if (!serviceItems.length) return
     const index = Math.min(
-      Math.floor(latest * servicesData.length),
-      servicesData.length - 1
+      Math.floor(latest * serviceItems.length),
+      serviceItems.length - 1
     )
     setActiveServiceIndex(index)
   })
@@ -295,12 +320,12 @@ const ServicePage: FC = () => {
               Направления <br /> <span className="text-[#FF8201]">сервиса</span>
             </h2>
             <div className="font-mono text-xs md:text-sm uppercase tracking-[0.2em] text-neutral-400 mb-2">
-              [ 0{activeServiceIndex + 1} / 0{servicesData.length} ]
+              [ 0{activeServiceIndex + 1} / 0{serviceItems.length} ]
             </div>
           </div>
 
           <div className="w-[90%] flex flex-col border-t border-black/10">
-            {servicesData.map((service, index) => (
+            {serviceItems.map((service, index) => (
               <ServiceCard
                 key={index}
                 index={index}
@@ -321,12 +346,12 @@ const ServicePage: FC = () => {
               Направления <br /> <span className="text-[#FF8201]">сервиса</span>
             </h2>
             <div className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-400 mt-4">
-              [ 0{activeServiceIndex + 1} / 0{servicesData.length} ]
+              [ 0{activeServiceIndex + 1} / 0{serviceItems.length} ]
             </div>
           </div>
 
           <div className="flex flex-col border-t border-black/10">
-            {servicesData.map((service, index) => (
+            {serviceItems.map((service, index) => (
               <ServiceCard
                 key={index}
                 index={index}
