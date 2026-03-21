@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 
-const BASE_URL = 'https://pickupservicetest.netlify.app'
+const BASE_URL = (
+  import.meta.env.VITE_SITE_URL ||
+  (typeof window !== 'undefined' ? window.location.origin : 'https://pickupservicetest.netlify.app')
+).replace(/\/+$/, '')
 
 type SeoConfig = {
   title: string
