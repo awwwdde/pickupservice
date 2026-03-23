@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
-import type { FC } from 'react'
+import type { FC, FormEvent } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InputField } from '../components/inputfields/InputField'
+import { submitBookingRequest } from '../api/backend'
 import image5 from '../assets/img/image5.png'
 import image6 from '../assets/img/image6.png'
 import image7 from '../assets/img/image7.png'
@@ -36,9 +37,19 @@ interface TrailItem {
 
 const BookingPage: FC = () => {
   const [form, setForm] = useState({
-    name: '', phone: '', email: '', brand: '', model: '', service: '', message: '',
+    name: '',
+    phone: '',
+    email: '',
+    brand: '',
+    model: '',
+    service: '',
+    message: '',
+    website: '',
   })
   const [isFocused, setIsFocused] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState('')
 
   const [enableTrail, setEnableTrail] = useState(false)
 
@@ -96,7 +107,43 @@ const BookingPage: FC = () => {
   }
 
   const handleChange = (key: string, value: string) => {
+    setSubmitSuccess(false)
     setForm(prev => ({ ...prev, [key]: value }))
+  }
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (submitting) return
+    setSubmitError('')
+    setSubmitSuccess(false)
+    setSubmitting(true)
+    try {
+      await submitBookingRequest({
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        brand: form.brand.trim(),
+        model: form.model.trim(),
+        service: form.service.trim(),
+        message: form.message.trim(),
+        website: form.website,
+      })
+      setSubmitSuccess(true)
+      setForm({
+        name: '',
+        phone: '',
+        email: '',
+        brand: '',
+        model: '',
+        service: '',
+        message: '',
+        website: '',
+      })
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Ошибка отправки.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -155,15 +202,57 @@ const BookingPage: FC = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 1 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12"
+          className="relative grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12"
+          onSubmit={handleSubmit}
         >
+          <input
+            type="text"
+            name="website"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden
+            value={form.website}
+            onChange={e => handleChange('website', e.target.value)}
+            className="absolute -left-[9999px] h-px w-px opacity-0"
+          />
           {/* Левая колонка */}
           <div className="flex flex-col gap-12">
-            <InputField label="Имя" value={form.name} onChange={e => handleChange('name', e.target.value)} />
-            <InputField label="Номер телефона" value={form.phone} onChange={e => handleChange('phone', e.target.value)} />
-            <InputField label="Почта" type="email" value={form.email} onChange={e => handleChange('email', e.target.value)} />
-            <InputField label="Марка автомобиля" value={form.brand} onChange={e => handleChange('brand', e.target.value)} />
-            <InputField label="Модель + год" value={form.model} onChange={e => handleChange('model', e.target.value)} />
+            <InputField
+              label="Имя"
+              value={form.name}
+              disabled={submitting}
+              required
+              onChange={e => handleChange('name', e.target.value)}
+            />
+            <InputField
+              label="Номер телефона"
+              value={form.phone}
+              disabled={submitting}
+              required
+              onChange={e => handleChange('phone', e.target.value)}
+            />
+            <InputField
+              label="Почта"
+              type="email"
+              value={form.email}
+              disabled={submitting}
+              required
+              onChange={e => handleChange('email', e.target.value)}
+            />
+            <InputField
+              label="Марка автомобиля"
+              value={form.brand}
+              disabled={submitting}
+              required
+              onChange={e => handleChange('brand', e.target.value)}
+            />
+            <InputField
+              label="Модель + год"
+              value={form.model}
+              disabled={submitting}
+              required
+              onChange={e => handleChange('model', e.target.value)}
+            />
           </div>
 
           {/* Правая колонка */}
@@ -172,7 +261,9 @@ const BookingPage: FC = () => {
               <select
                 value={form.service}
                 onChange={e => handleChange('service', e.target.value)}
-                className="w-full border-b border-white/20 bg-transparent py-4 text-lg text-white focus:border-[#FF8201] focus:outline-none appearance-none transition-colors"
+                disabled={submitting}
+                required
+                className="w-full border-b border-white/20 bg-transparent py-4 text-lg text-white focus:border-[#FF8201] focus:outline-none appearance-none transition-colors disabled:opacity-50"
               >
                 <option value="" disabled hidden>Выберите услугу</option>
                 {services.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
@@ -185,9 +276,10 @@ const BookingPage: FC = () => {
                 value={form.message}
                 onChange={e => handleChange('message', e.target.value)}
                 rows={5}
+                disabled={submitting}
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
-                className="peer w-full border-b border-white/20 bg-transparent py-4 text-lg text-white placeholder-transparent focus:border-[#FF8201] focus:outline-none resize-none transition-colors"
+                className="peer w-full border-b border-white/20 bg-transparent py-4 text-lg text-white placeholder-transparent focus:border-[#FF8201] focus:outline-none resize-none transition-colors disabled:opacity-50"
                 placeholder="Сообщение"
               />
               <label className={`absolute left-0 transition-all pointer-events-none ${isFocused || form.message ? '-top-4 text-xs text-[#FF8201]' : 'top-4 text-lg text-white/40'}`}>
@@ -195,13 +287,25 @@ const BookingPage: FC = () => {
               </label>
             </motion.div>
 
+            {submitSuccess && (
+              <p className="text-sm text-emerald-400/90" role="status">
+                Заявка отправлена. Мы свяжемся с вами в ближайшее время.
+              </p>
+            )}
+            {submitError && (
+              <p className="text-sm text-red-400/90" role="alert">
+                {submitError}
+              </p>
+            )}
+
             <motion.button
-              whileHover={{ backgroundColor: '#fff', color: '#000' }}
-              whileTap={{ scale: 0.98 }}
-              type="button"
-              className="mt-10 w-full bg-[#FF8201] text-black py-5 text-lg font-bold uppercase tracking-widest transition-colors"
+              whileHover={submitting ? undefined : { backgroundColor: '#fff', color: '#000' }}
+              whileTap={submitting ? undefined : { scale: 0.98 }}
+              type="submit"
+              disabled={submitting}
+              className="mt-10 w-full bg-[#FF8201] text-black py-5 text-lg font-bold uppercase tracking-widest transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Отправить заявку
+              {submitting ? 'Отправка…' : 'Отправить заявку'}
             </motion.button>
           </div>
         </motion.form>

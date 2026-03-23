@@ -7,7 +7,7 @@
 - Бэкенд: Django + Django REST Framework
 - База: SQLite (для разработки; можно заменить на другую без изменения API)
 - URL бэкенда в деве: `http://127.0.0.1:8000`
-- CORS разрешён для фронта: `http://localhost:5173`
+- CORS разрешён для локального фронта (`http://localhost:5173`, `http://127.0.0.1:5173`) и для дополнительных origin из переменной окружения бэкенда `CORS_ALLOWED_ORIGINS` (список через запятую, например прод-домен на Netlify)
 
 Все ответы API — в формате JSON.
 
@@ -369,3 +369,347 @@ export type AccordionListResponse = AccordionItem[];
 - Если запрос упал или вернулся пустой массив:
   - можно скрыть блок аккордеона,
   - либо показать заглушку/скелетон с текстом о временной недоступности данных.
+
+---
+
+## Галерея страницы «Сервис»
+
+Фотографии для ленты (два горизонтальных ряда с параллаксом на десктопе и горизонтальная карусель на мобильных) и для фона hero-блока на странице `/service` задаются через Django-админку и отдаются отдельным API.
+
+### Модель ServiceGalleryImage
+
+Поля:
+
+- `id: integer` — идентификатор записи.
+- `image: string (URL)` — URL изображения (файл загружается в админке).
+- `order: integer` — порядок в ленте (0, 1, 2, …); чем меньше число, тем левее в первом ряду.
+- `published: boolean` — флаг публикации (только опубликованные записи попадают в публичный API).
+
+Гарантии:
+
+- В публичное API попадают только элементы с `published = true`.
+- Элементы отсортированы по `order ASC`, затем по `created_at DESC`.
+- `image` в JSON — абсолютный URL (как у других эндпоинтов с медиа).
+
+### Эндпоинт галереи сервиса
+
+**URL:**  
+`GET /api/projects/service-gallery/`
+
+**Пример запроса:**
+
+```http
+GET http://127.0.0.1:8000/api/projects/service-gallery/
+Accept: application/json
+```
+
+**Ответ:**
+
+Ответ **без пагинации** — сразу массив объектов:
+
+```json
+[
+  {
+    "id": 1,
+    "image": "http://127.0.0.1:8000/media/service/gallery/photo1.jpg",
+    "order": 0
+  },
+  {
+    "id": 2,
+    "image": "http://127.0.0.1:8000/media/service/gallery/photo2.jpg",
+    "order": 1
+  }
+]
+```
+
+### Типы для фронта
+
+```ts
+export type ServiceGalleryItem = {
+  id: number;
+  image: string; // URL
+  order: number;
+};
+
+export type ServiceGalleryListResponse = ServiceGalleryItem[];
+```
+
+### Использование на фронтенде
+
+- При монтировании страницы `/service` запросить `GET /api/projects/service-gallery/`.
+- Отсортировать элементы по `order` (если нужно гарантировать порядок на клиенте) и собрать массив URL из поля `image`.
+- **Первый ряд** — эти URL по возрастанию `order`.
+- **Второй ряд** — тот же список в **обратном** порядке (как зеркальная лента).
+- **Hero** на той же странице: фон можно брать как **первое изображение** в этом порядке (первый элемент после сортировки по `order`).
+- Если запрос не удался или список пустой, разумный фолбэк — статические изображения из сборки, чтобы вёрстка и анимации не ломались.
+
+---
+
+## Отзывы на главной (`/`)
+
+Тексты отзывов для блока с карточками (`TestimonialCard`) на главной странице задаются в Django-админке («Отзывы на главной») и отдаются публичным GET без пагинации.
+
+### Модель Testimonial
+
+Поля:
+
+- `id: integer` — идентификатор записи.
+- `quote: string` — полный текст отзыва.
+- `name: string` — имя автора (в админке поле называется «Имя», в БД — `author_name`).
+- `car: string` — модель автомобиля.
+- `order: integer` — порядок в блоке (0, 1, 2, …); чем меньше число, тем раньше в списке.
+
+Гарантии:
+
+- В публичное API попадают только записи с `published = true`.
+- Элементы отсортированы по `order ASC`, затем по `created_at DESC`.
+
+### Эндпоинт отзывов
+
+**URL:**  
+`GET /api/projects/testimonials/`
+
+**Пример запроса:**
+
+```http
+GET http://127.0.0.1:8000/api/projects/testimonials/
+Accept: application/json
+```
+
+**Ответ:**
+
+Ответ **без пагинации** — сразу массив объектов:
+
+```json
+[
+  {
+    "id": 1,
+    "quote": "Ребята из Пикапсервис превратили мой обычный крузак...",
+    "name": "Алексей Смирнов",
+    "car": "Toyota Land Cruiser 200",
+    "order": 0
+  },
+  {
+    "id": 2,
+    "quote": "Идеальная работа с подвеской...",
+    "name": "Дмитрий Волков",
+    "car": "Nissan Patrol Y61",
+    "order": 1
+  }
+]
+```
+
+Если нет опубликованных отзывов, приходит пустой массив `[]`.
+
+### Типы для фронта
+
+```ts
+export type TestimonialItem = {
+  id: number;
+  quote: string;
+  name: string;
+  car: string;
+  order: number;
+};
+
+export type TestimonialsListResponse = TestimonialItem[];
+```
+
+### Использование на фронтенде
+
+- Базовый URL API — через `VITE_BACKEND_ORIGIN` (см. корень проекта).
+- При монтировании главной страницы выполнить `GET /api/projects/testimonials/` и подставить элементы в карусель / горизонтальную ленту вместо захардкоженного `testimonialsData`: поля `quote`, `name`, `car` совпадают с пропсами `TestimonialCard`.
+- При пустом ответе или ошибке сети разумный фолбэк — статические отзывы из сборки, чтобы блок не пропадал.
+
+---
+
+## Заявка на странице «Запись» (`/booking`)
+
+Публичная форма записи отправляет данные на бэкенд; заявка сохраняется в БД, на указанный в настройках адрес уходит письмо (если задан SMTP и получатель).
+
+### Модель BookingRequest
+
+Поля (хранятся в админке, правка с фронта недоступна):
+
+- `name: string` — имя.
+- `phone: string` — телефон.
+- `email: string` — почта.
+- `brand: string` — марка автомобиля.
+- `model: string` — модель и год.
+- `service: string` — выбранная услуга (строка с фронта).
+- `message: string` — сообщение (может быть пустым).
+- `created_at` — время создания записи.
+- `email_sent: boolean` — удалось ли отправить письмо.
+- `email_error: string` — текст ошибки доставки почты (если была), либо подсказка, что не задан `BOOKING_TO_EMAIL`.
+
+Дополнительно в теле **POST** можно передать поле `website` — это **honeypot**: оно должно быть пустым; если заполнено, бэкенд вернёт ошибку валидации.
+
+### Эндпоинт заявки
+
+**URL:**  
+`POST /api/projects/booking/`
+
+**Заголовки:**
+
+```http
+POST /api/projects/booking/
+Content-Type: application/json
+Accept: application/json
+```
+
+**Тело запроса (пример):**
+
+```json
+{
+  "name": "Иван",
+  "phone": "+79991234567",
+  "email": "client@example.com",
+  "brand": "Toyota",
+  "model": "Land Cruiser 200, 2018",
+  "service": "Диагностика",
+  "message": "Нужна запись на выходных",
+  "website": ""
+}
+```
+
+**Ответ при успехе (201):**
+
+```json
+{
+  "id": 1,
+  "status": "created",
+  "email_delivered": true
+}
+```
+
+Поле `email_delivered` — `true`, если письмо ушло на SMTP; `false`, если получатель не настроен или произошла ошибка отправки (заявка в БД всё равно сохранена).
+
+**Ответ при ошибке валидации (400):**
+
+Типичный формат DRF — объект с полями и списками строк, например:
+
+```json
+{
+  "phone": ["Укажите корректный номер телефона."]
+}
+```
+
+### Переменные окружения бэкенда (почта и CORS)
+
+| Переменная | Назначение |
+|------------|------------|
+| `BOOKING_TO_EMAIL` | Адрес, на который слать уведомления о новой заявке. Если пусто, письмо не отправляется, в ответе `email_delivered: false`. |
+| `DEFAULT_FROM_EMAIL` | Отправитель письма (по умолчанию в коде задан запасной локальный адрес). |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS` | SMTP. Если `EMAIL_HOST` не задан, используется **console**-бэкенд: текст письма выводится в консоль сервера (удобно для разработки). |
+| `CORS_ALLOWED_ORIGINS` | Дополнительные разрешённые origin через запятую (например `https://pickupservicetest.netlify.app`). |
+
+### Типы для фронта
+
+```ts
+export type BookingRequestPayload = {
+  name: string;
+  phone: string;
+  email: string;
+  brand: string;
+  model: string;
+  service: string;
+  message: string;
+  website?: string;
+};
+
+export type BookingRequestResponse = {
+  id: number;
+  status: string;
+  email_delivered: boolean;
+};
+```
+
+### Использование на фронтенде
+
+- Базовый URL API задаётся через `VITE_BACKEND_ORIGIN` (см. корень проекта).
+- На странице `/booking` вызвать `POST` с JSON; при успехе показать пользователю подтверждение; при 400 — показать сообщения из ответа.
+- Для продакшена на Netlify: задать на бэкенде `CORS_ALLOWED_ORIGINS` с URL фронта и настроить SMTP + `BOOKING_TO_EMAIL`.
+
+---
+
+## Контакты и карта (`/contact`)
+
+Телефон, почта, ссылки на Telegram / WhatsApp / ВКонтакте и параметры встраиваемой карты задаются **одной записью** в Django-админке («Контакты на сайте») и отдаются публичным GET без пагинации.
+
+### Модель ContactSettings
+
+Поля:
+
+- `email: string` — почта для `mailto:` и отображения.
+- `phone_display: string` — телефон как текст на странице (например «+7 999 000 00 00»).
+- `phone_tel: string` — значение для ссылки `tel:` **без** префикса `tel:` (например `+79990000000`).
+- `telegram_url: string` — полный URL; может быть пустым.
+- `whatsapp_url: string` — полный URL; может быть пустым.
+- `vk_url: string` — полный URL; может быть пустым.
+- `map_embed_url: string` — полный `src` для `<iframe>` (ссылка «Встроить карту» из Google / Яндекс и т.д.).
+- `coordinates_label: string` — подпись координат под картой / в HUD (может быть пустой).
+
+В API всегда одна логическая конфигурация; вторая запись в админке создать нельзя.
+
+### Эндпоинт контактов
+
+**URL:**  
+`GET /api/projects/contact/`
+
+**Пример запроса:**
+
+```http
+GET http://127.0.0.1:8000/api/projects/contact/
+Accept: application/json
+```
+
+**Ответ при успехе (200):**
+
+```json
+{
+  "email": "info@pickupservice.ru",
+  "phone_display": "+7 999 000 00 00",
+  "phone_tel": "+79990000000",
+  "telegram_url": "",
+  "whatsapp_url": "",
+  "vk_url": "",
+  "map_embed_url": "https://www.google.com/maps/embed?pb=...",
+  "coordinates_label": "55.7558° N, 37.5366° E"
+}
+```
+
+Пустые URL соцсетей приходят как пустые строки — на фронте можно скрывать соответствующие ссылки.
+
+**Ответ, если записи нет (404):**
+
+```json
+{
+  "detail": "Настройки контактов не заданы."
+}
+```
+
+После первой миграции бэкенд создаёт запись с дефолтами, совпадающими с прежней вёрсткой страницы контактов.
+
+### Типы для фронта
+
+```ts
+export type ContactSettingsResponse = {
+  email: string;
+  phone_display: string;
+  phone_tel: string;
+  telegram_url: string;
+  whatsapp_url: string;
+  vk_url: string;
+  map_embed_url: string;
+  coordinates_label: string;
+};
+```
+
+### Использование на фронтенде
+
+- Базовый URL API — через `VITE_BACKEND_ORIGIN` (см. корень проекта).
+- На странице `/contact` выполнить `GET /api/projects/contact/` при монтировании.
+- Подставить `email` в `mailto:` и текст ссылки; `phone_display` — видимый номер, `href` телефона — `tel:` + `phone_tel`.
+- Ссылки Telegram / WhatsApp / ВКонтакте — из `telegram_url`, `whatsapp_url`, `vk_url` (если строка не пустая).
+- Карта: `iframe` с `src={map_embed_url}`; подпись координат — `coordinates_label`.
+- При 404 или ошибке сети разумный фолбэк — статический текст из сборки, чтобы страница не ломалась.

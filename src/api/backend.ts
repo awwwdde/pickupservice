@@ -49,6 +49,12 @@ export interface ApiAccordionItem {
   order: number
 }
 
+export interface ApiServiceGalleryItem {
+  id: number
+  image: string
+  order: number
+}
+
 export async function fetchProjects(): Promise<ApiProjectListItem[]> {
   const payload = await getJson<ApiProjectListItem[] | { results?: ApiProjectListItem[] }>('/api/projects/')
   return asList(payload).map((item) => ({ ...item, image: toAbsoluteMediaUrl(item.image) }))
@@ -66,5 +72,89 @@ export async function fetchProjectById(id: string): Promise<ApiProjectDetail> {
 export async function fetchAccordionItems(): Promise<ApiAccordionItem[]> {
   const payload = await getJson<ApiAccordionItem[] | { results?: ApiAccordionItem[] }>('/api/projects/accordion/')
   return asList(payload).map((item) => ({ ...item, image: toAbsoluteMediaUrl(item.image) }))
+}
+
+export async function fetchServiceGalleryImages(): Promise<ApiServiceGalleryItem[]> {
+  const payload = await getJson<
+    ApiServiceGalleryItem[] | { results?: ApiServiceGalleryItem[] }
+  >('/api/projects/service-gallery/')
+  return asList(payload).map((item) => ({
+    ...item,
+    image: toAbsoluteMediaUrl(item.image)
+  }))
+}
+
+export interface BookingRequestPayload {
+  name: string
+  phone: string
+  email: string
+  brand: string
+  model: string
+  service: string
+  message: string
+  /** Honeypot: должен оставаться пустым */
+  website?: string
+}
+
+export interface BookingRequestResponse {
+  id: number
+  status: string
+  email_delivered: boolean
+}
+
+function formatBookingApiErrors(data: unknown): string {
+  if (!data || typeof data !== 'object') {
+    return 'Не удалось отправить заявку. Попробуйте позже.'
+  }
+  const o = data as Record<string, unknown>
+  if (typeof o.detail === 'string') return o.detail
+  const parts: string[] = []
+  for (const [, val] of Object.entries(o)) {
+    if (Array.isArray(val) && val.length && typeof val[0] === 'string') {
+      parts.push(val[0])
+    } else if (typeof val === 'string') {
+      parts.push(val)
+    }
+  }
+  return parts.length
+    ? parts.join(' ')
+    : 'Проверьте поля формы.'
+}
+
+export async function submitBookingRequest(
+  payload: BookingRequestPayload
+): Promise<BookingRequestResponse> {
+  const response = await fetch(`${BACKEND_ORIGIN}/api/projects/booking/`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: payload.name,
+      phone: payload.phone,
+      email: payload.email,
+      brand: payload.brand,
+      model: payload.model,
+      service: payload.service,
+      message: payload.message,
+      website: payload.website ?? ''
+    })
+  })
+
+  const text = await response.text()
+  let data: unknown = null
+  try {
+    data = text ? JSON.parse(text) : null
+  } catch {
+    data = null
+  }
+
+  if (!response.ok) {
+    const msg = formatBookingApiErrors(data)
+    throw new Error(msg)
+  }
+
+  return data as BookingRequestResponse
 }
 

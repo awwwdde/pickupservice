@@ -93,10 +93,33 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS
+# CORS — базовый список + опционально CORS_ALLOWED_ORIGINS (через запятую)
+_cors_extra = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
+if _cors_extra:
+    CORS_ALLOWED_ORIGINS.extend(
+        o.strip() for o in _cors_extra.split(",") if o.strip()
+    )
+
+# Почта: в деве без SMTP — вывод в консоль
+_email_host = os.environ.get("EMAIL_HOST", "").strip()
+if _email_host:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = _email_host
+    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+    EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "1") not in ("0", "false", "False")
+else:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL", "noreply@pickupservice.local"
+)
+BOOKING_TO_EMAIL = os.environ.get("BOOKING_TO_EMAIL", "").strip()
 
 # DRF
 REST_FRAMEWORK = {

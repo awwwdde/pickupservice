@@ -4,7 +4,11 @@ import Lenis from 'lenis'
 import { ArrowRight } from 'lucide-react'
 
 import { ServiceCard } from '../components/accordeoncard/ServiceCard' 
-import { fetchAccordionItems, type ApiAccordionItem } from '../api/backend'
+import {
+  fetchAccordionItems,
+  fetchServiceGalleryImages,
+  type ApiAccordionItem
+} from '../api/backend'
 
 // Более "дорогой" easing — быстрый старт, ооочень плавный финиш
 const customEase = cubicBezier(0.19, 1, 0.22, 1)
@@ -36,8 +40,7 @@ const servicesData = [
   }
 ]
 
-const trackRow1 = [image5, image6, image7, image8, image9]
-const trackRow2 = [image9, image8, image7, image6, image5]
+const FALLBACK_TRACK_ROW1 = [image5, image6, image7, image8, image9]
 
 // Обновленные анимации для текста: более резкое появление
 const titleLineVariants = {
@@ -57,6 +60,8 @@ const titleLineVariants = {
 const ServicePage: FC = () => {
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
   const [serviceItems, setServiceItems] = useState(servicesData)
+  const [trackRow1, setTrackRow1] = useState<string[]>(() => [...FALLBACK_TRACK_ROW1])
+  const [trackRow2, setTrackRow2] = useState<string[]>(() => [...FALLBACK_TRACK_ROW1].reverse())
   const stickySectionRef = useRef<HTMLDivElement>(null)
   const imageTrackRef = useRef<HTMLDivElement>(null)
   const heroRef = useRef<HTMLDivElement>(null)
@@ -95,6 +100,26 @@ const ServicePage: FC = () => {
       })
       .catch(() => {
         // Фолбэк уже задан в servicesData.
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    fetchServiceGalleryImages()
+      .then((items) => {
+        if (cancelled || !items.length) return
+        const sorted = [...items].sort((a, b) => a.order - b.order)
+        const urls = sorted.map((i) => i.image).filter(Boolean)
+        if (!urls.length) return
+        setTrackRow1(urls)
+        setTrackRow2([...urls].reverse())
+      })
+      .catch(() => {
+        // Фолбэк: FALLBACK_TRACK_ROW1 в начальном state.
       })
 
     return () => {
@@ -168,7 +193,7 @@ const ServicePage: FC = () => {
             initial={{ scale: 1.2, opacity: 0 }}
             animate={{ scale: 1, opacity: 0.85 }} // Слегка затемняем саму картинку для контраста без мыльного блюра
             transition={{ duration: 2, ease: customEase }}
-            src={image5}
+            src={trackRow1[0] ?? image5}
             className="h-full w-full object-cover"
             alt="Offroad workshop hero"
           />
