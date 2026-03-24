@@ -5,9 +5,27 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-secret-key-change-me")
 
-DEBUG = True
+# Прод: DJANGO_DEBUG=0 или false; локально по умолчанию включён
+DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS: list[str] = ["*"]
+_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "").strip()
+if _hosts:
+    ALLOWED_HOSTS = [h.strip() for h in _hosts.split(",") if h.strip()]
+else:
+    ALLOWED_HOSTS = ["*"]
+
+_csrf_origins = os.environ.get("CSRF_TRUSTED_ORIGINS", "").strip()
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in _csrf_origins.split(",") if o.strip()
+]
+
+if os.environ.get("DJANGO_BEHIND_PROXY", "").lower() in ("1", "true", "yes"):
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 INSTALLED_APPS = [
     "django.contrib.admin",

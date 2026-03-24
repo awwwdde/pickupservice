@@ -1,0 +1,18 @@
+[Unit]
+Description=Gunicorn для Pickup Service (Django)
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+RuntimeDirectory=gunicorn
+WorkingDirectory=/var/www/pickupservice/server
+EnvironmentFile=-/etc/default/pickupservice.django.env
+ExecStart=/var/www/pickupservice/server/venv/bin/gunicorn \
+    --config /var/www/pickupservice/deploy/gunicorn.conf.py \
+    pickupservice.wsgi:application
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
