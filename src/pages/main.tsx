@@ -330,7 +330,7 @@ const MainPage: FC = () => {
           >
             <div className="flex items-center gap-4">
               <span>МЫ</span>
-              <div className="inline-flex h-[1.1em] w-[13ch] items-center overflow-hidden whitespace-nowrap leading-none">
+              <div className="inline-flex h-[1.1em] w-[15ch] max-w-full items-center overflow-hidden whitespace-nowrap leading-none">
                 <AnimatePresence mode="wait">
                   <motion.span 
                     key={currentWordIndex} 
@@ -367,8 +367,8 @@ const MainPage: FC = () => {
       {/* SECTION 2: PARALLAX */}
       <section ref={parallaxRef} className="relative h-[300vh] bg-[#f3f3f1]">
         <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden text-black px-6 sm:px-10 relative">
-          <div className="text-center text-[96px] font-bold italic tracking-tighter leading-[0.9] uppercase">
-            Собираем и обслуживаем <span className="text-[#FF8201]">внедорожники</span> 
+        <div className="text-center text-[clamp(44px,8vw,96px)] font-bold italic tracking-tighter leading-[0.9] uppercase">
+            Собираем и обслуживаем <span className="text-[#FF8201] block md:inline">внедорожники</span> 
           </div>
           <motion.div
             style={{ y: firstBlockY }}
@@ -581,7 +581,7 @@ const MainPage: FC = () => {
       {/* SECTION 5: SERVICES */}
       <section className="bg-[#f3f3f1] py-32 w-full flex flex-col items-center">
         <div className="w-[90%] mb-12 flex flex-col gap-4">
-          <h2 className="text-6xl font-regular uppercase tracking-tighter text-[#FF8201] ">Чем мы занимаемся</h2>
+          <h2 className="text-4xl sm:text-6xl font-regular uppercase tracking-tighter text-[#FF8201] ">Чем мы занимаемся</h2>
         </div>
         <div className="w-[90%] flex flex-col border-t border-black/10">
           {dynamicServices.map((service, index) => (
