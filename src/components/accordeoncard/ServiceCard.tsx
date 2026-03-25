@@ -28,7 +28,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       initial={false}
       animate={{ 
         // Подстраиваем высоту карточки под высоту экрана, чтобы на телефонах не было переполнения
-        height: isActive ? 'min(400px,60vh)' : 'min(120px,18vh)',
+        height: isActive ? 'min(400px,60vh)' : 'min(130px,20vh)',
         backgroundColor: isActive ? "#ffffff" : "#f3f3f1" 
       }}
       transition={{ duration: 0.8, ease: customEase }}
@@ -112,10 +112,10 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       </motion.div>
 
       {/* Mobile text */}
-      <motion.div className="md:hidden flex-1 flex flex-col justify-center px-5 pb-4 z-10">
+      <motion.div className="md:hidden flex-1 flex flex-col justify-start px-5 pb-4 z-10">
         <motion.h3
           layout
-          className="text-xl sm:text-2xl font-black uppercase tracking-tighter text-black"
+          className="text-lg sm:text-xl font-black uppercase tracking-tighter text-black leading-tight break-words w-full"
         >
           {title}
         </motion.h3>
@@ -127,7 +127,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.45, delay: 0.05, ease: customEase }}
-              className="mt-3 text-base text-black/50 leading-tight font-medium"
+              className="mt-3 text-base text-black/50 leading-tight font-medium break-words"
             >
               {subtitle}
             </motion.p>

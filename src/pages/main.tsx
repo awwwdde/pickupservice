@@ -330,7 +330,7 @@ const MainPage: FC = () => {
           >
             <div className="flex items-center gap-4">
               <span>МЫ</span>
-              <div className="inline-flex h-[1.1em] items-center overflow-hidden">
+              <div className="inline-flex h-[1.1em] w-[13ch] items-center overflow-hidden whitespace-nowrap leading-none">
                 <AnimatePresence mode="wait">
                   <motion.span 
                     key={currentWordIndex} 
@@ -338,7 +338,7 @@ const MainPage: FC = () => {
                     animate={{ y: 0 }} 
                     exit={{ y: '-100%' }} 
                     transition={{ duration: 0.6, ease }}
-                    className="inline-block"
+                    className="inline-block whitespace-nowrap"
                   >
                     {words[currentWordIndex]}
                   </motion.span>
