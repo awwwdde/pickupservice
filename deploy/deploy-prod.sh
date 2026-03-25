@@ -46,6 +46,12 @@ if [[ -n "${GITHUB_TOKEN:-}" ]]; then
     fi
   fi
 
+  # Нормализуем slug на случай, если туда попал суффикс `.git`
+  # (например: `owner/repo.git` -> `owner/repo`), чтобы не получить `...repo.git.git`.
+  while [[ -n "$repo_slug" && "$repo_slug" == *.git ]]; do
+    repo_slug="${repo_slug%.git}"
+  done
+
   [[ -n "$repo_slug" ]] || { echo "Cannot infer GITHUB_REPO_SLUG; set it explicitly (owner/repo)." >&2; exit 1; }
 
   cleanup() {
