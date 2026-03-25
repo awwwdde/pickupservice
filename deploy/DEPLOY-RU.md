@@ -246,18 +246,25 @@ sudo nginx -t && sudo systemctl reload nginx
 
 ## 9. Обновление сайта (повторный деплой)
 
+1) Задайте переменные окружения на сервере (токен не должен попадать в репозиторий).
+
+```bash
+export GITHUB_ACTOR=ZhIZh22
+export GITHUB_TOKEN="YOUR_GITHUB_TOKEN_HERE"
+
+# (опционально) если `git remote origin` не указывает на github.com/owner/repo.git:
+# export GITHUB_REPO_SLUG="ZhIZh22/pickupservice"
+
+# По умолчанию уже используются:
+# VITE_SITE_URL=https://pickupservice.moscow
+# VITE_BACKEND_ORIGIN=https://pickupservice.moscow
+```
+
+2) Запустите деплой-скрипт:
+
 ```bash
 cd /var/www/pickupservice
-git pull
-export VITE_SITE_URL=https://pickupservice.moscow
-export VITE_BACKEND_ORIGIN=https://pickupservice.moscow
-npm ci && npm run build
-cd server && source venv/bin/activate
-set -a && source /etc/default/pickupservice.django.env && set +a
-python manage.py migrate
-python manage.py collectstatic --noinput
-sudo systemctl restart pickupservice
-sudo systemctl reload nginx
+bash deploy/deploy-prod.sh
 ```
 
 ---
