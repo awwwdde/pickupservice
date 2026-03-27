@@ -488,96 +488,98 @@ const MainPage: FC = () => {
 
       {/* SECTION 4: ABOUT */}
       <section ref={aboutRef} className="relative bg-[#f3f3f1] text-black md:h-[300vh]">
-        {/* Desktop */}
-        <div className="hidden md:flex sticky top-0 h-screen w-full flex items-center justify-center px-[5%] overflow-hidden">
-          <div className="absolute left-[5%] z-0">
-            <div className="text-[12vw] font-black leading-[0.75] tracking-tighter uppercase">
-              <div>КТО</div>
-              <div className="text-[#FF8201]">МЫ?</div>
-            </div>
+      
+      {/* ================= DESKTOP ================= */}
+      <div className="hidden md:flex sticky top-0 h-screen w-full items-center justify-center px-[5%] overflow-hidden">
+        {/* Фоновый текст */}
+        <div className="absolute left-[5%] z-0 pointer-events-none">
+          <div className="text-[12vw] font-black leading-[0.75] tracking-tighter uppercase">
+            <div>КТО</div>
+            <div className="text-[#FF8201]">МЫ?</div>
           </div>
-          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-[min(1100px,100%)]">
-            <div className="relative w-[min(1100px,100%)] h-[min(600px,80vh)] overflow-hidden">
-              {aboutImages.map((img, i) => (
-                <motion.img
-                  key={i} src={img}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  animate={{ opacity: aboutImageIndex === i ? 1 : 0, scale: aboutImageIndex === i ? 1 : 1.1 }}
-                  transition={{ duration: 0.8 }}
-                />
-              ))}
-            </div>
-            <div className="mt-12 flex flex-col gap-4">
-              <div className="max-w-[500px]">
-                <h3 className="text-4xl font-bold tracking-tight uppercase mb-4">Инженерная эстетика оффроуда</h3>
-                <p className="text-black/60 text-lg leading-relaxed">
-                  Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
-                  Опыт, надежность и японское качество в каждой детали.
-                </p>
-              </div>
-              <div className="w-[min(300px,90vw)]">
-                <button className="w-full h-[min(100px,12vh)] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-black/5 uppercase tracking-widest text-[11px] font-bold">
-                  УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </motion.div>
         </div>
 
-        {/* Mobile */}
-        <div className="md:hidden w-full px-[6%] pt-24 pb-14">
-          <div className="flex items-end justify-between mb-10">
-            <div className="text-[14vw] font-black leading-[0.75] tracking-tighter uppercase">
-              <div>КТО</div>
-              <div className="text-[#FF8201]">МЫ?</div>
-            </div>
-          </div>
-
-          <div
-            ref={aboutCarouselRef}
-            className="overflow-x-auto snap-x snap-mandatory flex gap-4 pb-4 -mx-[6%] px-[6%]"
-          >
+        {/* Контентная карточка */}
+        <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px]">
+          {/* Контейнер изображений */}
+          <div className="relative w-full h-[60vh] max-h-[600px] overflow-hidden bg-black/5">
             {aboutImages.map((img, i) => (
-              <div
+              <motion.img
                 key={i}
-                data-about-slide
-                className="snap-start flex-none w-[85vw] max-w-[360px] overflow-hidden bg-black/5"
-              >
-                <motion.img
-                  src={img}
-                  className="h-full w-full object-cover"
-                  initial={false}
-                  animate={{
-                    opacity: aboutImageIndex === i ? 1 : 0.65,
-                    scale: aboutImageIndex === i ? 1 : 1.05
-                  }}
-                  transition={{ duration: 0.35 }}
-                />
-              </div>
+                src={img}
+                alt={`Оффроуд проект ${i + 1}`}
+                className="absolute inset-0 w-full h-full object-cover"
+                animate={{
+                  opacity: aboutImageIndex === i ? 1 : 0,
+                  scale: aboutImageIndex === i ? 1 : 1.1,
+                  zIndex: aboutImageIndex === i ? 10 : 0
+                }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              />
             ))}
           </div>
 
-          <motion.div
-            key={aboutImageIndex}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="mt-6 flex flex-col gap-4"
-          >
-            <h3 className="text-3xl font-bold tracking-tight uppercase mb-3">Инженерная эстетика оффроуда</h3>
-            <p className="text-black/60 text-base leading-relaxed">
-              Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
-              Опыт, надежность и японское качество в каждой детали.
-            </p>
-            <div className="w-full max-w-[320px] mt-2">
-              <button className="w-full h-[min(90px,12vh)] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-black/5 uppercase tracking-widest text-[11px] font-bold">
-                УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
-              </button>
+          <div className="mt-12 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
+            <div className="max-w-[500px]">
+              <h3 className="text-4xl font-bold tracking-tight uppercase mb-4">Инженерная эстетика оффроуда</h3>
+              <p className="text-black/60 text-lg leading-relaxed">
+                Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
+                Опыт, надежность и японское качество в каждой детали.
+              </p>
             </div>
-          </motion.div>
-        </div>
-      </section>
+            
+            <button className="w-full max-w-[300px] h-[80px] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-colors duration-300 flex items-center justify-center gap-3 uppercase tracking-widest text-[11px] font-bold">
+              УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      </div>
 
+      {/* ================= MOBILE ================= */}
+      <div className="md:hidden w-full px-[6%] pt-24 pb-14 overflow-hidden">
+        <div className="flex items-end justify-between mb-10">
+          <div className="text-[14vw] font-black leading-[0.75] tracking-tighter uppercase">
+            <div>КТО</div>
+            <div className="text-[#FF8201]">МЫ?</div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-6">
+          {aboutImages.map((img, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }} 
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="w-full aspect-[4/5] sm:aspect-square overflow-hidden bg-black/5 relative"
+            >
+              <img
+                src={img}
+                alt={`Оффроуд проект ${i + 1}`}
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </motion.div>
+          ))}
+        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5 }}
+          className="mt-10 flex flex-col gap-4"
+        >
+          <h3 className="text-2xl font-bold tracking-tight uppercase mb-2">Инженерная эстетика оффроуда</h3>
+          <p className="text-black/60 text-base leading-relaxed">
+            Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
+            Опыт, надежность и японское качество в каждой детали.
+          </p>
+          
+          <button className="w-full mt-4 h-[70px] cursor-pointer bg-black text-white active:bg-[#FF8201] transition-colors flex items-center justify-center gap-3 uppercase tracking-widest text-[11px] font-bold">
+            УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
+          </button>
+        </motion.div>
+      </div>
+    </section>
       {/* SECTION 5: SERVICES */}
       <section className="bg-[#f3f3f1] py-32 w-full flex flex-col items-center">
         <div className="w-[90%] mb-12 flex flex-col gap-4">
