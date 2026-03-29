@@ -27,11 +27,6 @@ const desktopLinksVariants = {
   exit: { opacity: 0, x: -10, filter: 'blur(3px)' },
 }
 
-const desktopBurgerPanelVariants = {
-  initial: { opacity: 0, scale: 0.96, x: 10 },
-  animate: { opacity: 1, scale: 1, x: 0 },
-  exit: { opacity: 0, scale: 0.98, x: -6 },
-}
 
 const swapTransition = { duration: 0.58, ease: easeSwap }
 const colorTransition = { duration: 0.55, ease: easeSwap }
