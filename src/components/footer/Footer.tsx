@@ -102,7 +102,7 @@ const Footer: React.FC = () => {
       <div className="mt-10 pt-8 border-t border-white/5 flex justify-between text-[clamp(9px,1.2vw,10px)] uppercase tracking-widest text-gray-600">
         <p>© {currentYear} ПИКАПСЕРВИС. ВСЕ ПРАВА ЗАЩИЩЕНЫ</p>
         <p>Design by 
-          <a href="https://bitluna.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors"> BitLuna </a>
+          <a href="https://bitluna.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors"> KiTLuna </a>
         </p>
       </div>
     </footer>

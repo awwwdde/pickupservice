@@ -21,6 +21,7 @@ import image6 from '../assets/img/image6.png'
 import image7 from '../assets/img/image7.png'
 import image8 from '../assets/img/image8.png'
 import image9 from '../assets/img/image9.png'
+import { Link } from 'react-router-dom'
 
 const servicesData = [
   {
@@ -184,7 +185,7 @@ const ServicePage: FC = () => {
     <div className="bg-[#fcfcfc] selection:bg-[#FF8201] selection:text-white font-sans text-black antialiased">
       
       {/* SECTION 1: HERO */}
-      <section ref={heroRef} className="relative h-screen w-full overflow-hidden bg-black">
+      <section id="site-hero" ref={heroRef} className="relative h-screen w-full overflow-hidden bg-black">
         <motion.div 
           style={{ y: heroBgY }}
           className="absolute inset-0 z-0 bg-black"
@@ -370,9 +371,6 @@ const ServicePage: FC = () => {
             <h2 className="text-4xl font-black uppercase tracking-[-0.04em] text-black leading-[0.95]">
               Направления <br /> <span className="text-[#FF8201]">сервиса</span>
             </h2>
-            <div className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-400 mt-4">
-              [ 0{activeServiceIndex + 1} / 0{serviceItems.length} ]
-            </div>
           </div>
 
           <div className="flex flex-col border-t border-black/10">
@@ -385,6 +383,7 @@ const ServicePage: FC = () => {
                 image={service.image}
                 isActive={activeServiceIndex === index}
                 onClick={() => setActiveServiceIndex(index)}
+                alwaysExpanded
               />
             ))}
           </div>
@@ -418,7 +417,7 @@ const ServicePage: FC = () => {
             />
             
             <span className="relative z-10 text-3xl md:text-[3vw] font-black uppercase tracking-[-0.04em] text-white">
-              Записаться
+              <Link className="text-white hover:text-gray-300 transition-colors cursor-pointer" to="/booking">Записаться</Link>
             </span>
             
             <motion.div

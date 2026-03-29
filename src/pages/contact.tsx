@@ -85,13 +85,13 @@ const ContactPage: FC = () => {
 
             <div className="group border-b border-white/10 pb-10">
               <span className="block font-mono text-[10px] uppercase tracking-widest text-neutral-600 mb-6">02. Телефон</span>
-              <a href="tel:+79990000000" className="relative inline-block text-4xl md:text-7xl font-bold uppercase tracking-tighter hover:italic transition-all duration-500">
-                +7 999 000 00 00
+              <a href="tel:+79859234777" className="relative inline-block text-4xl md:text-7xl font-bold uppercase tracking-tighter hover:italic transition-all duration-500">
+                +7 985 923 47 77
               </a>
             </div>
 
             <div className="flex flex-wrap gap-x-12 gap-y-6 pt-4">
-              {['Telegram', 'WhatsApp', 'ВКонтакте'].map((social) => (
+              {['Telegram', 'MAX', 'ВКонтакте'].map((social) => (
                 <a key={social} href="#" className="font-mono text-[11px] uppercase tracking-[0.3em] text-neutral-500 hover:text-white transition-colors relative overflow-hidden group">
                   <span className="inline-block transition-transform duration-500 group-hover:-translate-y-full">{social}</span>
                   <span className="absolute top-0 left-0 inline-block transition-transform duration-300 translate-y-full group-hover:translate-y-0 text-white underline underline-offset-4">{social}</span>

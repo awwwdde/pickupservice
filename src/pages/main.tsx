@@ -85,6 +85,7 @@ const MainPage: FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const parallaxRef = useRef<HTMLDivElement | null>(null)
   const aboutRef = useRef<HTMLDivElement | null>(null)
+  const servicesStickyRef = useRef<HTMLDivElement | null>(null)
   const testimonialsRef = useRef<HTMLDivElement | null>(null)
   const aboutCarouselRef = useRef<HTMLDivElement | null>(null)
   const testimonialsCarouselRef = useRef<HTMLDivElement | null>(null)
@@ -138,6 +139,10 @@ const MainPage: FC = () => {
   // Скролл-анимации
   const { scrollYProgress } = useScroll({ target: parallaxRef, offset: ['start start', 'end end'] })
   const { scrollYProgress: aboutProgress } = useScroll({ target: aboutRef, offset: ['start start', 'end end'] })
+  const { scrollYProgress: servicesStickyProgress } = useScroll({
+    target: servicesStickyRef,
+    offset: ['start start', 'end end'],
+  })
   const { scrollYProgress: testimonialsProgress } = useScroll({ target: testimonialsRef })
 
   const springConfig = { stiffness: 50, damping: 20, mass: 1 }
@@ -153,6 +158,13 @@ const MainPage: FC = () => {
   useMotionValueEvent(aboutIndexRaw, 'change', (latest) => {
     if (isMobileRef.current) return
     setAboutImageIndex(Math.round(latest))
+  })
+
+  useMotionValueEvent(servicesStickyProgress, 'change', (latest) => {
+    if (isMobileRef.current) return
+    if (!dynamicServices.length) return
+    const index = Math.min(Math.floor(latest * dynamicServices.length), dynamicServices.length - 1)
+    setActiveServiceIndex(index)
   })
 
   // На mobile индексация задается скроллом swipe-галереи, а не scroll-driven анимациями.
@@ -305,7 +317,7 @@ const MainPage: FC = () => {
     <div className="bg-black text-white selection:bg-[#FF8201]">
       
       {/* SECTION 1: HERO */}
-      <section className="relative h-screen w-full overflow-hidden">
+      <section id="site-hero" className="relative h-screen w-full overflow-hidden">
         <img
           src={image1}
           className="absolute inset-0 h-full w-full object-cover opacity-10 pointer-events-none"
@@ -322,21 +334,21 @@ const MainPage: FC = () => {
         />
         
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[min(35px,6vw)]">
-          <motion.div 
-            className="flex w-full items-center justify-between text-[clamp(32px,6vw,64px)] font-semibold tracking-tighter uppercase" 
-            initial={{ opacity: 0, y: 10 }} 
+          <motion.div
+            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(26px,7vw,64px)] font-semibold tracking-tighter uppercase md:flex-row md:items-center md:justify-between md:gap-4 md:text-left"
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease }}
           >
-            <div className="flex items-center gap-4">
-              <span>МЫ</span>
-              <div className="inline-flex h-[1.1em] w-[15ch] max-w-full items-center overflow-hidden whitespace-nowrap leading-none">
+            <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
+              <span className="leading-none">МЫ</span>
+              <div className="inline-flex h-[1.1em] w-[15ch] max-w-full items-center justify-center overflow-hidden whitespace-nowrap leading-none md:justify-start">
                 <AnimatePresence mode="wait">
-                  <motion.span 
-                    key={currentWordIndex} 
-                    initial={{ y: '100%' }} 
-                    animate={{ y: 0 }} 
-                    exit={{ y: '-100%' }} 
+                  <motion.span
+                    key={currentWordIndex}
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    exit={{ y: '-100%' }}
                     transition={{ duration: 0.6, ease }}
                     className="inline-block whitespace-nowrap"
                   >
@@ -345,7 +357,7 @@ const MainPage: FC = () => {
                 </AnimatePresence>
               </div>
             </div>
-            <span>ВНЕДОРОЖНИКИ</span>
+            <span className="leading-none">ВНЕДОРОЖНИКИ</span>
           </motion.div>
         </div>
 
@@ -366,19 +378,19 @@ const MainPage: FC = () => {
 
       {/* SECTION 2: PARALLAX */}
       <section ref={parallaxRef} className="relative h-[300vh] bg-[#f3f3f1]">
-        <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden text-black px-6 sm:px-10 relative">
-        <div className="text-center text-[clamp(44px,8vw,96px)] font-bold italic tracking-tighter leading-[0.9] uppercase">
-            Собираем и обслуживаем <span className="text-[#FF8201] block md:inline">внедорожники</span> 
+        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden px-6 text-black sm:px-10">
+          <div className="text-center text-[clamp(44px,8vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter">
+            Собираем и обслуживаем <span className="block text-[#FF8201] md:inline">внедорожники</span>
           </div>
           <motion.div
             style={{ y: firstBlockY }}
-            className="absolute left-[8%] glass-header px-6 sm:px-10 py-4 sm:py-6 text-[min(22px,4vw)] text-[#FF8201] font-bold shadow-2xl"
+            className="absolute left-[8%] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl sm:px-10 sm:py-6"
           >
             ПИКАПСЕРВИС
           </motion.div>
           <motion.div
             style={{ y: secondBlockY }}
-            className="absolute right-[8%] glass-header max-w-[min(400px,90vw)] p-6 sm:p-10 text-[min(18px,3.8vw)] shadow-2xl leading-relaxed text-black/70"
+            className="absolute right-[8%] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl sm:p-10"
           >
             Бескомпромиссная подготовка к экспедициям и трофи-рейдам. Ваша уверенность в каждом километре пути.
           </motion.div>
@@ -386,19 +398,29 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 3: PROJECTS */}
-      <section className="bg-[#f3f3f1] py-32 flex justify-center">
+      <section className="flex justify-center bg-[#f3f3f1] py-24 md:py-32">
         {/* Desktop/tablet */}
-        <div className="hidden md:flex items-end gap-5 h-[min(550px,70vh)] w-full px-[5%]" onMouseLeave={() => setActiveProjectIndex(0)}>
+        <div
+          className="hidden h-[min(620px,72vh)] w-full items-end gap-5 px-[5%] md:flex"
+          onMouseLeave={() => setActiveProjectIndex(0)}
+        >
           {dynamicProjects.map((p, i) => (
             <motion.div
-              key={i} layout
+              key={i}
+              layout
               onMouseEnter={() => setActiveProjectIndex(i)}
-              animate={{ width: activeProjectIndex === i ? 450 : 280, height: activeProjectIndex === i ? 550 : 400 }}
-              className="relative overflow-hidden cursor-pointer bg-black shadow-2xl"
+              animate={{
+                width: activeProjectIndex === i ? 540 : 300,
+                height: activeProjectIndex === i ? 620 : 440,
+              }}
+              className="relative cursor-pointer overflow-hidden bg-black shadow-2xl"
             >
               {p.type === 'info' ? (
-                <div className="w-full h-full p-[30px] flex flex-col relative">
-                  <motion.h2 className="font-serif leading-tight mb-4" animate={{ fontSize: activeProjectIndex === i ? '42px' : '32px' }}>
+                <div className="relative flex h-full w-full flex-col p-[30px]">
+                  <motion.h2
+                    className="mb-4 font-serif leading-tight"
+                    animate={{ fontSize: activeProjectIndex === i ? '46px' : '34px' }}
+                  >
                     {p.title}
                   </motion.h2>
                   <AnimatePresence>
@@ -409,194 +431,169 @@ const MainPage: FC = () => {
                     )}
                   </AnimatePresence>
                   <div className="absolute bottom-[15px] left-[15px] right-[15px]">
-                    <button className="w-full cursor-pointer h-[min(100px,12vh)] bg-[#1c1c1c] hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-white/5 uppercase tracking-widest text-[11px] font-bold">
-                      ВСЕ РАБОТЫ <Plus className="w-4 h-4" />
+                    <button className="flex h-[min(108px,12vh)] w-full cursor-pointer items-center justify-center gap-3 border border-white/5 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-[#FF8201]">
+                      ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
               ) : (
-                <img src={p.image || ''} className="w-full h-full object-cover opacity-80" alt="" />
+                <img src={p.image || ''} className="h-full w-full object-cover opacity-80" alt="" />
               )}
             </motion.div>
           ))}
         </div>
 
-        {/* Mobile: вертикальный accordion */}
-        <div className="md:hidden w-[90%] flex flex-col gap-0">
-          {dynamicProjects.map((p, i) => {
-            const isActive = activeProjectIndex === i
-            return (
-              <motion.div
-                key={i}
-                layout
-                onClick={() => setActiveProjectIndex(i)}
-                initial={false}
-                animate={{
-                  height: isActive ? 'min(420px,58vh)' : 'min(135px,22vh)',
-                  backgroundColor: isActive ? '#ffffff' : '#0b0b0b'
-                }}
-                transition={{ duration: 0.65, ease }}
-                className="relative cursor-pointer overflow-hidden border-b border-black/10 shadow-2xl"
-              >
-                {p.type === 'info' ? (
-                  <div className="absolute inset-0 p-[18px] flex flex-col">
-                    <motion.h2
-                      className="font-serif leading-tight mb-3"
-                      animate={{
-                        fontSize: isActive ? '36px' : '26px',
-                        color: isActive ? '#000000' : '#ffffff'
-                      }}
-                    >
-                      {p.title}
-                    </motion.h2>
-                    <AnimatePresence>
-                      {isActive && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0 }}
-                          className="flex flex-col h-full"
-                        >
-                          <p className="text-[#a0a0a0] text-[14px] leading-relaxed mt-2">
-                            {p.description}
-                          </p>
-                          <div className="mt-auto">
-                            <button className="w-full cursor-pointer h-[min(96px,12vh)] bg-[#1c1c1c] hover:bg-[#FF8201] transition-all flex items-center justify-center gap-3 border border-white/5 uppercase tracking-widest text-[11px] font-bold">
-                              ВСЕ РАБОТЫ <Plus className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+        {/* Mobile: все блоки раскрыты, колонка */}
+        <div className="flex w-[90%] flex-col gap-8 md:hidden">
+          {dynamicProjects.map((p, i) => (
+            <div
+              key={i}
+              className={`overflow-hidden shadow-2xl ${p.type === 'info' ? 'border border-black/10 bg-white' : 'relative min-h-[220px] border border-black/10'}`}
+            >
+              {p.type === 'info' ? (
+                <div className="flex flex-col gap-4 p-6">
+                  <h2 className="font-serif text-[32px] leading-tight text-black">{p.title}</h2>
+                  <p className="text-[15px] leading-relaxed text-[#a0a0a0]">{p.description}</p>
+                  <button className="mt-2 flex h-14 w-full cursor-pointer items-center justify-center gap-3 border border-black/10 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest text-white transition-colors hover:bg-[#FF8201]">
+                    ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : (
+                <div className="relative min-h-[280px] w-full">
+                  <img src={p.image || ''} className="absolute inset-0 h-full w-full object-cover" alt="" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
+                  <div className="absolute bottom-4 left-4">
+                    <span className="text-5xl font-black text-[#FF8201]">0{i + 1}</span>
                   </div>
-                ) : (
-                  <div className="absolute inset-0">
-                    <img src={p.image || ''} className="w-full h-full object-cover opacity-85" alt="" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                    <div className="absolute bottom-[14px] left-[14px]">
-                      <span className={`text-6xl font-black ${isActive ? 'text-[#FF8201]' : 'text-white/40'}`}>
-                        0{i + 1}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            )
-          })}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </section>
 
       {/* SECTION 4: ABOUT */}
       <section ref={aboutRef} className="relative bg-[#f3f3f1] text-black md:h-[300vh]">
-      
-      {/* ================= DESKTOP ================= */}
-      <div className="hidden md:flex sticky top-0 h-screen w-full items-center justify-center px-[5%] overflow-hidden">
-        {/* Фоновый текст */}
-        <div className="absolute left-[5%] z-0 pointer-events-none">
-          <div className="text-[12vw] font-black leading-[0.75] tracking-tighter uppercase">
-            <div>КТО</div>
-            <div className="text-[#FF8201]">МЫ?</div>
+        <div className="hidden md:flex sticky top-0 h-screen w-full items-center justify-center overflow-hidden px-[5%]">
+          <div className="pointer-events-none absolute left-[5%] z-0">
+            <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter">
+              <div>КТО</div>
+              <div className="text-[#FF8201]">МЫ?</div>
+            </div>
           </div>
+
+          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px]">
+            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5">
+              {aboutImages.map((img, i) => (
+                <motion.img
+                  key={i}
+                  src={img}
+                  alt={`Оффроуд проект ${i + 1}`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  animate={{
+                    opacity: aboutImageIndex === i ? 1 : 0,
+                    scale: aboutImageIndex === i ? 1 : 1.1,
+                    zIndex: aboutImageIndex === i ? 10 : 0,
+                  }}
+                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                />
+              ))}
+            </div>
+
+            <div className="mt-12 flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
+              <div className="max-w-[500px]">
+                <h3 className="mb-4 text-4xl font-bold uppercase tracking-tight">Инженерная эстетика оффроуда</h3>
+                <p className="text-lg leading-relaxed text-black/60">
+                  Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
+                  японское качество в каждой детали.
+                </p>
+              </div>
+
+              <button className="flex h-[80px] w-full max-w-[300px] cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors duration-300 hover:bg-[#FF8201]">
+                УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Контентная карточка */}
-        <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px]">
-          {/* Контейнер изображений */}
-          <div className="relative w-full h-[60vh] max-h-[600px] overflow-hidden bg-black/5">
+        <div className="w-full md:hidden">
+          <div className="sticky top-0 z-30 border-b border-black/[0.06] bg-[#f3f3f1] px-[6%] pb-5 pt-14">
+            <div className="text-[14vw] font-black uppercase leading-[0.75] tracking-tighter">
+              <div>КТО</div>
+              <div className="text-[#FF8201]">МЫ?</div>
+            </div>
+          </div>
+          <div className="space-y-5 px-[6%] pb-6 pt-8">
             {aboutImages.map((img, i) => (
-              <motion.img
+              <motion.div
                 key={i}
-                src={img}
-                alt={`Оффроуд проект ${i + 1}`}
-                className="absolute inset-0 w-full h-full object-cover"
-                animate={{
-                  opacity: aboutImageIndex === i ? 1 : 0,
-                  scale: aboutImageIndex === i ? 1 : 1.1,
-                  zIndex: aboutImageIndex === i ? 10 : 0
-                }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                initial={{ opacity: 0.2 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: false, amount: 0.25, margin: '0px 0px -18% 0px' }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+                className="relative aspect-[4/5] w-full overflow-hidden bg-black/5 sm:aspect-square"
+              >
+                <img src={img} alt={`Оффроуд проект ${i + 1}`} className="absolute inset-0 h-full w-full object-cover" />
+              </motion.div>
+            ))}
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-40px' }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col gap-4 px-[6%] pb-16"
+          >
+            <h3 className="mb-1 text-2xl font-bold uppercase tracking-tight">Инженерная эстетика оффроуда</h3>
+            <p className="text-base leading-relaxed text-black/60">
+              Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
+              японское качество в каждой детали.
+            </p>
+            <button className="mt-4 flex h-[70px] w-full cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors active:bg-[#FF8201]">
+              УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
+            </button>
+          </motion.div>
+        </div>
+      </section>
+      {/* SECTION 5: SERVICES */}
+      <section ref={servicesStickyRef} className="relative w-full bg-[#f3f3f1] text-black md:h-[300vh]">
+        <div className="sticky top-0 hidden h-screen w-full flex-col items-center justify-center overflow-hidden py-8 md:flex">
+          <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10">
+            <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(2.5rem,4.5vw,4rem)]">
+              Чем мы занимаемся
+            </h2>
+          </div>
+          <div className="flex w-[90%] flex-col border-t border-black/10">
+            {dynamicServices.map((service, index) => (
+              <ServiceCard
+                key={index}
+                index={index}
+                title={service.title}
+                subtitle={service.subtitle}
+                image={service.image}
+                isActive={activeServiceIndex === index}
+                onClick={() => setActiveServiceIndex(index)}
               />
             ))}
           </div>
-
-          <div className="mt-12 flex flex-col xl:flex-row xl:items-end justify-between gap-6">
-            <div className="max-w-[500px]">
-              <h3 className="text-4xl font-bold tracking-tight uppercase mb-4">Инженерная эстетика оффроуда</h3>
-              <p className="text-black/60 text-lg leading-relaxed">
-                Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
-                Опыт, надежность и японское качество в каждой детали.
-              </p>
-            </div>
-            
-            <button className="w-full max-w-[300px] h-[80px] cursor-pointer bg-black text-white hover:bg-[#FF8201] transition-colors duration-300 flex items-center justify-center gap-3 uppercase tracking-widest text-[11px] font-bold">
-              УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* ================= MOBILE ================= */}
-      <div className="md:hidden w-full px-[6%] pt-24 pb-14 overflow-hidden">
-        <div className="flex items-end justify-between mb-10">
-          <div className="text-[14vw] font-black leading-[0.75] tracking-tighter uppercase">
-            <div>КТО</div>
-            <div className="text-[#FF8201]">МЫ?</div>
-          </div>
         </div>
-        <div className="flex flex-col gap-6">
-          {aboutImages.map((img, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-10%" }} 
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="w-full aspect-[4/5] sm:aspect-square overflow-hidden bg-black/5 relative"
-            >
-              <img
-                src={img}
-                alt={`Оффроуд проект ${i + 1}`}
-                className="absolute inset-0 h-full w-full object-cover"
+
+        <div className="w-full px-[6%] py-20 md:hidden">
+          <h2 className="text-3xl uppercase tracking-tighter text-[#FF8201] sm:text-4xl">Чем мы занимаемся</h2>
+          <div className="mt-10 flex flex-col border-t border-black/10">
+            {dynamicServices.map((service, index) => (
+              <ServiceCard
+                key={index}
+                index={index}
+                title={service.title}
+                subtitle={service.subtitle}
+                image={service.image}
+                isActive={activeServiceIndex === index}
+                onClick={() => setActiveServiceIndex(index)}
+                alwaysExpanded
               />
-            </motion.div>
-          ))}
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5 }}
-          className="mt-10 flex flex-col gap-4"
-        >
-          <h3 className="text-2xl font-bold tracking-tight uppercase mb-2">Инженерная эстетика оффроуда</h3>
-          <p className="text-black/60 text-base leading-relaxed">
-            Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов.
-            Опыт, надежность и японское качество в каждой детали.
-          </p>
-          
-          <button className="w-full mt-4 h-[70px] cursor-pointer bg-black text-white active:bg-[#FF8201] transition-colors flex items-center justify-center gap-3 uppercase tracking-widest text-[11px] font-bold">
-            УЗНАТЬ БОЛЬШЕ <Plus className="w-4 h-4" />
-          </button>
-        </motion.div>
-      </div>
-    </section>
-      {/* SECTION 5: SERVICES */}
-      <section className="bg-[#f3f3f1] py-32 w-full flex flex-col items-center">
-        <div className="w-[90%] mb-12 flex flex-col gap-4">
-          <h2 className="text-4xl sm:text-6xl font-regular uppercase tracking-tighter text-[#FF8201] ">Чем мы занимаемся</h2>
-        </div>
-        <div className="w-[90%] flex flex-col border-t border-black/10">
-          {dynamicServices.map((service, index) => (
-            <ServiceCard
-              key={index}
-              index={index}
-              title={service.title}
-              subtitle={service.subtitle}
-              image={service.image}
-              isActive={activeServiceIndex === index}
-              onClick={() => setActiveServiceIndex(index)}
-            />
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
