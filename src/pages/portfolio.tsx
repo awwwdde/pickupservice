@@ -47,12 +47,16 @@ const ProjectsPage: FC = () => {
       smoothWheel: true,
     });
 
+    let rafId: number
     function raf(time: number) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
+      lenis.raf(time)
+      rafId = requestAnimationFrame(raf)
     }
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
+    rafId = requestAnimationFrame(raf)
+    return () => {
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
+    }
   }, []);
 
   useEffect(() => {

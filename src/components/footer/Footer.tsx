@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -61,7 +62,7 @@ const Footer: React.FC = () => {
               className="w-full bg-[#1c1c1c] border border-white/5 p-8 mb-8 group transition-colors hover:bg-[#252525] cursor-pointer"
             >
               <div className="flex items-center justify-between text-gray-400 group-hover:text-white">
-                <span className="uppercase tracking-[0.2em] text-sm">Запишитесь к нам</span>
+                <span className="uppercase tracking-[0.2em] text-sm"><Link to="/booking">Запишитесь к нам</Link></span>
                 <Plus size={20} strokeWidth={1} />
               </div>
             </motion.button>

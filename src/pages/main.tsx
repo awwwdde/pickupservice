@@ -318,11 +318,6 @@ const MainPage: FC = () => {
       
       {/* SECTION 1: HERO */}
       <section id="site-hero" className="relative h-screen w-full overflow-hidden">
-        <img
-          src={image1}
-          className="absolute inset-0 h-full w-full object-cover opacity-10 pointer-events-none"
-          alt=""
-        />
         <video
           ref={videoRef}
           src={herovid}

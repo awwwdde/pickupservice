@@ -1,5 +1,4 @@
-import type { FC } from 'react'
-import type { Dispatch, SetStateAction } from 'react'
+import type { FC, Dispatch, SetStateAction, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
@@ -13,11 +12,8 @@ const navLinks = [
   { to: '/booking', label: 'Записаться' },
 ] as const
 
-const panelClassName =
-  'glass-header flex h-16 w-[12.5rem] shrink-0 items-center justify-center rounded-[0.2rem] border border-white/10 px-2 shadow-xl sm:h-[4.25rem] sm:w-[13.25rem] sm:px-3'
-
 const linksPanelClassName =
-  'glass-header flex h-16 shrink-0 items-center gap-4 rounded-[0.2rem] border border-white/10 px-4 shadow-xl sm:h-[4.25rem] sm:gap-5 sm:px-6'
+  'glass-header inline-flex items-center gap-4 rounded-[0.2rem] border border-white/10 px-5 py-2 shadow-xl sm:gap-5 sm:px-6 sm:py-2.5'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
@@ -26,7 +22,6 @@ const desktopLinksVariants = {
   animate: { opacity: 1, x: 0, filter: 'blur(0px)' },
   exit: { opacity: 0, x: -10, filter: 'blur(3px)' },
 }
-
 
 const swapTransition = { duration: 0.58, ease: easeSwap }
 const colorTransition = { duration: 0.55, ease: easeSwap }
@@ -38,14 +33,34 @@ const Header: FC = () => {
   const [pastHero, setPastHero] = useState(false)
 
   useEffect(() => {
+    const hero = document.getElementById('site-hero')
+    if (!hero) {
+      setPastHero(false)
+      return
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setPastHero(!entry.isIntersecting)
+      },
+      { threshold: 0 }
+    )
+
+    observer.observe(hero)
+    return () => observer.disconnect()
+  }, [location.pathname])
+
+  // Определяем, светлый или тёмный фон под хедером, и анимируем цвет текста
+  useEffect(() => {
     const getBackgroundColor = (el: HTMLElement | null): string | null => {
-      while (el) {
-        const style = window.getComputedStyle(el)
+      let current: HTMLElement | null = el
+      while (current) {
+        const style = window.getComputedStyle(current)
         const bg = style.backgroundColor
         if (bg && bg !== 'transparent' && bg !== 'rgba(0, 0, 0, 0)') {
           return bg
         }
-        el = el.parentElement
+        current = current.parentElement
       }
       return null
     }
@@ -67,6 +82,7 @@ const Header: FC = () => {
       const x = window.innerWidth / 2
       const y = rect.bottom + 1
       const target = document.elementFromPoint(x, y) as HTMLElement | null
+      if (!target) return
       const bg = getBackgroundColor(target)
       if (!bg) return
       setIsDarkBackground(isDarkColor(bg))
@@ -81,144 +97,151 @@ const Header: FC = () => {
     }
   }, [])
 
-  useEffect(() => {
-    const hero = document.getElementById('site-hero')
-    if (!hero) {
-      setPastHero(false)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setPastHero(!entry.isIntersecting)
-      },
-      { threshold: 0, rootMargin: '0px' }
-    )
-
-    observer.observe(hero)
-    return () => observer.disconnect()
-  }, [location.pathname])
-
-  useEffect(() => {
-    const onResize = () => {
-      if (window.innerWidth >= 768 && !pastHero) setIsMenuOpen(false)
-    }
-    window.addEventListener('resize', onResize)
-    onResize()
-    return () => window.removeEventListener('resize', onResize)
-  }, [pastHero])
-
   const closeMenu = () => setIsMenuOpen(false)
 
   return (
     <motion.header
-      className="fixed inset-x-0 top-3 z-[999] flex justify-center px-3 sm:top-5 "
-      initial={false}
-      animate={{ color: isDarkBackground ? '#ffffff' : '#0a0a0a' }}
+      className="fixed inset-x-0 top-3 z-[999] flex justify-center px-3 sm:top-5"
+      animate={{
+        color: isDarkBackground ? '#ffffff' : '#0a0a0a',
+        opacity: pastHero ? 0.95 : 1,
+      }}
       transition={colorTransition}
     >
-      <nav
-        className="mx-auto flex w-full max-w-6xl items-center justify-between gap-2 md:justify-center md:gap-5"
-        aria-label="Основная навигация"
-      >
-        <div className={panelClassName}>
-          <Link
-            to="/"
-            className="flex max-h-full w-full items-center justify-center text-inherit leading-none"
-            aria-label="PickupService"
-          >
-            <PickupLogo className="h-[3rem] w-auto max-w-[min(11.5rem,calc(100%-4px))] sm:h-[3.5rem] sm:max-w-[min(12rem,calc(100%-8px))]" />
-          </Link>
-        </div>
+      <nav className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-1 sm:gap-6 md:flex-col md:items-center md:gap-3">
+        {/* LOGO без блока, просто ссылка */}
+        <Link
+          to="/"
+          className="flex shrink-0 items-center justify-center text-inherit leading-none"
+          aria-label="PickupService"
+        >
+          <PickupLogo className="h-[3rem] w-auto sm:h-[3.5rem]" />
+        </Link>
 
-        <AnimatePresence mode="wait">
-          !showBurger ? (
+        {/* ДЕСКТОПНЫЕ ССЫЛКИ (под логотипом на больших экранах) */}
+        <div className="hidden items-center justify-center md:flex">
+          <AnimatePresence mode="wait">
             <motion.ul
-              key="desktop-links"
-              role="list"
-              className={`${linksPanelClassName} hidden text-[13px] sm:text-[15px] md:flex`}
+              className={`${linksPanelClassName} justify-center text-[15px] sm:text-[17px] md:text-[18px]`}
               variants={desktopLinksVariants}
               initial="initial"
               animate="animate"
               exit="exit"
               transition={swapTransition}
             >
-              {navLinks.map(({ to, label }) => (
-                <li key={to}>
-                  <Link to={to} className="whitespace-nowrap text-inherit transition-opacity duration-300 hover:opacity-75">
-                    {label}
-                  </Link>
+              {navLinks.map((link) => (
+                <li key={link.to}>
+                  <SimpleNavLink to={link.to}>{link.label}</SimpleNavLink>
                 </li>
               ))}
             </motion.ul>
-          )
-        </AnimatePresence>
+          </AnimatePresence>
+        </div>
 
-        <motion.div
-          className={`relative z-[1] flex shrink-0 md:hidden ${panelClassName}`}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.48, ease: easeSwap }}
-        >
+        {/* БУРГЕР (справа на мобиле) — компактный блок */}
+        <div className="flex shrink-0 items-center justify-end md:hidden">
+          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] border border-white/15 px-0.5 shadow-xl">
           <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
-          <Dropdown isOpen={isMenuOpen} onNavigate={closeMenu} layout="mobile" />
-        </motion.div>
+          </div>
+        </div>
       </nav>
+
+      {/* FULLSCREEN MENU */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            animate={{ opacity: 1, backdropFilter: 'blur(20px)' }}
+            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
+            transition={{ duration: 0.5, ease: easeSwap }}
+            className="fixed inset-0 z-[2000] flex flex-col justify-between bg-[#02020202] p-6 md:hidden"
+          >
+            {/* TOP */}
+            <motion.div
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.4, ease: easeSwap }}
+              className="flex justify-between text-white"
+            >
+              <div>EU</div>
+
+              <div className="flex gap-4 items-center">
+                <div>
+                  {new Date().toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </div>
+
+                <button onClick={() => setIsMenuOpen(false)}>
+                  <X />
+                </button>
+              </div>
+            </motion.div>
+
+            {/* LINKS */}
+            <motion.div
+              className="flex flex-col items-center gap-8 text-2xl text-white"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                visible: {
+                  transition: {
+                    staggerChildren: 0.08,
+                    delayChildren: 0.15,
+                  },
+                },
+              }}
+            >
+              {navLinks.map(link => (
+                <motion.div
+                  key={link.to}
+                  variants={{
+                    hidden: { opacity: 0, y: 30, scale: 0.95 },
+                    visible: { opacity: 1, y: 0, scale: 1 },
+                  }}
+                  transition={{ duration: 0.45, ease: easeSwap }}
+                >
+                  <SimpleNavLink to={link.to} onClick={closeMenu}>
+                    {link.label}
+                  </SimpleNavLink>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <div />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.header>
   )
 }
 
-type BurgerMenuButtonProps = {
-  isMenuOpen: boolean
-  setIsMenuOpen: Dispatch<SetStateAction<boolean>>
-}
+/* ================= SIMPLE NAV LINK (без магнита) ================= */
 
-const BurgerMenuButton: FC<BurgerMenuButtonProps> = ({ isMenuOpen, setIsMenuOpen }) => (
-  <button
-    type="button"
-    className="flex size-11 items-center justify-center rounded-sm text-inherit transition-opacity duration-300 hover:opacity-75 cursor-pointer"
-    aria-expanded={isMenuOpen}
-    aria-label={isMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
-    onClick={() => setIsMenuOpen((open) => !open)}
+const SimpleNavLink: FC<{
+  to: string
+  children: ReactNode
+  onClick?: () => void
+}> = ({ to, children, onClick }) => (
+  <Link
+    to={to}
+    onClick={onClick}
+    className="whitespace-nowrap text-inherit transition-opacity duration-200 hover:opacity-80"
   >
-    {isMenuOpen ? <X className="size-6" strokeWidth={2} aria-hidden /> : <Menu className="size-6" strokeWidth={2} aria-hidden />}
-  </button>
+    {children}
+  </Link>
 )
 
-type DropdownProps = {
-  isOpen: boolean
-  onNavigate: () => void
-  layout: 'desktop' | 'mobile'
-}
+/* ================= BURGER ================= */
 
-const Dropdown: FC<DropdownProps> = ({ isOpen, onNavigate, layout }) => (
-  <AnimatePresence>
-    {isOpen && (
-      <motion.div
-        initial={{ opacity: 0, y: -8, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -6, scale: 0.99 }}
-        transition={{ duration: 0.34, ease: easeSwap }}
-        className={
-          layout === 'desktop'
-            ? 'absolute left-1/2 top-full z-[1000] mt-3 w-[min(20rem,calc(100vw-2rem))] -translate-x-1/2'
-            : 'absolute right-0 top-full z-[1000] mt-3 w-[min(20rem,calc(100vw-1.5rem))]'
-        }
-      >
-        <div className="glass-header rounded-sm border border-white/10 shadow-xl backdrop-blur">
-          <ul className="flex flex-col gap-0.5 px-4 py-3 text-[14px] sm:text-[15px]">
-            {navLinks.map(({ to, label }) => (
-              <li key={to}>
-                <Link to={to} className="block py-2 text-inherit transition-opacity duration-300 hover:opacity-75" onClick={onNavigate}>
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </motion.div>
-    )}
-  </AnimatePresence>
+const BurgerMenuButton: FC<{
+  isMenuOpen: boolean
+  setIsMenuOpen: Dispatch<SetStateAction<boolean>>
+}> = ({ isMenuOpen, setIsMenuOpen }) => (
+  <button onClick={() => setIsMenuOpen(prev => !prev)}>
+    {isMenuOpen ? <X /> : <Menu />}
+  </button>
 )
 
 export default Header

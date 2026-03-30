@@ -42,9 +42,16 @@ const ProjectPage: FC = () => {
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
-    const raf = (time: number) => { lenis.raf(time); requestAnimationFrame(raf) }
-    requestAnimationFrame(raf)
-    return () => lenis.destroy()
+    let rafId: number
+    const raf = (time: number) => {
+      lenis.raf(time)
+      rafId = requestAnimationFrame(raf)
+    }
+    rafId = requestAnimationFrame(raf)
+    return () => {
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
+    }
   }, [])
 
   useEffect(() => {
