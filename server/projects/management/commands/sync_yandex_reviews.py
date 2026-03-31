@@ -280,6 +280,81 @@ def _parse_visible_reviews(page, reviews: dict) -> None:
         _parse_with_playwright(page, reviews)
 
 
+def _clean_author_name(raw: str) -> str:
+    """
+    В Яндекс.Картах внутри блока автора часто лежит не только имя:
+    "Мария РубанЗнаток города 8 уровняПодписаться".
+    Обрезаем всё лишнее и оставляем только имя.
+    """
+    import re
+
+    s = (raw or "").replace("\xa0", " ").strip()
+    if not s:
+        return "Аноним"
+
+    # Если текст склеен без пробелов, пытаемся отделить "Знаток города"/"Подписаться"
+    s = re.split(r"(Знаток города|Подписаться)", s, maxsplit=1)[0].strip()
+
+    # Удаляем возможные хвосты вроде "8 уровня"
+    s = re.sub(r"\s+Знаток.*$", "", s).strip()
+    s = re.sub(r"\s+Подписаться.*$", "", s).strip()
+
+    # Если остались переносы/табуляции — берём первую строку
+    first_line = next((ln.strip() for ln in s.splitlines() if ln.strip()), "")
+    s = first_line or s
+
+    # Сжимаем пробелы
+    s = re.sub(r"\s{2,}", " ", s).strip()
+    return s or "Аноним"
+
+
+def _extract_rating_from_text(text: str) -> int | None:
+    import re
+
+    s = (text or "").replace("\xa0", " ")
+    m = re.search(r"([1-5])\s*(?:из|/)\s*5", s)
+    if m:
+        try:
+            return int(m.group(1))
+        except ValueError:
+            return None
+    return None
+
+
+def _extract_rating_from_soup(el) -> int | None:
+    """
+    Пытаемся вытащить рейтинг 1–5 из DOM. Варианты:
+    - aria-label="5 из 5"
+    - data-rating / data-rate
+    - количество "полных" звёзд
+    """
+    # aria-label
+    for tag in el.find_all(attrs={"aria-label": True}):
+        r = _extract_rating_from_text(tag.get("aria-label", ""))
+        if r:
+            return r
+
+    # data-rating / data-rate
+    for tag in el.find_all(True):
+        for attr in ("data-rating", "data-rate", "data-stars"):
+            val = tag.get(attr)
+            if not val:
+                continue
+            try:
+                r = int(float(val))
+                if 1 <= r <= 5:
+                    return r
+            except (ValueError, TypeError):
+                continue
+
+    # звёзды (часто svg/иконки с "full")
+    stars = el.find_all(attrs={"class": lambda c: c and ("_full" in " ".join(c) or "star_full" in " ".join(c))})
+    if stars:
+        return max(1, min(len(stars), 5))
+
+    return None
+
+
 def _parse_with_soup(soup, reviews: dict) -> None:
     """Парсит отзывы через BeautifulSoup — более надёжный метод."""
     import hashlib
@@ -318,7 +393,8 @@ def _parse_with_soup(soup, reviews: dict) -> None:
             or el.find(attrs={"class": lambda c: c and "business-review-view__author" in " ".join(c)})
             or el.find(attrs={"class": lambda c: c and "user-icon-view__name" in " ".join(c)})
         )
-        author_name = (author_el.get_text(strip=True) if author_el else "Аноним").strip() or "Аноним"
+        author_raw = (author_el.get_text(" ", strip=True) if author_el else "").strip()
+        author_name = _clean_author_name(author_raw)
 
         # --- Ссылка на автора ---
         author_link_el = el.find("a", attrs={"class": lambda c: c and "user-icon-view" in " ".join(c)})
@@ -331,34 +407,7 @@ def _parse_with_soup(soup, reviews: dict) -> None:
                 author_url = "https://yandex.ru" + href
 
         # --- Рейтинг ---
-        rating = None
-        # Вариант 1: aria-label="5 из 5"
-        rating_el = el.find(attrs={"aria-label": True, "class": lambda c: c and "rating" in " ".join(c or [])})
-        if rating_el:
-            label = rating_el.get("aria-label", "")
-            try:
-                rating = int(label.split()[0])
-            except (ValueError, IndexError):
-                pass
-        # Вариант 2: считаем звёзды span[class*="star_full"] или icon_full
-        if rating is None:
-            stars = el.find_all(attrs={"class": lambda c: c and (
-                "star_full" in " ".join(c)
-                or "icon_full" in " ".join(c)
-                or "_star_full" in " ".join(c)
-            )})
-            if stars:
-                rating = min(len(stars), 5)
-        # Вариант 3: data-rating атрибут
-        if rating is None:
-            for tag in el.find_all(True):
-                dr = tag.get("data-rating") or tag.get("data-rate")
-                if dr:
-                    try:
-                        rating = int(float(dr))
-                        break
-                    except (ValueError, TypeError):
-                        pass
+        rating = _extract_rating_from_soup(el)
 
         # --- ID отзыва (уникальный ключ) ---
         review_id = None
@@ -432,8 +481,17 @@ def _parse_with_playwright(page, reviews: dict) -> None:
         ]:
             a = item.locator(a_sel)
             if a.count() > 0:
-                author_name = (a.first.inner_text() or "Аноним").strip() or "Аноним"
+                author_name = _clean_author_name((a.first.inner_text() or "").strip())
                 break
+
+        # Рейтинг
+        rating = None
+        try:
+            aria = item.locator("[aria-label*='из 5'], [aria-label*='/ 5'], [aria-label*='/5']")
+            if aria.count() > 0:
+                rating = _extract_rating_from_text((aria.first.get_attribute("aria-label") or ""))
+        except Exception:
+            rating = None
 
         review_id = "hash_" + hashlib.md5(
             (quote[:200] + author_name).encode("utf-8")
@@ -445,7 +503,7 @@ def _parse_with_playwright(page, reviews: dict) -> None:
                 "quote": quote,
                 "author_name": author_name,
                 "yandex_author_url": "",
-                "rating": None,
+                "rating": rating,
             }
 
 
