@@ -9,6 +9,7 @@
 - django-cors-headers
 - Pillow
 - django-filter
+- python-telegram-bot
 
 ## Установка и запуск (Windows)
 
@@ -31,6 +32,23 @@ python manage.py runserver
 Админка: `http://localhost:8000/admin/`  
 API (список проектов): `http://localhost:8000/api/projects/`  
 API (детали проекта): `http://localhost:8000/api/projects/<id>/`
+
+## Telegram-бот для заявок
+
+Бот работает как отдельный процесс (long polling) и отправляет новые заявки из форм сайта в Telegram, а также умеет показывать последние 20 заявок каждого типа по кнопкам.
+
+### Переменные окружения (на сервере)
+
+- `TELEGRAM_BOT_TOKEN` — токен бота (секрет).
+- `TELEGRAM_WHITELIST_USER_IDS` — user_id, кому разрешены команды (через запятую).
+- `TELEGRAM_WHITELIST_CHAT_IDS` — chat_id разрешённых групп/каналов (через запятую).
+- `TELEGRAM_NOTIFY_CHAT_IDS` — куда слать авто-уведомления о новых заявках (через запятую). Если пусто, используется фолбэк на whitelist.
+
+### Запуск
+
+```bash
+python manage.py run_telegram_bot
+```
 
 ## Модели
 

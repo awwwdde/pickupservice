@@ -1,4 +1,4 @@
-import type { FC } from 'react'
+import type { FC, FormEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
 import {
   AnimatePresence,
@@ -22,7 +22,7 @@ import image4 from '../assets/img/images4.png'
 import { ServiceCard } from '../components/accordeoncard/ServiceCard'
 import { TestimonialCard } from '../components/reviewcard/TestimonialCard'
 import { InputField } from '../components/inputfields/InputField'
-import { fetchAccordionItems, fetchProjects } from '../api/backend'
+import { fetchAccordionItems, fetchProjects, submitCallbackRequest } from '../api/backend'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
@@ -103,6 +103,15 @@ const MainPage: FC = () => {
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
   const [dynamicServices, setDynamicServices] = useState(servicesData)
 
+  const [callbackForm, setCallbackForm] = useState({
+    name: '',
+    phone: '',
+    website: '',
+  })
+  const [callbackSubmitting, setCallbackSubmitting] = useState(false)
+  const [callbackSuccess, setCallbackSuccess] = useState(false)
+  const [callbackError, setCallbackError] = useState('')
+
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
     let rafId: number
@@ -135,6 +144,33 @@ const MainPage: FC = () => {
     mq.addListener(apply)
     return () => mq.removeListener(apply)
   }, [])
+
+  const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
+    setCallbackSuccess(false)
+    setCallbackError('')
+    setCallbackForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleCallbackSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (callbackSubmitting) return
+    setCallbackError('')
+    setCallbackSuccess(false)
+    setCallbackSubmitting(true)
+    try {
+      await submitCallbackRequest({
+        name: callbackForm.name.trim(),
+        phone: callbackForm.phone.trim(),
+        website: callbackForm.website,
+      })
+      setCallbackSuccess(true)
+      setCallbackForm({ name: '', phone: '', website: '' })
+    } catch (err) {
+      setCallbackError(err instanceof Error ? err.message : 'Ошибка отправки.')
+    } finally {
+      setCallbackSubmitting(false)
+    }
+  }
 
   // Скролл-анимации
   const { scrollYProgress } = useScroll({ target: parallaxRef, offset: ['start start', 'end end'] })
@@ -677,19 +713,58 @@ const MainPage: FC = () => {
           >
             Оставьте заявку и мы вам позвоним
           </motion.h3>
-          <form className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center">
+          <form
+            className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center"
+            onSubmit={handleCallbackSubmit}
+          >
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden
+              value={callbackForm.website}
+              onChange={(e) => handleCallbackChange('website', e.target.value)}
+              className="absolute -left-[9999px] h-px w-px opacity-0"
+            />
             <div className="flex w-full flex-1 gap-10 flex-col md:flex-row">
-              <InputField label="Ваше Имя" type="text" required />
-              <InputField label="Телефон" type="tel" required />
+              <InputField
+                label="Ваше Имя"
+                type="text"
+                required
+                disabled={callbackSubmitting}
+                value={callbackForm.name}
+                onChange={(e) => handleCallbackChange('name', e.target.value)}
+              />
+              <InputField
+                label="Телефон"
+                type="tel"
+                required
+                disabled={callbackSubmitting}
+                value={callbackForm.phone}
+                onChange={(e) => handleCallbackChange('phone', e.target.value)}
+              />
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              type="submit"
+              disabled={callbackSubmitting}
               className="group flex h-[min(80px,10vh)] w-[min(300px,90vw)] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
             >
-              Отправить заявку
+              {callbackSubmitting ? 'Отправка…' : 'Отправить заявку'}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
             </motion.button>
+            {callbackSuccess && (
+              <p className="w-full text-sm text-emerald-400/90 mt-4 md:mt-0 md:ml-auto" role="status">
+                Заявка отправлена. Мы свяжемся с вами в ближайшее время.
+              </p>
+            )}
+            {callbackError && (
+              <p className="w-full text-sm text-red-400/90 mt-4 md:mt-0 md:ml-auto" role="alert">
+                {callbackError}
+              </p>
+            )}
           </form>
         </div>
       </section>

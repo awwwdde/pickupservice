@@ -447,7 +447,13 @@ export type ServiceGalleryListResponse = ServiceGalleryItem[];
 
 ## Отзывы на главной (`/`)
 
-Тексты отзывов для блока с карточками (`TestimonialCard`) на главной странице задаются в Django-админке («Отзывы на главной») и отдаются публичным GET без пагинации.
+Блок отзывов поддерживает три источника, управляемых из Django-админки:
+
+- **Только из админки** — вручную добавленные отзывы (`source = "admin"`).
+- **Только Яндекс.Карты** — отзывы, загруженные командой `sync_yandex_reviews` (`source = "yandex"`).
+- **Смешанный** — сначала яндексовые, потом ручные.
+
+Режим задаётся в записи «Настройки отзывов» в Django-админке.
 
 ### Модель Testimonial
 
@@ -455,18 +461,21 @@ export type ServiceGalleryListResponse = ServiceGalleryItem[];
 
 - `id: integer` — идентификатор записи.
 - `quote: string` — полный текст отзыва.
-- `name: string` — имя автора (в админке поле называется «Имя», в БД — `author_name`).
-- `car: string` — модель автомобиля.
-- `order: integer` — порядок в блоке (0, 1, 2, …); чем меньше число, тем раньше в списке.
+- `name: string` — имя автора (в БД — `author_name`).
+- `car: string` — модель автомобиля (может быть пустой строкой у яндексовых отзывов).
+- `rating: integer | null` — рейтинг 1–5 (приходит с Яндекса; у ручных обычно `null`).
+- `source: "admin" | "yandex"` — источник отзыва.
+- `yandex_author_url: string` — ссылка на профиль автора на Яндексе (пустая строка для ручных).
+- `order: integer` — порядок в блоке.
 
 Гарантии:
 
 - В публичное API попадают только записи с `published = true`.
-- Элементы отсортированы по `order ASC`, затем по `created_at DESC`.
+- В режиме `mixed`: сначала яндексовые (`order ASC, created_at DESC`), затем ручные (тот же порядок).
 
 ### Эндпоинт отзывов
 
-**URL:**  
+**URL:**
 `GET /api/projects/testimonials/`
 
 **Пример запроса:**
@@ -478,28 +487,54 @@ Accept: application/json
 
 **Ответ:**
 
-Ответ **без пагинации** — сразу массив объектов:
-
 ```json
-[
-  {
-    "id": 1,
-    "quote": "Ребята из Пикапсервис превратили мой обычный крузак...",
-    "name": "Алексей Смирнов",
-    "car": "Toyota Land Cruiser 200",
-    "order": 0
+{
+  "settings": {
+    "mode": "mixed",
+    "yandex_widget_url": "https://yandex.ru/maps/org/pickupservice/reviews/"
   },
-  {
-    "id": 2,
-    "quote": "Идеальная работа с подвеской...",
-    "name": "Дмитрий Волков",
-    "car": "Nissan Patrol Y61",
-    "order": 1
-  }
-]
+  "results": [
+    {
+      "id": 5,
+      "quote": "Отличная работа, всё по уму!",
+      "name": "Иван П.",
+      "car": "",
+      "rating": 5,
+      "source": "yandex",
+      "yandex_author_url": "https://yandex.ru/maps/user/abc123/",
+      "order": 0
+    },
+    {
+      "id": 1,
+      "quote": "Ребята из Пикапсервис превратили мой обычный крузак...",
+      "name": "Алексей Смирнов",
+      "car": "Toyota Land Cruiser 200",
+      "rating": null,
+      "source": "admin",
+      "yandex_author_url": "",
+      "order": 0
+    }
+  ]
+}
 ```
 
-Если нет опубликованных отзывов, приходит пустой массив `[]`.
+Если нет опубликованных отзывов, `results` — пустой массив `[]`.
+
+Поле `settings.yandex_widget_url` — используйте для кнопки «Все отзывы на Яндекс.Картах» (показывайте кнопку только если строка не пустая).
+
+### Эндпоинт только настроек
+
+**URL:**
+`GET /api/projects/testimonials/settings/`
+
+Возвращает только объект настроек (без списка отзывов):
+
+```json
+{
+  "mode": "mixed",
+  "yandex_widget_url": "https://yandex.ru/maps/org/pickupservice/reviews/"
+}
+```
 
 ### Типы для фронта
 
@@ -509,17 +544,70 @@ export type TestimonialItem = {
   quote: string;
   name: string;
   car: string;
+  rating: number | null;
+  source: "admin" | "yandex";
+  yandex_author_url: string;
   order: number;
 };
 
-export type TestimonialsListResponse = TestimonialItem[];
+export type TestimonialsMode = "admin_only" | "yandex_only" | "mixed";
+
+export type TestimonialsSettings = {
+  mode: TestimonialsMode;
+  yandex_widget_url: string;
+};
+
+export type TestimonialsResponse = {
+  settings: TestimonialsSettings;
+  results: TestimonialItem[];
+};
 ```
 
 ### Использование на фронтенде
 
-- Базовый URL API — через `VITE_BACKEND_ORIGIN` (см. корень проекта).
-- При монтировании главной страницы выполнить `GET /api/projects/testimonials/` и подставить элементы в карусель / горизонтальную ленту вместо захардкоженного `testimonialsData`: поля `quote`, `name`, `car` совпадают с пропсами `TestimonialCard`.
-- При пустом ответе или ошибке сети разумный фолбэк — статические отзывы из сборки, чтобы блок не пропадал.
+- Базовый URL API — через `VITE_BACKEND_ORIGIN`.
+- При монтировании главной страницы выполнить `GET /api/projects/testimonials/`.
+- Подставить `results` в карусель / горизонтальную ленту: поля `quote`, `name`, `car` совпадают с пропсами `TestimonialCard`.
+- Если `settings.yandex_widget_url` не пустой — показать кнопку «Все отзывы» со ссылкой на него.
+- Если у отзыва `rating` не `null` — можно показывать звёзды.
+- При пустом `results` или ошибке сети — разумный фолбэк: статические отзывы из сборки.
+
+### Синхронизация с Яндекс.Картами (бэкенд)
+
+Парсер использует **Playwright** (управляет реальным браузером Chromium).
+
+#### Первичная установка (один раз на сервере)
+
+```bash
+pip install playwright
+playwright install chromium
+```
+
+#### Запуск из Django-админки (рекомендуется)
+
+1. В разделе **«Настройки отзывов»** заполнить поле **«ID организации на Яндекс.Картах»** — числовой ID из URL страницы организации.
+2. Нажать кнопку **«▶ Запустить синхронизацию»**.
+3. Статус и лог — в разделе **«Логи синхронизации (Яндекс)»**.
+
+> Если Яндекс показывает капчу — парсер откроет видимый браузер на сервере и будет ждать (до 3 минут). В headless-режиме при капче упадёт с ошибкой.
+
+#### Запуск из терминала
+
+```bash
+python manage.py sync_yandex_reviews
+python manage.py sync_yandex_reviews --org-id 123456789
+python manage.py sync_yandex_reviews --max-reviews 50
+python manage.py sync_yandex_reviews --headless        # без GUI (не работает при капче)
+python manage.py sync_yandex_reviews --dry-run         # без записи в БД
+python manage.py sync_yandex_reviews --no-unpublish    # не снимать исчезнувшие
+```
+
+Команда:
+- добавляет новые отзывы (`published=True`, `source=yandex`),
+- обновляет текст и рейтинг изменившихся,
+- снимает с публикации отзывы, которых больше нет на Яндексе (если не передан `--no-unpublish`).
+
+ID организации также можно задать через переменную окружения `YANDEX_MAPS_ORG_ID`.
 
 ---
 
@@ -629,6 +717,102 @@ export type BookingRequestResponse = {
 - Базовый URL API задаётся через `VITE_BACKEND_ORIGIN` (см. корень проекта).
 - На странице `/booking` вызвать `POST` с JSON; при успехе показать пользователю подтверждение; при 400 — показать сообщения из ответа.
 - Для продакшена на Netlify: задать на бэкенде `CORS_ALLOWED_ORIGINS` с URL фронта и настроить SMTP + `BOOKING_TO_EMAIL`.
+
+---
+
+## Заявка на звонок (CTA формы на `/` и `/portfolio/:id`)
+
+Короткая форма «Оставьте заявку и мы вам позвоним» отправляет на бэкенд только имя и телефон; заявка сохраняется в БД и (если настроено) отправляет уведомление по почте.
+
+### Модель CallbackRequest
+
+Поля (хранятся в админке, правка с фронта недоступна):
+
+- `name: string` — имя.
+- `phone: string` — телефон.
+- `created_at` — время создания записи.
+- `email_sent: boolean` — удалось ли отправить письмо.
+- `email_error: string` — текст ошибки доставки почты (если была), либо подсказка, что не задан `BOOKING_TO_EMAIL`.
+
+Дополнительно в теле **POST** можно передать поле `website` — это **honeypot**: оно должно быть пустым; если заполнено, бэкенд вернёт ошибку валидации.
+
+### Эндпоинт заявки на звонок
+
+**URL:**  
+`POST /api/projects/callback/`
+
+**Заголовки:**
+
+```http
+POST /api/projects/callback/
+Content-Type: application/json
+Accept: application/json
+```
+
+**Тело запроса (пример):**
+
+```json
+{
+  "name": "Иван",
+  "phone": "+79991234567",
+  "website": ""
+}
+```
+
+**Ответ при успехе (201):**
+
+```json
+{
+  "id": 1,
+  "status": "created",
+  "email_delivered": true
+}
+```
+
+Поле `email_delivered` — `true`, если письмо ушло на SMTP; `false`, если получатель не настроен или произошла ошибка отправки (заявка в БД всё равно сохранена).
+
+**Ответ при ошибке валидации (400):**
+
+Типичный формат DRF — объект с полями и списками строк, например:
+
+```json
+{
+  "phone": ["Укажите корректный номер телефона."]
+}
+```
+
+### Переменные окружения бэкенда (почта и CORS)
+
+Используются те же переменные, что и для `/booking`:
+
+| Переменная | Назначение |
+|------------|------------|
+| `BOOKING_TO_EMAIL` | Адрес, на который слать уведомления о новой заявке. Если пусто, письмо не отправляется, в ответе `email_delivered: false`. |
+| `DEFAULT_FROM_EMAIL` | Отправитель письма. |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, `EMAIL_USE_TLS` | SMTP (в деве может быть console-backend). |
+| `CORS_ALLOWED_ORIGINS` | Дополнительные разрешённые origin через запятую. |
+
+### Типы для фронта
+
+```ts
+export type CallbackRequestPayload = {
+  name: string;
+  phone: string;
+  website?: string;
+};
+
+export type CallbackRequestResponse = {
+  id: number;
+  status: string;
+  email_delivered: boolean;
+};
+```
+
+### Использование на фронтенде
+
+- Базовый URL API задаётся через `VITE_BACKEND_ORIGIN` (см. корень проекта).
+- На главной (`/`) и странице проекта (`/portfolio/:id`) вызвать `POST` с JSON; при успехе показать пользователю подтверждение; при `400` — показать сообщения из ответа.
+- Рекомендуется добавлять скрытое поле `website` (honeypot) и отправлять его пустым.
 
 ---
 

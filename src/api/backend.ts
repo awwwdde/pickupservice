@@ -158,3 +158,48 @@ export async function submitBookingRequest(
   return data as BookingRequestResponse
 }
 
+export interface CallbackRequestPayload {
+  name: string
+  phone: string
+  /** Honeypot: должен оставаться пустым */
+  website?: string
+}
+
+export interface CallbackRequestResponse {
+  id: number
+  status: string
+  email_delivered: boolean
+}
+
+export async function submitCallbackRequest(
+  payload: CallbackRequestPayload
+): Promise<CallbackRequestResponse> {
+  const response = await fetch(`${BACKEND_ORIGIN}/api/projects/callback/`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: payload.name,
+      phone: payload.phone,
+      website: payload.website ?? ''
+    })
+  })
+
+  const text = await response.text()
+  let data: unknown = null
+  try {
+    data = text ? JSON.parse(text) : null
+  } catch {
+    data = null
+  }
+
+  if (!response.ok) {
+    const msg = formatBookingApiErrors(data)
+    throw new Error(msg)
+  }
+
+  return data as CallbackRequestResponse
+}
+

@@ -171,6 +171,45 @@ sudo chown -R www-data:www-data /var/www/pickupservice/server
 
 ---
 
+## 8. Telegram-бот для заявок (polling, без n8n)
+
+Бот запускается отдельным systemd-сервисом на **том же хосте**, что и Django.
+
+### 8.1 Переменные окружения
+
+Добавьте в env-файл Django (см. `deploy/pickupservice.django.env.example`):
+
+- `TELEGRAM_BOT_TOKEN` — токен бота (секрет).
+- `TELEGRAM_WHITELIST_USER_IDS` — user_id, кому разрешены команды (через запятую).
+- `TELEGRAM_WHITELIST_CHAT_IDS` — chat_id разрешённых групп/каналов (через запятую).
+- `TELEGRAM_NOTIFY_CHAT_IDS` — куда слать авто-уведомления о новых заявках (через запятую). Если пусто, используется фолбэк на whitelist.
+
+### 8.2 systemd unit
+
+1) Скопируйте unit на сервер:
+
+```bash
+sudo cp /var/www/pickupservice/deploy/pickupservice-telegram-bot.service /etc/systemd/system/pickupservice-telegram-bot.service
+sudo systemctl daemon-reload
+```
+
+2) В unit поправьте пути (если отличаются):
+- `WorkingDirectory`
+- `EnvironmentFile`
+- `ExecStart`
+
+3) Запуск:
+
+```bash
+sudo systemctl enable --now pickupservice-telegram-bot
+sudo systemctl status pickupservice-telegram-bot --no-pager
+```
+
+### 8.3 Важно про безопасность
+
+- **Не храните токен** в git/в коде/в `.env.example` — только на сервере в `EnvironmentFile`.
+- Так как токен уже был отправлен в чат, **ротируйте токен** в BotFather после деплоя.
+
 ## 6. Gunicorn (systemd)
 
 ```bash

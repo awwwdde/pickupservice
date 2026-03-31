@@ -6,8 +6,10 @@ from .models import (
     AccordionItem,
     ServiceGalleryImage,
     BookingRequest,
+    CallbackRequest,
     ContactSettings,
     Testimonial,
+    TestimonialsSettings,
 )
 
 
@@ -98,7 +100,15 @@ class TestimonialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Testimonial
-        fields = ("id", "quote", "name", "car", "order")
+        fields = ("id", "quote", "name", "car", "rating", "source", "yandex_author_url", "order")
+
+
+class TestimonialsSettingsSerializer(serializers.ModelSerializer):
+    """Публичные настройки блока отзывов."""
+
+    class Meta:
+        model = TestimonialsSettings
+        fields = ("mode", "yandex_widget_url")
 
 
 class BookingRequestCreateSerializer(serializers.ModelSerializer):
@@ -144,5 +154,39 @@ class BookingRequestCreateSerializer(serializers.ModelSerializer):
         return s
 
     def create(self, validated_data: dict) -> BookingRequest:
+        validated_data.pop("website", None)
+        return super().create(validated_data)
+
+
+class CallbackRequestCreateSerializer(serializers.ModelSerializer):
+    """Публичная форма «заявка на звонок»; поле website — honeypot (должно быть пустым)."""
+
+    website = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        write_only=True,
+        max_length=256,
+    )
+
+    class Meta:
+        model = CallbackRequest
+        fields = (
+            "name",
+            "phone",
+            "website",
+        )
+
+    def validate_website(self, value: str) -> str:
+        if value and value.strip():
+            raise serializers.ValidationError("Некорректный запрос.")
+        return value
+
+    def validate_phone(self, value: str) -> str:
+        s = (value or "").strip()
+        if len(s) < 5:
+            raise serializers.ValidationError("Укажите корректный номер телефона.")
+        return s
+
+    def create(self, validated_data: dict) -> CallbackRequest:
         validated_data.pop("website", None)
         return super().create(validated_data)

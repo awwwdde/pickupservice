@@ -1,0 +1,22 @@
+[Unit]
+Description=Pickupservice Telegram Bot (orders)
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/pickupservice
+
+# ВАЖНО: путь поправьте под ваш сервер.
+EnvironmentFile=/etc/default/pickupservice.django.env
+
+ExecStart=/var/www/pickupservice/server/venv/bin/python /var/www/pickupservice/server/manage.py run_telegram_bot
+Restart=always
+RestartSec=2
+
+# Безопасность (минимальные харднинги без ломания):
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
