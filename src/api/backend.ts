@@ -96,7 +96,7 @@ export async function fetchServiceGalleryImages(): Promise<ApiServiceGalleryItem
 }
 
 export async function fetchContactSettings(): Promise<ApiContactSettings> {
-  return await getJson<ApiContactSettings>('/api/projects/contact/settings/')
+  return await getJson<ApiContactSettings>('/api/projects/contact/')
 }
 
 export interface BookingRequestPayload {
