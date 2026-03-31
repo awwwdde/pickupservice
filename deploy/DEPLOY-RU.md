@@ -127,6 +127,53 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+### 5.1 Playwright (браузер для парсинга отзывов Яндекс.Карт)
+
+Playwright требует системные зависимости для Chromium. Установите их **один раз** от root:
+
+```bash
+# Системные зависимости Chromium (от root)
+sudo apt install -y \
+  libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+  libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+  libgbm1 libasound2 libpango-1.0-0 libcairo2 \
+  fonts-liberation libappindicator3-1 xdg-utils
+
+# Установить браузер Chromium в venv (от обычного пользователя)
+source /var/www/pickupservice/server/venv/bin/activate
+playwright install chromium
+```
+
+> **Примечание:** Parсер запускается от имени пользователя `www-data` (Gunicorn). Chromium должен быть установлен в окружение, доступное этому пользователю.
+> Playwright по умолчанию ставит браузер в `~/.cache/ms-playwright/`. Чтобы `www-data` мог его использовать, либо:
+>
+> **Вариант A** (проще) — установить браузер глобально в `/opt`:
+>
+> ```bash
+> sudo PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright \
+>   /var/www/pickupservice/server/venv/bin/playwright install chromium
+> sudo chmod -R a+rx /opt/ms-playwright
+> ```
+>
+> И добавить в env-файл Django (`/etc/default/pickupservice.django.env`):
+>
+> ```
+> PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+> ```
+>
+> **Вариант B** — запускать парсер вручную от своего пользователя (не `www-data`):
+>
+> ```bash
+> sudo -u $USER bash -c "
+>   cd /var/www/pickupservice/server
+>   source venv/bin/activate
+>   set -a && source /etc/default/pickupservice.django.env && set +a
+>   python manage.py sync_yandex_reviews --org-id ВАШ_ID
+> "
+> ```
+>
+> Для кнопки в Django-админке (запуск через браузер) выберите **Вариант A**.
+
 Окружение Django (скопируйте пример и отредактируйте):
 
 ```bash

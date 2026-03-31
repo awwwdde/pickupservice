@@ -80,6 +80,11 @@ def scrape_reviews(
         if log_cb:
             log_cb(msg)
 
+    # На сервере без X-сервера headless=False невозможен — переключаемся автоматически
+    if not headless and not os.environ.get("DISPLAY"):
+        log("DISPLAY не задан — принудительно включаем headless-режим.")
+        headless = True
+
     url = _reviews_url(org_id)
     log(f"Открываем: {url}  (headless={headless})")
 
@@ -90,7 +95,9 @@ def scrape_reviews(
             headless=headless,
             args=[
                 "--no-sandbox",
+                "--disable-dev-shm-usage",
                 "--disable-blink-features=AutomationControlled",
+                "--disable-gpu",
             ],
         )
         ctx = browser.new_context(
@@ -117,21 +124,10 @@ def scrape_reviews(
 
         # Проверяем капчу
         if "showcaptcha" in page.url or page.locator("form.CheckboxCaptcha-Form").count():
-            if headless:
-                raise CommandError(
-                    "Яндекс показал капчу. Запустите без --headless, "
-                    "чтобы пройти её вручную в браузере."
-                )
-            log("⚠ Обнаружена капча — пожалуйста, пройдите её в открывшемся браузере...")
-            # Ждём пока капча исчезнет (максимум 3 минуты)
-            try:
-                page.wait_for_url(
-                    lambda u: "showcaptcha" not in u,
-                    timeout=180_000,
-                )
-            except PlaywrightTimeout:
-                raise CommandError("Капча не была пройдена в течение 3 минут.")
-            log("Капча пройдена, продолжаем...")
+            raise CommandError(
+                "Яндекс показал капчу и заблокировал парсинг. "
+                "Попробуйте позже или смените IP-адрес сервера."
+            )
 
         # Ждём появления списка отзывов
         # Яндекс.Карты используют div[class*="reviews-list"] или ul с li[class*="review"]
