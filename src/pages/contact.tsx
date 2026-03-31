@@ -112,7 +112,7 @@ const ContactPage: FC = () => {
             <iframe
               key={mapKey}
               title="map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.371342371511!2d37.534411316046484!3d55.75581448055152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54bd6ed0f2c73%3A0x69687e1f40d86161!2z0JrRg9GC0YPQt9C-0LLRgdC60LjQuSDQv9GALdGCLiwgMzYsIE1vc2t2YSwgMTIxMTcw!5e0!3m2!1sru!2sru!4v1650000000000!5m2!1sru!2sru"
+              src="https://yandex.ru/maps/-/CPbZyL5C"
               className="w-full h-full border-none opacity-90 pointer-events-auto"
               allowFullScreen
               loading="lazy"
@@ -141,7 +141,7 @@ const ContactPage: FC = () => {
             <iframe
               key={mapKey}
               title="map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.371342371511!2d37.534411316046484!3d55.75581448055152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54bd6ed0f2c73%3A0x69687e1f40d86161!2z0JrRg9GC0YPQt9C-0LLRgdC60LjQuSDQv9GALdGCLiwgMzYsIE1vc2t2YSwgMTIxMTcw!5e0!3m2!1sru!2sru!4v1650000000000!5m2!1sru!2sru"
+              src="https://yandex.ru/maps/-/CPbZyL5C"
               className="w-full h-full border-none opacity-80 pointer-events-auto"
               allowFullScreen
               loading="lazy"
@@ -165,7 +165,7 @@ const ContactPage: FC = () => {
                  <div className="w-24 h-24 border border-white/10 rounded-full flex items-center justify-center relative">
                     <div className="w-[1px] h-40 bg-gradient-to-b from-transparent via-white/20 to-transparent absolute"></div>
                     <div className="w-40 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent absolute"></div>
-                    <div className="w-3 h-3 bg-white rounded-full z-10 shadow-[0_0_20px_white]"></div>
+                    <div className="w-3 h-3  rounded-full z-10 "></div>
                     <div className="absolute inset-0 border border-white/40 rounded-full animate-ping"></div>
                  </div>
               </div>

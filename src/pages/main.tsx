@@ -23,6 +23,7 @@ import { ServiceCard } from '../components/accordeoncard/ServiceCard'
 import { TestimonialCard } from '../components/reviewcard/TestimonialCard'
 import { InputField } from '../components/inputfields/InputField'
 import { fetchAccordionItems, fetchProjects } from '../api/backend'
+import { Link } from 'react-router-dom'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
@@ -325,7 +326,7 @@ const MainPage: FC = () => {
           playsInline
           onEnded={handleVideoEnd}
           // Чтобы видео замерло на последнем кадре, убираем loop (его и не было)
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${isVideoFinished ? 'opacity-60' : 'opacity-100'}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000`}
         />
         
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[min(35px,6vw)]">
@@ -425,11 +426,13 @@ const MainPage: FC = () => {
                       </motion.p>
                     )}
                   </AnimatePresence>
+                  <Link to='/portfolio'>
                   <div className="absolute bottom-[15px] left-[15px] right-[15px]">
                     <button className="flex h-[min(108px,12vh)] w-full cursor-pointer items-center justify-center gap-3 border border-white/5 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-[#FF8201]">
-                      ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
+                     ВСЕ РАБОТЫ   <Plus className="h-4 w-4" /> 
                     </button>
                   </div>
+                  </Link>
                 </div>
               ) : (
                 <img src={p.image || ''} className="h-full w-full object-cover opacity-80" alt="" />
@@ -544,9 +547,11 @@ const MainPage: FC = () => {
               Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
               японское качество в каждой детали.
             </p>
-            <button className="mt-4 flex h-[70px] w-full cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors active:bg-[#FF8201]">
-              УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
+              <button className="mt-4 flex h-[70px] w-full cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors active:bg-[#FF8201]">
+              <Link to="/service"> УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" /> </Link>
             </button>
+            
+
           </motion.div>
         </div>
       </section>
@@ -683,8 +688,8 @@ const MainPage: FC = () => {
               <InputField label="Телефон" type="tel" required />
             </div>
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1 }}
+              whileTap={{ scale: 1 }}
               className="group flex h-[min(80px,10vh)] w-[min(300px,90vw)] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
             >
               Отправить заявку

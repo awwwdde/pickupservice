@@ -7,15 +7,14 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
-    { name: 'Сервис', href: '#' },
-    { name: 'Работы', href: '#' },
-    { name: 'Новости', href: '#' },
+    { name: 'Сервис', href: '/service' },
+    { name: 'Портфолио', href: '/portfolio' },
+    { name: 'Контакты', href: '/contact' },
   ];
 
   const socialLinks = [
-    { name: 'Вконтакте', href: '#' },
-    { name: 'Телеграм', href: '#' },
-    { name: 'MAX', href: '#' },
+    { name: 'Вконтакте', href: 'vk.com' },
+    { name: 'MAX', href: 'max.ru' },
   ];
 
   return (
@@ -61,10 +60,12 @@ const Footer: React.FC = () => {
               whileTap={{ scale: 1 }}
               className="w-full bg-[#1c1c1c] border border-white/5 p-8 mb-8 group transition-colors hover:bg-[#252525] cursor-pointer"
             >
+              <Link to="/booking">
               <div className="flex items-center justify-between text-gray-400 group-hover:text-white">
-                <span className="uppercase tracking-[0.2em] text-sm"><Link to="/booking">Запишитесь к нам</Link></span>
+                <span className="uppercase tracking-[0.2em] text-sm">Запишитесь к нам</span>
                 <Plus size={20} strokeWidth={1} />
               </div>
+              </Link>
             </motion.button>
 
             <div className="space-y-4 text-sm md:text-base">
@@ -72,7 +73,7 @@ const Footer: React.FC = () => {
               
               <div className="flex items-center gap-3 group cursor-pointer">
                 <Plus size={14} className="text-gray-600 group-hover:rotate-90 transition-transform" />
-                <a href="tel:84959991122" className="hover:text-gray-300 transition-colors">8 (495) 999-11-22</a>
+                <a href="tel:84959991122" className="hover:text-gray-300 transition-colors">8 (985) 923-47-77</a>
               </div>
               
               <div className="flex items-center gap-3 group cursor-pointer">
@@ -82,7 +83,7 @@ const Footer: React.FC = () => {
 
               <div className="flex items-center gap-3 group cursor-pointer">
                 <Plus size={14} className="text-gray-600 group-hover:rotate-90 transition-transform" />
-                <span>Москва, улица Пушкина 1</span>
+                <span>Москва, улица Самокатная 3/8, с1А</span>
               </div>
             </div>
           </div>
@@ -102,7 +103,7 @@ const Footer: React.FC = () => {
 
       <div className="mt-10 pt-8 border-t border-white/5 flex justify-between text-[clamp(9px,1.2vw,10px)] uppercase tracking-widest text-gray-600">
         <p>© {currentYear} ПИКАПСЕРВИС. ВСЕ ПРАВА ЗАЩИЩЕНЫ</p>
-        <p>Design by 
+        <p>Разработано
           <a href="https://bitluna.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors"> KiTLuna </a>
         </p>
       </div>

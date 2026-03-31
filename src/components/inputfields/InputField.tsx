@@ -16,10 +16,27 @@ export const InputField: FC<InputFieldProps> = ({ label, ...props }) => {
     >
       <input
         {...props}
-        className="peer w-full border-b border-white/20 bg-transparent py-3 sm:py-4 text-base sm:text-lg text-white placeholder-transparent focus:border-white focus:outline-none transition-colors"
-        placeholder={label}
+        // Важно: плейсхолдер должен быть хотя бы пробелом, чтобы работал :placeholder-shown
+        placeholder=" " 
+        className="peer w-full border-b border-white/20 bg-transparent py-3 sm:py-4 text-base sm:text-lg text-white focus:border-white focus:outline-none transition-colors"
       />
-      <label className="pointer-events-none absolute left-0 top-3 sm:top-4 text-base sm:text-lg text-white/40 transition-all peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#FF8201] peer-focus:opacity-100 peer-[-moz-placeholder-shown]:top-3 peer-[-moz-placeholder-shown]:text-base peer-[-webkit-placeholder-shown]:top-3 peer-[-webkit-placeholder-shown]:text-base">
+      <label className="
+        pointer-events-none absolute left-0 transition-all duration-200
+        /* Состояние, когда текст введен или поле в фокусе (Лейбл вверху) */
+        -top-3 text-xs text-[#FF8201] opacity-100
+        
+        /* Состояние, когда поле пустое И не в фокусе (Лейбл внутри инпута) */
+        peer-placeholder-shown:top-3 
+        peer-placeholder-shown:sm:top-4 
+        peer-placeholder-shown:text-base 
+        peer-placeholder-shown:sm:text-lg 
+        peer-placeholder-shown:text-white/40
+        
+        /* Возвращаем лейбл наверх при фокусе, даже если поле пустое */
+        peer-focus:-top-3 
+        peer-focus:text-xs 
+        peer-focus:text-[#FF8201]
+      ">
         {label}
       </label>
     </motion.div>

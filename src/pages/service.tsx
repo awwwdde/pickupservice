@@ -20,6 +20,7 @@ import image6 from '../assets/img/image6.png'
 import image7 from '../assets/img/image7.png'
 import image8 from '../assets/img/image8.png'
 import image9 from '../assets/img/image9.png'
+import { Link } from 'react-router-dom'
 
 const servicesData = [
   {
@@ -396,12 +397,13 @@ const ServicePage: FC = () => {
                 <h3 className="text-[clamp(2rem,5vw,5rem)] font-black uppercase tracking-[-0.04em] text-black mb-[clamp(0.75rem,2vw,1.5rem)] leading-[0.88]">Готовы к проектам?</h3>
                 <p className="text-[clamp(1rem,2.4vw,1.5rem)] text-neutral-500 max-w-2xl mx-auto font-medium tracking-tight">Оставьте заявку, и мы свяжемся с вами, чтобы обсудить подготовку вашего внедорожника.</p>
             </motion.div>
-          <motion.button
+          <Link to='/booking'>
+            <motion.button
             whileHover="hover"
             initial="rest"
             animate="rest"
             className="group relative flex h-[clamp(72px,14vw,140px)] w-full max-w-5xl cursor-pointer items-center justify-between overflow-hidden bg-black px-[clamp(1.25rem,4vw,3rem)]"
-          >
+            >
             <motion.div 
               variants={{
                 rest: { scaleY: 0 },
@@ -410,11 +412,10 @@ const ServicePage: FC = () => {
               transition={{ duration: 0.6, ease: customEase }}
               className="absolute inset-0 bg-[#FF8201] origin-bottom"
             />
-            
+           
             <span className="relative z-10 text-[clamp(1.5rem,3vw,3rem)] font-black uppercase tracking-[-0.04em] text-white whitespace-nowrap">
               Записаться
             </span>
-            
             <motion.div
                 variants={{
                     rest: { x: 0 },
@@ -426,6 +427,7 @@ const ServicePage: FC = () => {
                 <ArrowRight className="h-[clamp(1.5rem,4vw,3rem)] w-[clamp(1.5rem,4vw,3rem)] text-white" strokeWidth={1.5} />
             </motion.div>
           </motion.button>
+          </Link>
         </div>
       </section>
     </div>
