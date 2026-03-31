@@ -312,7 +312,7 @@ def _extract_rating_from_text(text: str) -> int | None:
     import re
 
     s = (text or "").replace("\xa0", " ")
-    m = re.search(r"([1-5])\s*(?:из|/)\s*5", s)
+    m = re.search(r"([1-5])\s*(?:из|/)\s*5", s, flags=re.IGNORECASE)
     if m:
         try:
             return int(m.group(1))
@@ -333,6 +333,16 @@ def _extract_rating_from_soup(el) -> int | None:
         r = _extract_rating_from_text(tag.get("aria-label", ""))
         if r:
             return r
+
+    # schema.org microdata: <meta itemprop="ratingValue" content="5.0">
+    meta = el.select_one('[itemprop="reviewRating"] meta[itemprop="ratingValue"]')
+    if meta and meta.get("content"):
+        try:
+            r = int(float(meta["content"]))
+            if 1 <= r <= 5:
+                return r
+        except (ValueError, TypeError):
+            pass
 
     # data-rating / data-rate
     for tag in el.find_all(True):
@@ -487,9 +497,19 @@ def _parse_with_playwright(page, reviews: dict) -> None:
         # Рейтинг
         rating = None
         try:
-            aria = item.locator("[aria-label*='из 5'], [aria-label*='/ 5'], [aria-label*='/5']")
+            aria = item.locator(".business-review-view__rating [aria-label], [aria-label]")
             if aria.count() > 0:
                 rating = _extract_rating_from_text((aria.first.get_attribute("aria-label") or ""))
+            if rating is None:
+                meta = item.locator('[itemprop="reviewRating"] meta[itemprop="ratingValue"]')
+                if meta.count() > 0:
+                    content = meta.first.get_attribute("content") or ""
+                    try:
+                        r = int(float(content))
+                        if 1 <= r <= 5:
+                            rating = r
+                    except (ValueError, TypeError):
+                        pass
         except Exception:
             rating = None
 
