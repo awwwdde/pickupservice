@@ -6,8 +6,10 @@ from .views import (
     AccordionItemViewSet,
     ServiceGalleryImageViewSet,
     TestimonialViewSet,
+    TestimonialsSettingsView,
     ContactSettingsView,
     BookingRequestView,
+    CallbackRequestView,
 )
 
 
@@ -23,11 +25,17 @@ router.register(
 urlpatterns = [
     path("contact/", ContactSettingsView.as_view(), name="contact-settings"),
     path("booking/", BookingRequestView.as_view(), name="booking-request"),
-    # до router: иначе ProjectViewSet с префиксом "" перехватит "testimonials" как pk проекта
+    path("callback/", CallbackRequestView.as_view(), name="callback-request"),
+    # до router: иначе ProjectViewSet с префиксом "" перехватит эти пути как pk проекта
     path(
         "testimonials/",
         TestimonialViewSet.as_view({"get": "list"}),
         name="testimonial-list",
+    ),
+    path(
+        "testimonials/settings/",
+        TestimonialsSettingsView.as_view(),
+        name="testimonials-settings",
     ),
 ] + router.urls
 

@@ -85,6 +85,21 @@ set -a
 source "$DJANGO_ENV_FILE"
 set +a
 
+pip install -r requirements.txt --quiet
+
+# Playwright: устанавливаем/обновляем браузер если задан PLAYWRIGHT_BROWSERS_PATH
+if python -c "import playwright" 2>/dev/null; then
+  if [[ -n "${PLAYWRIGHT_BROWSERS_PATH:-}" ]]; then
+    log "Installing/updating Playwright Chromium → $PLAYWRIGHT_BROWSERS_PATH"
+    PLAYWRIGHT_BROWSERS_PATH="$PLAYWRIGHT_BROWSERS_PATH" playwright install chromium
+    chmod -R a+rx "$PLAYWRIGHT_BROWSERS_PATH" 2>/dev/null || true
+  else
+    log "Playwright installed but PLAYWRIGHT_BROWSERS_PATH not set — skipping browser install"
+    log "  To enable Yandex reviews sync, add PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright"
+    log "  to $DJANGO_ENV_FILE and run: sudo PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright playwright install chromium"
+  fi
+fi
+
 python manage.py migrate
 python manage.py collectstatic --noinput
 

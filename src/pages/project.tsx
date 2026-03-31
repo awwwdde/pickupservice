@@ -1,10 +1,10 @@
-import { type FC, useEffect, useState } from 'react'
+import { type FC, type FormEvent, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import Lenis from 'lenis'
 import { InputField } from '../components/inputfields/InputField'
 import { useParams } from 'react-router-dom'
-import { fetchProjectById } from '../api/backend'
+import { fetchProjectById, submitCallbackRequest } from '../api/backend'
 
 import image1 from '../assets/img/image1.png'
 import image2 from '../assets/img/image2.png'
@@ -39,6 +39,14 @@ const PROJECT_CONTENT = {
 const ProjectPage: FC = () => {
   const { id } = useParams()
   const [projectData, setProjectData] = useState(PROJECT_CONTENT)
+  const [callbackForm, setCallbackForm] = useState({
+    name: '',
+    phone: '',
+    website: '',
+  })
+  const [callbackSubmitting, setCallbackSubmitting] = useState(false)
+  const [callbackSuccess, setCallbackSuccess] = useState(false)
+  const [callbackError, setCallbackError] = useState('')
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
@@ -54,6 +62,33 @@ const ProjectPage: FC = () => {
     }
   }, [])
 
+  const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
+    setCallbackSuccess(false)
+    setCallbackError('')
+    setCallbackForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const handleCallbackSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (callbackSubmitting) return
+    setCallbackError('')
+    setCallbackSuccess(false)
+    setCallbackSubmitting(true)
+    try {
+      await submitCallbackRequest({
+        name: callbackForm.name.trim(),
+        phone: callbackForm.phone.trim(),
+        website: callbackForm.website,
+      })
+      setCallbackSuccess(true)
+      setCallbackForm({ name: '', phone: '', website: '' })
+    } catch (err) {
+      setCallbackError(err instanceof Error ? err.message : 'Ошибка отправки.')
+    } finally {
+      setCallbackSubmitting(false)
+    }
+  }
+
   useEffect(() => {
     if (!id) return
     let cancelled = false
@@ -65,7 +100,13 @@ const ProjectPage: FC = () => {
           title: data.title || 'PROJECT',
           subtitle: `${data.vehicle || 'OFFROAD'} / ${new Date(data.updated_at || Date.now()).getFullYear()}`,
           description: data.description || PROJECT_CONTENT.description,
-          workStages: PROJECT_CONTENT.workStages,
+          workStages:
+            data.preparation_stages?.length
+              ? data.preparation_stages.map((s) => ({
+                  title: s.title,
+                  detail: s.text
+                }))
+              : PROJECT_CONTENT.workStages,
           gallery:
             data.gallery?.length
               ? data.gallery.map((g, index) => ({
@@ -161,19 +202,58 @@ const ProjectPage: FC = () => {
            <h3 className="text-[8vw] font-black uppercase tracking-tighter mb-16 leading-none">
              Ваш джип готов <br /> к <span className="text-[#FF8201]">превращению?</span>
            </h3>
-           <form className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center">
+          <form
+            className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center"
+            onSubmit={handleCallbackSubmit}
+          >
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden
+              value={callbackForm.website}
+              onChange={(e) => handleCallbackChange('website', e.target.value)}
+              className="absolute -left-[9999px] h-px w-px opacity-0"
+            />
             <div className="flex w-full flex-1 gap-10 flex-col md:flex-row">
-              <InputField label="Ваше Имя" type="text" required />
-              <InputField label="Телефон" type="tel" required />
+              <InputField
+                label="Ваше Имя"
+                type="text"
+                required
+                disabled={callbackSubmitting}
+                value={callbackForm.name}
+                onChange={(e) => handleCallbackChange('name', e.target.value)}
+              />
+              <InputField
+                label="Телефон"
+                type="tel"
+                required
+                disabled={callbackSubmitting}
+                value={callbackForm.phone}
+                onChange={(e) => handleCallbackChange('phone', e.target.value)}
+              />
             </div>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              type="submit"
+              disabled={callbackSubmitting}
               className="group flex h-[80px] w-full max-w-[300px] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
             >
-              Отправить заявку
+              {callbackSubmitting ? 'Отправка…' : 'Отправить заявку'}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
             </motion.button>
+            {callbackSuccess && (
+              <p className="w-full text-sm text-emerald-400/90 mt-4 md:mt-0 md:ml-auto" role="status">
+                Заявка отправлена. Мы свяжемся с вами в ближайшее время.
+              </p>
+            )}
+            {callbackError && (
+              <p className="w-full text-sm text-red-400/90 mt-4 md:mt-0 md:ml-auto" role="alert">
+                {callbackError}
+              </p>
+            )}
           </form>
         </div>
       </section>

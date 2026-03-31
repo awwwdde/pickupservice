@@ -139,6 +139,44 @@ DEFAULT_FROM_EMAIL = os.environ.get(
 )
 BOOKING_TO_EMAIL = os.environ.get("BOOKING_TO_EMAIL", "").strip()
 
+# Яндекс.Карты — ID организации для sync_yandex_reviews
+YANDEX_MAPS_ORG_ID = os.environ.get("YANDEX_MAPS_ORG_ID", "").strip()
+
+
+def _parse_int_list(value: str) -> list[int]:
+    items = []
+    for raw in (value or "").split(","):
+        s = raw.strip()
+        if not s:
+            continue
+        try:
+            items.append(int(s))
+        except ValueError:
+            # игнорируем мусорные элементы, чтобы не падать при старте
+            continue
+    return items
+
+
+# Telegram bot (токен хранится только в окружении сервиса)
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_WHITELIST_USER_IDS = _parse_int_list(
+    os.environ.get("TELEGRAM_WHITELIST_USER_IDS", "")
+)
+TELEGRAM_WHITELIST_CHAT_IDS = _parse_int_list(
+    os.environ.get("TELEGRAM_WHITELIST_CHAT_IDS", "")
+)
+TELEGRAM_NOTIFY_CHAT_IDS = _parse_int_list(
+    os.environ.get("TELEGRAM_NOTIFY_CHAT_IDS", "")
+)
+
+# Telegram proxy (актуально для серверов, где api.telegram.org недоступен)
+# Формат: http://user:pass@host:port или socks5://user:pass@host:port
+# Если указан только TELEGRAM_PROXY_URL, он применяется и к Bot API, и к getUpdates (polling).
+TELEGRAM_PROXY_URL = os.environ.get("TELEGRAM_PROXY_URL", "").strip()
+TELEGRAM_GET_UPDATES_PROXY_URL = os.environ.get(
+    "TELEGRAM_GET_UPDATES_PROXY_URL", ""
+).strip()
+
 # DRF
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",

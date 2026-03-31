@@ -127,6 +127,53 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+### 5.1 Playwright (браузер для парсинга отзывов Яндекс.Карт)
+
+Playwright требует системные зависимости для Chromium. Установите их **один раз** от root:
+
+```bash
+# Системные зависимости Chromium (от root)
+sudo apt install -y \
+  libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+  libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+  libgbm1 libasound2 libpango-1.0-0 libcairo2 \
+  fonts-liberation libappindicator3-1 xdg-utils
+
+# Установить браузер Chromium в venv (от обычного пользователя)
+source /var/www/pickupservice/server/venv/bin/activate
+playwright install chromium
+```
+
+> **Примечание:** Parсер запускается от имени пользователя `www-data` (Gunicorn). Chromium должен быть установлен в окружение, доступное этому пользователю.
+> Playwright по умолчанию ставит браузер в `~/.cache/ms-playwright/`. Чтобы `www-data` мог его использовать, либо:
+>
+> **Вариант A** (проще) — установить браузер глобально в `/opt`:
+>
+> ```bash
+> sudo PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright \
+>   /var/www/pickupservice/server/venv/bin/playwright install chromium
+> sudo chmod -R a+rx /opt/ms-playwright
+> ```
+>
+> И добавить в env-файл Django (`/etc/default/pickupservice.django.env`):
+>
+> ```
+> PLAYWRIGHT_BROWSERS_PATH=/opt/ms-playwright
+> ```
+>
+> **Вариант B** — запускать парсер вручную от своего пользователя (не `www-data`):
+>
+> ```bash
+> sudo -u $USER bash -c "
+>   cd /var/www/pickupservice/server
+>   source venv/bin/activate
+>   set -a && source /etc/default/pickupservice.django.env && set +a
+>   python manage.py sync_yandex_reviews --org-id ВАШ_ID
+> "
+> ```
+>
+> Для кнопки в Django-админке (запуск через браузер) выберите **Вариант A**.
+
 Окружение Django (скопируйте пример и отредактируйте):
 
 ```bash
@@ -170,6 +217,45 @@ sudo chown -R www-data:www-data /var/www/pickupservice/server
 (Если `db.sqlite3` ещё не создан — он появится после `migrate`; затем снова `chown` при необходимости.)
 
 ---
+
+## 8. Telegram-бот для заявок (polling, без n8n)
+
+Бот запускается отдельным systemd-сервисом на **том же хосте**, что и Django.
+
+### 8.1 Переменные окружения
+
+Добавьте в env-файл Django (см. `deploy/pickupservice.django.env.example`):
+
+- `TELEGRAM_BOT_TOKEN` — токен бота (секрет).
+- `TELEGRAM_WHITELIST_USER_IDS` — user_id, кому разрешены команды (через запятую).
+- `TELEGRAM_WHITELIST_CHAT_IDS` — chat_id разрешённых групп/каналов (через запятую).
+- `TELEGRAM_NOTIFY_CHAT_IDS` — куда слать авто-уведомления о новых заявках (через запятую). Если пусто, используется фолбэк на whitelist.
+
+### 8.2 systemd unit
+
+1) Скопируйте unit на сервер:
+
+```bash
+sudo cp /var/www/pickupservice/deploy/pickupservice-telegram-bot.service /etc/systemd/system/pickupservice-telegram-bot.service
+sudo systemctl daemon-reload
+```
+
+2) В unit поправьте пути (если отличаются):
+- `WorkingDirectory`
+- `EnvironmentFile`
+- `ExecStart`
+
+3) Запуск:
+
+```bash
+sudo systemctl enable --now pickupservice-telegram-bot
+sudo systemctl status pickupservice-telegram-bot --no-pager
+```
+
+### 8.3 Важно про безопасность
+
+- **Не храните токен** в git/в коде/в `.env.example` — только на сервере в `EnvironmentFile`.
+- Так как токен уже был отправлен в чат, **ротируйте токен** в BotFather после деплоя.
 
 ## 6. Gunicorn (systemd)
 

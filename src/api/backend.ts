@@ -37,6 +37,7 @@ export interface ApiProjectDetail extends ApiProjectListItem {
   description: string
   published: boolean
   gallery: { id: number; image: string; order: number }[]
+  preparation_stages?: { id: number; title: string; text: string; photo: string | null; order: number }[]
   created_at?: string
   updated_at?: string
 }
@@ -55,6 +56,17 @@ export interface ApiServiceGalleryItem {
   order: number
 }
 
+export interface ApiContactSettings {
+  email: string
+  phone_display: string
+  phone_tel: string
+  telegram_url: string
+  whatsapp_url: string
+  vk_url: string
+  map_embed_url: string
+  coordinates_label: string
+}
+
 export async function fetchProjects(): Promise<ApiProjectListItem[]> {
   const payload = await getJson<ApiProjectListItem[] | { results?: ApiProjectListItem[] }>('/api/projects/')
   return asList(payload).map((item) => ({ ...item, image: toAbsoluteMediaUrl(item.image) }))
@@ -65,7 +77,11 @@ export async function fetchProjectById(id: string): Promise<ApiProjectDetail> {
   return {
     ...data,
     image: toAbsoluteMediaUrl(data.image),
-    gallery: (data.gallery || []).map((g) => ({ ...g, image: toAbsoluteMediaUrl(g.image) }))
+    gallery: (data.gallery || []).map((g) => ({ ...g, image: toAbsoluteMediaUrl(g.image) })),
+    preparation_stages: (data.preparation_stages || []).map((s) => ({
+      ...s,
+      photo: s.photo ? toAbsoluteMediaUrl(s.photo) : null
+    }))
   }
 }
 
@@ -82,6 +98,10 @@ export async function fetchServiceGalleryImages(): Promise<ApiServiceGalleryItem
     ...item,
     image: toAbsoluteMediaUrl(item.image)
   }))
+}
+
+export async function fetchContactSettings(): Promise<ApiContactSettings> {
+  return await getJson<ApiContactSettings>('/api/projects/contact/')
 }
 
 export interface BookingRequestPayload {
@@ -156,5 +176,50 @@ export async function submitBookingRequest(
   }
 
   return data as BookingRequestResponse
+}
+
+export interface CallbackRequestPayload {
+  name: string
+  phone: string
+  /** Honeypot: должен оставаться пустым */
+  website?: string
+}
+
+export interface CallbackRequestResponse {
+  id: number
+  status: string
+  email_delivered: boolean
+}
+
+export async function submitCallbackRequest(
+  payload: CallbackRequestPayload
+): Promise<CallbackRequestResponse> {
+  const response = await fetch(`${BACKEND_ORIGIN}/api/projects/callback/`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: payload.name,
+      phone: payload.phone,
+      website: payload.website ?? ''
+    })
+  })
+
+  const text = await response.text()
+  let data: unknown = null
+  try {
+    data = text ? JSON.parse(text) : null
+  } catch {
+    data = null
+  }
+
+  if (!response.ok) {
+    const msg = formatBookingApiErrors(data)
+    throw new Error(msg)
+  }
+
+  return data as CallbackRequestResponse
 }
 
