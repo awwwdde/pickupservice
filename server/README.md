@@ -43,6 +43,8 @@ API (детали проекта): `http://localhost:8000/api/projects/<id>/`
 - `TELEGRAM_WHITELIST_USER_IDS` — user_id, кому разрешены команды (через запятую).
 - `TELEGRAM_WHITELIST_CHAT_IDS` — chat_id разрешённых групп/каналов (через запятую).
 - `TELEGRAM_NOTIFY_CHAT_IDS` — куда слать авто-уведомления о новых заявках (через запятую). Если пусто, используется фолбэк на whitelist.
+- `TELEGRAM_PROXY_URL` — прокси для доступа к Telegram (если `api.telegram.org` недоступен напрямую). Пример: `http://user:pass@host:port` или `socks5://user:pass@host:port`.
+- `TELEGRAM_GET_UPDATES_PROXY_URL` — (опционально) отдельный прокси только для long polling (`getUpdates`). Если не задан, используется `TELEGRAM_PROXY_URL`.
 
 ### Запуск
 

@@ -3,11 +3,32 @@ import type { FC } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import Lenis from 'lenis';
 
+import { fetchContactSettings } from '../api/backend'
 
 const ContactPage: FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyTrackRef = useRef<HTMLDivElement>(null); 
   const [mapKey] = useState(0);
+  const [contact, setContact] = useState<{
+    email: string
+    phoneDisplay: string
+    phoneTel: string
+    telegramUrl: string
+    whatsappUrl: string
+    vkUrl: string
+    mapEmbedUrl: string
+    coordinatesLabel: string
+  }>({
+    email: 'info@pickupservice.ru',
+    phoneDisplay: '+7 985 923 47 77',
+    phoneTel: '+79859234777',
+    telegramUrl: '',
+    whatsappUrl: '',
+    vkUrl: '',
+    mapEmbedUrl:
+      'https://yandex.ru/map-widget/v1/?um=constructor%3A00000000000000000000000000000000&source=constructor',
+    coordinatesLabel: '55.7558° N, 37.5366° E'
+  })
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -28,6 +49,32 @@ const ContactPage: FC = () => {
       cancelAnimationFrame(rafId);
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false
+
+    fetchContactSettings()
+      .then((data) => {
+        if (cancelled) return
+        setContact({
+          email: data.email || 'info@pickupservice.ru',
+          phoneDisplay: data.phone_display || '+7 985 923 47 77',
+          phoneTel: data.phone_tel || '+79859234777',
+          telegramUrl: data.telegram_url || '',
+          whatsappUrl: data.whatsapp_url || '',
+          vkUrl: data.vk_url || '',
+          mapEmbedUrl: data.map_embed_url || '',
+          coordinatesLabel: data.coordinates_label || ''
+        })
+      })
+      .catch(() => {
+        // Оставляем дефолтные значения, чтобы страница не ломалась без настроек.
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const { scrollYProgress } = useScroll({
     target: stickyTrackRef,
@@ -78,25 +125,41 @@ const ContactPage: FC = () => {
           <div className="md:col-span-8 flex flex-col gap-20 md:pl-20">
             <div className="group border-b border-white/10 pb-10">
               <span className="block font-mono text-[10px] uppercase tracking-widest text-neutral-600 mb-6">01. Почта</span>
-              <a href="mailto:info@pickupservice.ru" className="relative inline-block text-4xl md:text-7xl font-bold uppercase tracking-tighter hover:italic transition-all duration-500">
-                info@pickupservice.ru
+              <a href={`mailto:${contact.email}`} className="relative inline-block text-4xl md:text-7xl font-bold uppercase tracking-tighter hover:italic transition-all duration-500">
+                {contact.email}
               </a>
             </div>
 
             <div className="group border-b border-white/10 pb-10">
               <span className="block font-mono text-[10px] uppercase tracking-widest text-neutral-600 mb-6">02. Телефон</span>
-              <a href="tel:+79859234777" className="relative inline-block text-4xl md:text-7xl font-bold uppercase tracking-tighter hover:italic transition-all duration-500">
-                +7 985 923 47 77
+              <a href={`tel:${contact.phoneTel}`} className="relative inline-block text-4xl md:text-7xl font-bold uppercase tracking-tighter hover:italic transition-all duration-500">
+                {contact.phoneDisplay}
               </a>
             </div>
 
             <div className="flex flex-wrap gap-x-12 gap-y-6 pt-4">
-              {['Telegram', 'MAX', 'ВКонтакте'].map((social) => (
-                <a key={social} href="#" className="font-mono text-[11px] uppercase tracking-[0.3em] text-neutral-500 hover:text-white transition-colors relative overflow-hidden group">
-                  <span className="inline-block transition-transform duration-500 group-hover:-translate-y-full">{social}</span>
-                  <span className="absolute top-0 left-0 inline-block transition-transform duration-300 translate-y-full group-hover:translate-y-0 text-white underline underline-offset-4">{social}</span>
-                </a>
-              ))}
+              {[
+                { label: 'Telegram', href: contact.telegramUrl },
+                { label: 'WhatsApp', href: contact.whatsappUrl },
+                { label: 'ВКонтакте', href: contact.vkUrl }
+              ]
+                .filter((s) => Boolean(s.href))
+                .map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-[11px] uppercase tracking-[0.3em] text-neutral-500 hover:text-white transition-colors relative overflow-hidden group"
+                  >
+                    <span className="inline-block transition-transform duration-500 group-hover:-translate-y-full">
+                      {social.label}
+                    </span>
+                    <span className="absolute top-0 left-0 inline-block transition-transform duration-300 translate-y-full group-hover:translate-y-0 text-white underline underline-offset-4">
+                      {social.label}
+                    </span>
+                  </a>
+                ))}
             </div>
           </div>
         </div>
@@ -112,7 +175,7 @@ const ContactPage: FC = () => {
             <iframe
               key={mapKey}
               title="map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.371342371511!2d37.534411316046484!3d55.75581448055152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54bd6ed0f2c73%3A0x69687e1f40d86161!2z0JrRg9GC0YPQt9C-0LLRgdC60LjQuSDQv9GALdGCLiwgMzYsIE1vc2t2YSwgMTIxMTcw!5e0!3m2!1sru!2sru!4v1650000000000!5m2!1sru!2sru"
+              src={contact.mapEmbedUrl}
               className="w-full h-full border-none opacity-90 pointer-events-auto"
               allowFullScreen
               loading="lazy"
@@ -120,9 +183,11 @@ const ContactPage: FC = () => {
             <div className="absolute inset-0 shadow-[inset_0_0_150px_rgba(2,2,2,1)] pointer-events-none" />
           </div>
 
-          <div className="mt-6 font-mono text-[10px] text-white/50 tracking-[0.3em] uppercase">
-            55.7558° N, 37.5366° E
-          </div>
+          {contact.coordinatesLabel ? (
+            <div className="mt-6 font-mono text-[10px] text-white/50 tracking-[0.3em] uppercase">
+              {contact.coordinatesLabel}
+            </div>
+          ) : null}
         </div>
       </section>
       <section ref={stickyTrackRef} className="relative md:h-[180vh] w-full">
@@ -141,7 +206,7 @@ const ContactPage: FC = () => {
             <iframe
               key={mapKey}
               title="map"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2245.371342371511!2d37.534411316046484!3d55.75581448055152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46b54bd6ed0f2c73%3A0x69687e1f40d86161!2z0JrRg9GC0YPQt9C-0LLRgdC60LjQuSDQv9GALdGCLiwgMzYsIE1vc2t2YSwgMTIxMTcw!5e0!3m2!1sru!2sru!4v1650000000000!5m2!1sru!2sru"
+              src={contact.mapEmbedUrl}
               className="w-full h-full border-none opacity-80 pointer-events-auto"
               allowFullScreen
               loading="lazy"
@@ -173,7 +238,11 @@ const ContactPage: FC = () => {
               <div className="flex justify-between items-end">
                  <div>
                    <div className="w-12 h-12 border-b border-l border-white/30 mb-4" />
-                   <span className="font-mono text-[9px] text-white/40 tracking-[0.3em] block">55.7558° N, 37.5366° E</span>
+                   {contact.coordinatesLabel ? (
+                     <span className="font-mono text-[9px] text-white/40 tracking-[0.3em] block">
+                       {contact.coordinatesLabel}
+                     </span>
+                   ) : null}
                  </div>
                  <div className="w-12 h-12 border-b border-r border-white/30" />
               </div>

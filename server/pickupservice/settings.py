@@ -169,6 +169,14 @@ TELEGRAM_NOTIFY_CHAT_IDS = _parse_int_list(
     os.environ.get("TELEGRAM_NOTIFY_CHAT_IDS", "")
 )
 
+# Telegram proxy (актуально для серверов, где api.telegram.org недоступен)
+# Формат: http://user:pass@host:port или socks5://user:pass@host:port
+# Если указан только TELEGRAM_PROXY_URL, он применяется и к Bot API, и к getUpdates (polling).
+TELEGRAM_PROXY_URL = os.environ.get("TELEGRAM_PROXY_URL", "").strip()
+TELEGRAM_GET_UPDATES_PROXY_URL = os.environ.get(
+    "TELEGRAM_GET_UPDATES_PROXY_URL", ""
+).strip()
+
 # DRF
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",

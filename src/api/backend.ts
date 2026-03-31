@@ -55,6 +55,17 @@ export interface ApiServiceGalleryItem {
   order: number
 }
 
+export interface ApiContactSettings {
+  email: string
+  phone_display: string
+  phone_tel: string
+  telegram_url: string
+  whatsapp_url: string
+  vk_url: string
+  map_embed_url: string
+  coordinates_label: string
+}
+
 export async function fetchProjects(): Promise<ApiProjectListItem[]> {
   const payload = await getJson<ApiProjectListItem[] | { results?: ApiProjectListItem[] }>('/api/projects/')
   return asList(payload).map((item) => ({ ...item, image: toAbsoluteMediaUrl(item.image) }))
@@ -82,6 +93,10 @@ export async function fetchServiceGalleryImages(): Promise<ApiServiceGalleryItem
     ...item,
     image: toAbsoluteMediaUrl(item.image)
   }))
+}
+
+export async function fetchContactSettings(): Promise<ApiContactSettings> {
+  return await getJson<ApiContactSettings>('/api/projects/contact/settings/')
 }
 
 export interface BookingRequestPayload {

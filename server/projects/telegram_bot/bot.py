@@ -224,15 +224,81 @@ async def outbox_tick(context: ContextTypes.DEFAULT_TYPE) -> None:
         await asyncio.sleep(0)
 
 
+def _apply_builder_proxy(builder, *, method_names: tuple[str, ...], proxy_url: str):
+    """
+    Поддержка разных имён методов в PTB (v21: proxy_url/get_updates_proxy_url,
+    v22+: proxy/get_updates_proxy).
+    """
+    if not proxy_url:
+        return builder
+    for name in method_names:
+        fn = getattr(builder, name, None)
+        if callable(fn):
+            return fn(proxy_url)
+    raise RuntimeError(
+        f"Установлен TELEGRAM_PROXY_URL, но в python-telegram-bot не найден метод {method_names}"
+    )
+
+
+async def _post_init(app: Application) -> None:
+    """
+    Быстрая проверка, что бот может достучаться до Telegram.
+    Если сеть/прокси сломаны, это будет видно сразу в логах.
+    """
+    proxy_url = (getattr(settings, "TELEGRAM_PROXY_URL", "") or "").strip()
+    get_updates_proxy_url = (
+        (getattr(settings, "TELEGRAM_GET_UPDATES_PROXY_URL", "") or "").strip()
+        or proxy_url
+    )
+    try:
+        me = await app.bot.get_me()
+        logger.info(
+            "Telegram OK: @%s (id=%s). proxy=%s get_updates_proxy=%s",
+            getattr(me, "username", None),
+            getattr(me, "id", None),
+            proxy_url or "-",
+            get_updates_proxy_url or "-",
+        )
+    except Exception:
+        logger.exception(
+            "Telegram FAIL: не удалось выполнить getMe. proxy=%s get_updates_proxy=%s",
+            proxy_url or "-",
+            get_updates_proxy_url or "-",
+        )
+
+
 def build_application() -> Application:
     token = require_token()
-    app = Application.builder().token(token).build()
+    proxy_url = (getattr(settings, "TELEGRAM_PROXY_URL", "") or "").strip()
+    get_updates_proxy_url = (
+        (getattr(settings, "TELEGRAM_GET_UPDATES_PROXY_URL", "") or "").strip()
+        or proxy_url
+    )
+
+    builder = Application.builder().token(token).post_init(_post_init)
+    if proxy_url:
+        builder = _apply_builder_proxy(
+            builder, method_names=("proxy_url", "proxy"), proxy_url=proxy_url
+        )
+    if get_updates_proxy_url:
+        builder = _apply_builder_proxy(
+            builder,
+            method_names=("get_updates_proxy_url", "get_updates_proxy"),
+            proxy_url=get_updates_proxy_url,
+        )
+
+    app = builder.build()
 
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CallbackQueryHandler(menu_cb, pattern=r"^menu$"))
     app.add_handler(CallbackQueryHandler(list_cb, pattern=r"^list:(booking|callback):\d+$"))
 
     # Отправка outbox — периодически в фоне
-    app.job_queue.run_repeating(outbox_tick, interval=2.0, first=2.0, name="outbox_tick")
+    if app.job_queue is None:
+        logger.warning(
+            "JobQueue не настроен. Установите зависимости: pip install \"python-telegram-bot[job-queue]\""
+        )
+    else:
+        app.job_queue.run_repeating(outbox_tick, interval=2.0, first=2.0, name="outbox_tick")
     return app
 
