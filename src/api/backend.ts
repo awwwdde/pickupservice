@@ -37,6 +37,7 @@ export interface ApiProjectDetail extends ApiProjectListItem {
   description: string
   published: boolean
   gallery: { id: number; image: string; order: number }[]
+  preparation_stages?: { id: number; title: string; text: string; photo: string | null; order: number }[]
   created_at?: string
   updated_at?: string
 }
@@ -76,7 +77,11 @@ export async function fetchProjectById(id: string): Promise<ApiProjectDetail> {
   return {
     ...data,
     image: toAbsoluteMediaUrl(data.image),
-    gallery: (data.gallery || []).map((g) => ({ ...g, image: toAbsoluteMediaUrl(g.image) }))
+    gallery: (data.gallery || []).map((g) => ({ ...g, image: toAbsoluteMediaUrl(g.image) })),
+    preparation_stages: (data.preparation_stages || []).map((s) => ({
+      ...s,
+      photo: s.photo ? toAbsoluteMediaUrl(s.photo) : null
+    }))
   }
 }
 

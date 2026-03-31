@@ -114,7 +114,7 @@ class ProjectViewSet(
     queryset = (
         Project.objects.filter(published=True)
         .select_related()
-        .prefetch_related("gallery")
+        .prefetch_related("gallery", "preparation_stages")
         .order_by("order", "-created_at")
     )
 

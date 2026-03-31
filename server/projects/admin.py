@@ -12,6 +12,7 @@ from django.utils.html import format_html
 from .models import (
     Project,
     ProjectImage,
+    ProjectPreparationStage,
     AccordionItem,
     ServiceGalleryImage,
     BookingRequest,
@@ -49,6 +50,15 @@ class ProjectImageInline(admin.TabularInline):
     verbose_name_plural = "Галерея"
 
 
+class ProjectPreparationStageInline(admin.TabularInline):
+    model = ProjectPreparationStage
+    extra = 1
+    fields = ("order", "title", "text", "photo")
+    ordering = ("order", "id")
+    verbose_name = "Этап подготовки"
+    verbose_name_plural = "Этапы подготовки"
+
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = (
@@ -63,7 +73,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_editable = ("order", "published")
     list_filter = ("category", "published", "created_at")
     search_fields = ("title", "description", "vehicle")
-    inlines = (ProjectImageInline,)
+    inlines = (ProjectPreparationStageInline, ProjectImageInline)
     readonly_fields = ("thumbnail", "created_at", "updated_at")
     fieldsets = (
         (
@@ -83,6 +93,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "Публикация и порядок",
             {"fields": ("order", "published", "created_at", "updated_at")},
         ),
+        ("Этапы подготовки", {"fields": ()}),
         ("Галерея", {"fields": ()}),
     )
 

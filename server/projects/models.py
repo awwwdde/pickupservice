@@ -52,6 +52,34 @@ class Project(models.Model):
         return self.title
 
 
+class ProjectPreparationStage(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="preparation_stages",
+        verbose_name="Проект",
+    )
+    title = models.CharField("Заголовок", max_length=255)
+    text = models.TextField("Текст")
+    photo = models.ImageField(
+        "Фото (необязательно)",
+        upload_to="projects/preparation-stages/",
+        blank=True,
+        null=True,
+    )
+    order = models.PositiveIntegerField("Порядок отображения", default=0)
+    created_at = models.DateTimeField("Создан", auto_now_add=True)
+    updated_at = models.DateTimeField("Обновлён", auto_now=True)
+
+    class Meta:
+        ordering = ["order", "id"]
+        verbose_name = "Этап подготовки (проекта)"
+        verbose_name_plural = "Этапы подготовки (проекта)"
+
+    def __str__(self) -> str:
+        return f"{self.project_id}: {self.title}"
+
+
 class AccordionItem(models.Model):
     title = models.CharField("Заголовок", max_length=255)
     description = models.TextField("Описание", blank=True)

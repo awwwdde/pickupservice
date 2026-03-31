@@ -100,7 +100,13 @@ const ProjectPage: FC = () => {
           title: data.title || 'PROJECT',
           subtitle: `${data.vehicle || 'OFFROAD'} / ${new Date(data.updated_at || Date.now()).getFullYear()}`,
           description: data.description || PROJECT_CONTENT.description,
-          workStages: PROJECT_CONTENT.workStages,
+          workStages:
+            data.preparation_stages?.length
+              ? data.preparation_stages.map((s) => ({
+                  title: s.title,
+                  detail: s.text
+                }))
+              : PROJECT_CONTENT.workStages,
           gallery:
             data.gallery?.length
               ? data.gallery.map((g, index) => ({

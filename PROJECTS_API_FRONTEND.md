@@ -39,6 +39,7 @@
 - `published: boolean` — флаг публикации (только опубликованные проекты попадают в публичный API).
 - `created_at: string (datetime)` — дата создания.
 - `updated_at: string (datetime)` — дата последнего обновления.
+- `preparation_stages: ProjectPreparationStage[]` — этапы подготовки проекта (для отдельной секции на детальной странице). Возвращается в `GET /api/projects/<id>/`.
 
 ### ProjectImage
 
@@ -49,6 +50,18 @@
 - `id: integer`
 - `image: string (URL)` — путь к картинке.
 - `order: integer` — порядок в галерее (0, 1, 2, …).
+
+### ProjectPreparationStage
+
+Этап подготовки проекта (для секции «Этапы подготовки» на детальной странице).
+
+Поля:
+
+- `id: integer`
+- `title: string` — заголовок этапа.
+- `text: string` — описание этапа.
+- `photo: string (URL) | null` — опциональное фото для этапа.
+- `order: integer` — порядок отображения (0, 1, 2, …).
 
 ---
 
@@ -156,6 +169,22 @@ Accept: application/json
       "order": 1
     }
   ],
+  "preparation_stages": [
+    {
+      "id": 1,
+      "title": "Проектирование",
+      "text": "Разработка 3D-модели силового каркаса и расчет развесовки по осям.",
+      "photo": "http://127.0.0.1:8000/media/projects/preparation-stages/stage1.jpg",
+      "order": 0
+    },
+    {
+      "id": 2,
+      "title": "Подвеска",
+      "text": "Установка усиленных рычагов и амортизаторов с выносными бачками.",
+      "photo": null,
+      "order": 1
+    }
+  ],
   "created_at": "2026-03-16T12:00:00Z",
   "updated_at": "2026-03-16T12:05:00Z"
 }
@@ -170,6 +199,14 @@ export type ProjectImage = {
   order: number;
 };
 
+export type ProjectPreparationStage = {
+  id: number;
+  title: string;
+  text: string;
+  photo: string | null; // URL | null
+  order: number;
+};
+
 export type ProjectDetail = {
   id: number;
   title: string;
@@ -180,6 +217,7 @@ export type ProjectDetail = {
   order: number;
   published: boolean;
   gallery: ProjectImage[];
+  preparation_stages: ProjectPreparationStage[];
   created_at: string;
   updated_at: string;
 };

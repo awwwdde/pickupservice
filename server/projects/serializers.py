@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import (
     Project,
     ProjectImage,
+    ProjectPreparationStage,
     AccordionItem,
     ServiceGalleryImage,
     BookingRequest,
@@ -36,6 +37,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     gallery = ProjectImageSerializer(many=True, read_only=True)
+    preparation_stages = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -49,9 +51,23 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "order",
             "published",
             "gallery",
+            "preparation_stages",
             "created_at",
             "updated_at",
         )
+
+    def get_preparation_stages(self, obj: Project):
+        qs = getattr(obj, "preparation_stages", None)
+        items = qs.all() if qs is not None else []
+        return ProjectPreparationStageSerializer(items, many=True).data
+
+
+class ProjectPreparationStageSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(read_only=True)
+
+    class Meta:
+        model = ProjectPreparationStage
+        fields = ("id", "title", "text", "photo", "order")
 
 
 class AccordionItemSerializer(serializers.ModelSerializer):
