@@ -24,6 +24,9 @@ ID организации берётся из:
 
 import logging
 import os
+import shutil
+import subprocess
+import sys
 import time
 
 from django.core.management.base import BaseCommand, CommandError
@@ -47,6 +50,45 @@ def _get_org_id_from_env() -> str:
 
 def _reviews_url(org_id: str) -> str:
     return f"https://yandex.ru/maps/org/{org_id}/reviews/"
+
+
+def _in_async_context() -> bool:
+    try:
+        import asyncio
+
+        asyncio.get_running_loop()
+        return True
+    except RuntimeError:
+        return False
+
+
+def _reexec_with_xvfb_if_needed(*, headless: bool, log) -> None:
+    """
+    Если DISPLAY не задан и headless=False, пытаемся перезапустить текущую
+    management-команду под xvfb-run (Linux). Это позволяет работать
+    в "не-headless" режиме даже на сервере без X.
+    """
+    if headless:
+        return
+    if os.name == "nt":
+        return
+    if os.environ.get("DISPLAY"):
+        return
+    if os.environ.get("YANDEX_XVFB_REEXEC") == "1":
+        return
+
+    xvfb = shutil.which("xvfb-run")
+    if not xvfb:
+        log("DISPLAY не задан и xvfb-run не найден — переключаемся на headless-режим.")
+        os.environ["YANDEX_FORCE_HEADLESS_FALLBACK"] = "1"
+        return
+
+    log("DISPLAY не задан — перезапускаем команду под xvfb-run.")
+    env = dict(os.environ)
+    env["YANDEX_XVFB_REEXEC"] = "1"
+    # -a: авто-выбор номера DISPLAY чтобы избежать коллизий
+    cmd = [xvfb, "-a", sys.executable, *sys.argv]
+    raise SystemExit(subprocess.call(cmd, env=env))
 
 
 # ---------------------------------------------------------------------------
@@ -79,11 +121,6 @@ def scrape_reviews(
         logger.info(msg)
         if log_cb:
             log_cb(msg)
-
-    # На сервере без X-сервера headless=False невозможен — переключаемся автоматически
-    if not headless and not os.environ.get("DISPLAY"):
-        log("DISPLAY не задан — принудительно включаем headless-режим.")
-        headless = True
 
     url = _reviews_url(org_id)
     log(f"Открываем: {url}  (headless={headless})")
@@ -489,6 +526,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         from projects.models import TestimonialsSettings, YandexSyncLog
 
+        # Если кто-то запускает команду из async-контекста (например, из ASGI),
+        # Django запретит синхронный ORM. Самый надёжный путь — перезапустить
+        # команду как отдельный процесс.
+        if _in_async_context() and os.environ.get("YANDEX_ASYNC_REEXEC") != "1":
+            env = dict(os.environ)
+            env["YANDEX_ASYNC_REEXEC"] = "1"
+            raise SystemExit(subprocess.call([sys.executable, *sys.argv], env=env))
+
         org_id = (options["org_id"] or "").strip()
         if not org_id:
             cfg = TestimonialsSettings.objects.first()
@@ -519,12 +564,24 @@ class Command(BaseCommand):
         def log_cb(msg: str):
             self.stdout.write(msg)
             if sync_log:
-                sync_log.append_log(msg)
+                # Если вдруг команда оказалась в async-контексте, ORM нельзя
+                # вызывать напрямую. Пишем лог через thread, чтобы не падать.
+                if _in_async_context():
+                    from asgiref.sync import async_to_sync, sync_to_async
+
+                    async_to_sync(sync_to_async(sync_log.append_log, thread_sensitive=True))(msg)
+                else:
+                    sync_log.append_log(msg)
 
         log_cb(
             f"Запуск sync_yandex_reviews: org_id={org_id}, max={max_reviews}, "
             f"headless={headless}, dry_run={dry_run}"
         )
+
+        # Если просили не-headless, но DISPLAY нет — попробуем xvfb-run.
+        _reexec_with_xvfb_if_needed(headless=headless, log=log_cb)
+        if os.environ.get("YANDEX_FORCE_HEADLESS_FALLBACK") == "1":
+            headless = True
 
         try:
             parsed = scrape_reviews(

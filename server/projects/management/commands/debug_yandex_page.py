@@ -9,6 +9,9 @@ HTML + скриншот в /tmp/ для диагностики.
 """
 
 import os
+import shutil
+import subprocess
+import sys
 import time
 
 from django.core.management.base import BaseCommand, CommandError
@@ -20,6 +23,11 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--org-id", dest="org_id", default="")
         parser.add_argument("--wait", type=int, default=15, help="Секунд ждать после загрузки")
+        parser.add_argument(
+            "--headless",
+            action="store_true",
+            help="Принудительно запускать в headless-режиме (без GUI).",
+        )
 
     def handle(self, *args, **options):
         try:
@@ -41,7 +49,21 @@ class Command(BaseCommand):
         self.stdout.write(f"URL: {url}")
         self.stdout.write(f"Ждём {wait_sec}с после загрузки...")
 
-        headless = not os.environ.get("DISPLAY")
+        headless = bool(options.get("headless"))
+
+        # Если DISPLAY нет, но хотим не-headless — перезапускаем под xvfb-run (Linux).
+        if not headless and os.name != "nt" and not os.environ.get("DISPLAY") and os.environ.get("YANDEX_XVFB_REEXEC") != "1":
+            xvfb = shutil.which("xvfb-run")
+            if xvfb:
+                self.stdout.write("DISPLAY не задан — перезапускаем команду под xvfb-run.")
+                env = dict(os.environ)
+                env["YANDEX_XVFB_REEXEC"] = "1"
+                cmd = [xvfb, "-a", sys.executable, *sys.argv]
+                raise SystemExit(subprocess.call(cmd, env=env))
+            else:
+                self.stdout.write("DISPLAY не задан и xvfb-run не найден — переключаемся на headless-режим.")
+                headless = True
+
         self.stdout.write(f"headless={headless}")
 
         with sync_playwright() as pw:

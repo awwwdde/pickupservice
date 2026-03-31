@@ -1,5 +1,7 @@
 import subprocess
 import sys
+import os
+import shutil
 
 from django.contrib import admin
 from django.contrib import messages
@@ -365,13 +367,23 @@ class TestimonialsSettingsAdmin(admin.ModelAdmin):
         )
 
         # Запускаем management command в фоне
-        cmd = [
+        base_cmd = [
             sys.executable,
             "manage.py",
             "sync_yandex_reviews",
             "--org-id", settings_obj.yandex_org_id,
             "--log-id", str(sync_log.pk),
         ]
+        # На сервере без DISPLAY пытаемся запускать под xvfb-run, чтобы
+        # браузер мог работать в non-headless режиме.
+        if os.name != "nt" and not os.environ.get("DISPLAY"):
+            xvfb = shutil.which("xvfb-run")
+            if xvfb:
+                cmd = [xvfb, "-a", *base_cmd]
+            else:
+                cmd = base_cmd
+        else:
+            cmd = base_cmd
         try:
             subprocess.Popen(
                 cmd,
