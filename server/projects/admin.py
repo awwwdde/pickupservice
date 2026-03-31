@@ -368,10 +368,12 @@ class TestimonialsSettingsAdmin(admin.ModelAdmin):
 
         # Запускаем management command в фоне
         base_cmd = [
-            sys.executable,
+            _get_venv_python(),
             "manage.py",
             "sync_yandex_reviews",
             "--org-id", settings_obj.yandex_org_id,
+            "--max-reviews", "50",
+            "--only-new",
             "--log-id", str(sync_log.pk),
         ]
         # На сервере без DISPLAY пытаемся запускать под xvfb-run, чтобы
@@ -424,6 +426,16 @@ def _get_manage_py_dir() -> str:
     from django.conf import settings as dj_settings
     # BASE_DIR из settings.py — это server/
     return str(dj_settings.BASE_DIR)
+
+
+def _get_venv_python() -> str:
+    """
+    Возвращает python из venv (server/venv/bin/python) если он существует,
+    иначе — текущий sys.executable.
+    """
+    base_dir = _get_manage_py_dir()
+    venv_python = os.path.join(base_dir, "venv", "bin", "python")
+    return venv_python if os.path.exists(venv_python) else sys.executable
 
 
 @admin.register(YandexSyncLog)

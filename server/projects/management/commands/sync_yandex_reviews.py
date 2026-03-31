@@ -535,6 +535,7 @@ def upsert_reviews(
     parsed: list[dict],
     no_unpublish: bool,
     dry_run: bool,
+    only_new: bool = False,
     log_cb=None,
 ) -> tuple[int, int, int]:
     """Сохраняет результаты парсинга в БД. Возвращает (created, updated, unpublished)."""
@@ -554,11 +555,16 @@ def upsert_reviews(
 
         if dry_run:
             exists = Testimonial.objects.filter(yandex_review_id=rid).exists()
-            log(f"  [dry-run] {'update' if exists else 'create'} id={rid!r} author={data['author_name']!r}")
+            action = "skip(existing)" if (only_new and exists) else ("update" if exists else "create")
+            log(f"  [dry-run] {action} id={rid!r} author={data['author_name']!r}")
             if exists:
-                updated += 1
+                if not only_new:
+                    updated += 1
             else:
                 created += 1
+            continue
+
+        if only_new and Testimonial.objects.filter(yandex_review_id=rid).exists():
             continue
 
         obj, is_new = Testimonial.objects.get_or_create(
@@ -588,7 +594,7 @@ def upsert_reviews(
                 skipped += 1
 
     unpublished = 0
-    if not no_unpublish and not dry_run and fetched_ids:
+    if not only_new and not no_unpublish and not dry_run and fetched_ids:
         stale_qs = Testimonial.objects.filter(
             source=Testimonial.Source.YANDEX,
             published=True,
@@ -640,6 +646,11 @@ class Command(BaseCommand):
             help="Не снимать с публикации отзывы, которых больше нет на Яндексе.",
         )
         parser.add_argument(
+            "--only-new",
+            action="store_true",
+            help="Создавать только новые отзывы (не обновлять существующие и не снимать с публикации).",
+        )
+        parser.add_argument(
             "--log-id",
             type=int,
             default=None,
@@ -676,6 +687,7 @@ class Command(BaseCommand):
         headless: bool = options["headless"]
         dry_run: bool = options["dry_run"]
         no_unpublish: bool = options["no_unpublish"]
+        only_new: bool = options["only_new"]
         log_id: int | None = options["log_id"]
 
         sync_log: YandexSyncLog | None = None
@@ -688,12 +700,21 @@ class Command(BaseCommand):
         def log_cb(msg: str):
             self.stdout.write(msg)
             if sync_log:
-                # Если вдруг команда оказалась в async-контексте, ORM нельзя
-                # вызывать напрямую. Пишем лог через thread, чтобы не падать.
+                # Если в текущем потоке крутится event loop, AsyncToSync использовать нельзя.
+                # В этом случае уводим запись в БД в отдельный поток.
                 if _in_async_context():
-                    from asgiref.sync import async_to_sync, sync_to_async
+                    import threading
 
-                    async_to_sync(sync_to_async(sync_log.append_log, thread_sensitive=True))(msg)
+                    def _worker():
+                        try:
+                            from django.db import close_old_connections
+
+                            close_old_connections()
+                        except Exception:
+                            pass
+                        sync_log.append_log(msg)
+
+                    threading.Thread(target=_worker, daemon=True).start()
                 else:
                     sync_log.append_log(msg)
 
@@ -729,6 +750,7 @@ class Command(BaseCommand):
                 parsed=parsed,
                 no_unpublish=no_unpublish,
                 dry_run=dry_run,
+                only_new=only_new,
                 log_cb=log_cb,
             )
 
