@@ -128,15 +128,35 @@ def scrape_reviews(
     reviews: dict[str, dict] = {}  # review_id → data
 
     with sync_playwright() as pw:
-        browser = pw.chromium.launch(
-            headless=headless,
-            args=[
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-gpu",
-            ],
-        )
+        launch_args = [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-blink-features=AutomationControlled",
+            "--disable-gpu",
+            # В некоторых окружениях (root/CI/Xvfb) Chromium может падать из-за crashpad.
+            # Эти флаги не вредят в нормальных условиях и часто повышают стабильность.
+            "--disable-crash-reporter",
+            "--disable-breakpad",
+            "--noerrdialogs",
+        ]
+
+        def _launch(*, headless_flag: bool):
+            return pw.chromium.launch(headless=headless_flag, args=launch_args)
+
+        try:
+            browser = _launch(headless_flag=headless)
+        except Exception as exc:
+            # Если пытались headful и он упал (часто: crashpad/закрытие браузера) —
+            # пробуем headless, чтобы синхронизация всё равно могла отработать.
+            if not headless:
+                log(
+                    "Не удалось запустить Chromium в non-headless режиме "
+                    f"(ошибка: {exc}). Пробуем headless=True."
+                )
+                browser = _launch(headless_flag=True)
+                headless = True
+            else:
+                raise
         ctx = browser.new_context(
             viewport={"width": 1280, "height": 900},
             user_agent=(
@@ -169,6 +189,9 @@ def scrape_reviews(
         # Ждём появления списка отзывов
         # Яндекс.Карты используют div[class*="reviews-list"] или ul с li[class*="review"]
         review_list_selectors = [
+            ".business-reviews-card-view__review",
+            ".business-reviews-card-view__reviews-container",
+            ".card-reviews-view",
             "[class*='reviews-list']",
             "[class*='business-reviews-view']",
             "ul[class*='reviews']",
@@ -220,7 +243,13 @@ def _scroll_reviews(page) -> None:
     """Скроллим вниз — сначала пробуем внутренний контейнер, потом всю страницу."""
     scrolled = False
     # Пробуем найти прокручиваемый контейнер отзывов
-    for sel in ["[class*='reviews-list']", "[class*='scroll__container']", "[class*='sidebar']"]:
+    for sel in [
+        ".business-reviews-card-view__reviews-container",
+        ".card-reviews-view",
+        "[class*='reviews-list']",
+        "[class*='scroll__container']",
+        "[class*='sidebar']",
+    ]:
         els = page.locator(sel)
         if els.count() > 0:
             try:
@@ -258,7 +287,9 @@ def _parse_with_soup(soup, reviews: dict) -> None:
     # Яндекс.Карты меняют классы, поэтому ищем по паттерну
     # Типичная структура: li[class*="review-view"] или div[class*="review"]
     review_candidates = (
-        soup.find_all(attrs={"class": lambda c: c and "review-view" in " ".join(c)})
+        soup.select(".business-reviews-card-view__review")
+        or soup.select(".business-review-view")
+        or soup.find_all(attrs={"class": lambda c: c and "review-view" in " ".join(c)})
         or soup.find_all(attrs={"class": lambda c: c and "business-review" in " ".join(c)})
         or soup.find_all("li", attrs={"class": lambda c: c and "review" in " ".join(c)})
     )
@@ -266,7 +297,11 @@ def _parse_with_soup(soup, reviews: dict) -> None:
     for el in review_candidates:
         # --- Текст отзыва ---
         text_el = (
-            el.find(attrs={"class": lambda c: c and "review-view__body-text" in " ".join(c)})
+            el.select_one(".spoiler-view__text")
+            or el.select_one(".business-review-view__body-text")
+            or el.select_one(".review-view__body-text")
+            or el.select_one(".review__text")
+            or el.find(attrs={"class": lambda c: c and "review-view__body-text" in " ".join(c)})
             or el.find(attrs={"class": lambda c: c and "business-review-view__body-text" in " ".join(c)})
             or el.find(attrs={"class": lambda c: c and "review__text" in " ".join(c)})
         )
@@ -276,7 +311,10 @@ def _parse_with_soup(soup, reviews: dict) -> None:
 
         # --- Автор ---
         author_el = (
-            el.find(attrs={"class": lambda c: c and "review-view__author" in " ".join(c)})
+            el.select_one(".business-review-view__author")
+            or el.select_one(".review-view__author")
+            or el.select_one(".user-icon-view__name")
+            or el.find(attrs={"class": lambda c: c and "review-view__author" in " ".join(c)})
             or el.find(attrs={"class": lambda c: c and "business-review-view__author" in " ".join(c)})
             or el.find(attrs={"class": lambda c: c and "user-icon-view__name" in " ".join(c)})
         )
@@ -354,6 +392,8 @@ def _parse_with_playwright(page, reviews: dict) -> None:
 
     # Пробуем разные селекторы
     selectors = [
+        ".business-reviews-card-view__review",
+        ".business-review-view",
         "[class*='review-view']",
         "[class*='business-review-view']",
         "li[class*='review']",
@@ -370,6 +410,8 @@ def _parse_with_playwright(page, reviews: dict) -> None:
         # Текст
         quote = ""
         for text_sel in [
+            ".spoiler-view__text",
+            ".business-review-view__body-text",
             "[class*='review-view__body-text']",
             "[class*='business-review-view__body-text']",
             "[class*='review__text']",
@@ -383,7 +425,11 @@ def _parse_with_playwright(page, reviews: dict) -> None:
 
         # Автор
         author_name = "Аноним"
-        for a_sel in ["[class*='review-view__author']", "[class*='user-icon-view__name']"]:
+        for a_sel in [
+            ".business-review-view__author",
+            "[class*='review-view__author']",
+            "[class*='user-icon-view__name']",
+        ]:
             a = item.locator(a_sel)
             if a.count() > 0:
                 author_name = (a.first.inner_text() or "Аноним").strip() or "Аноним"
