@@ -83,8 +83,10 @@ export const ServiceCard: FC<ServiceCardProps> = ({
         </div>
       </motion.div>
 
-      <div className="relative z-10 hidden flex-1 flex-col justify-center px-6 sm:px-10 md:flex">
-        <h3 className="text-4xl font-black uppercase tracking-tighter text-black md:text-6xl">{title}</h3>
+      <div className="relative z-10 hidden flex-1 flex-col justify-center px-6 sm:px-10 min-[1000px]:max-[1439px]:px-6 md:flex">
+        <h3 className="text-4xl font-black uppercase tracking-tighter text-black md:text-[clamp(1.75rem,3.5vw,3.25rem)] min-[1440px]:text-6xl">
+          {title}
+        </h3>
 
         <motion.p
           aria-hidden={!open}
@@ -95,7 +97,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
             marginTop: open ? 24 : 0,
           }}
           transition={{ duration: 0.55, ease: customEase }}
-          className="max-w-xl overflow-hidden text-lg font-medium leading-tight text-black/50"
+          className="max-w-xl overflow-hidden text-lg font-medium leading-tight text-black/50 min-[1000px]:max-[1439px]:max-w-[min(28rem,42vw)] min-[1000px]:max-[1439px]:text-base"
         >
           {subtitle}
         </motion.p>
@@ -121,9 +123,9 @@ export const ServiceCard: FC<ServiceCardProps> = ({
         </motion.p>
       </div>
 
-      <div className="hidden flex-shrink-0 items-center justify-end pr-6 sm:pr-10 md:flex">
+      <div className="hidden flex-shrink-0 items-center justify-end pr-6 min-[1000px]:max-[1439px]:pr-5 sm:pr-10 md:flex">
         <span
-          className={`text-6xl font-black transition-colors duration-500 md:text-8xl ${
+          className={`text-6xl font-black transition-colors duration-500 md:text-[clamp(3.25rem,7vw,5rem)] min-[1440px]:text-8xl ${
             open ? 'text-[#FF8201]' : 'text-black/5'
           }`}
         >

@@ -6,6 +6,7 @@ import Portfolio from './pages/portfolio.tsx'
 import Project from './pages/project.tsx'
 import Booking from './pages/booking.tsx'
 import Main from './pages/main.tsx'
+import NotFoundPage from './pages/not-found.tsx'
 import Scrollbar from './components/scrollbar/Scrollbar.tsx'
 import Footer from './components/footer/Footer.tsx'
 import ScrollTop from './components/utils/scrolltop.tsx'
@@ -26,6 +27,7 @@ function App() {
           <Route path="/portfolio/:id" element={<Project />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/booking" element={<Booking />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       <Footer />

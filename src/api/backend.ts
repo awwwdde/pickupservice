@@ -104,6 +104,33 @@ export async function fetchContactSettings(): Promise<ApiContactSettings> {
   return await getJson<ApiContactSettings>('/api/projects/contact/')
 }
 
+/**
+ * Главная новость / новинка для виджета на главной.
+ * Бэкенд (позже): GET /api/projects/news/featured/ — один объект JSON.
+ * Поля в snake_case, как в DRF:
+ *   id, title, date_display, excerpt, content, image (путь или URL, может быть null)
+ */
+export interface ApiNewsFeatured {
+  id: number
+  title: string
+  date_display: string
+  excerpt: string
+  content: string
+  image: string | null
+}
+
+export async function fetchFeaturedNews(): Promise<ApiNewsFeatured | null> {
+  try {
+    const data = await getJson<ApiNewsFeatured>('/api/projects/news/featured/')
+    return {
+      ...data,
+      image: data.image ? toAbsoluteMediaUrl(data.image) : null
+    }
+  } catch {
+    return null
+  }
+}
+
 export interface BookingRequestPayload {
   name: string
   phone: string

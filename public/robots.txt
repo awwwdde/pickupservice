@@ -1,5 +1,5 @@
 User-agent: *
 Allow: /
 
-Host: pickupservicetest.netlify.app
-Sitemap: https://pickupservicetest.netlify.app/sitemap.xml
+Host: pickupservice.moscow
+Sitemap: https://pickupservice.moscow/sitemap.xml

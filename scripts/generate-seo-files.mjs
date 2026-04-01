@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const root = process.cwd()
-const rawUrl = process.env.VITE_SITE_URL || 'https://pickupservicetest.netlify.app'
+const rawUrl = process.env.VITE_SITE_URL || 'https://pickupservice.moscow/'
 const siteUrl = rawUrl.replace(/\/+$/, '')
 const host = siteUrl.replace(/^https?:\/\//, '')
 

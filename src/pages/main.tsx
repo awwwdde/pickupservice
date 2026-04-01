@@ -92,9 +92,6 @@ const MainPage: FC = () => {
   const aboutCarouselRef = useRef<HTMLDivElement | null>(null)
   const testimonialsCarouselRef = useRef<HTMLDivElement | null>(null)
 
-  // Контент виден всегда
-  const [isVideoFinished, setIsVideoFinished] = useState(isHeroVideoPlayed)
-  
   const [isMobile, setIsMobile] = useState(false)
   const isMobileRef = useRef(false)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
@@ -104,6 +101,10 @@ const MainPage: FC = () => {
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
   const [dynamicServices, setDynamicServices] = useState(servicesData)
+  /** ≥1440px — исходная вёрстка проектов (540×620 / 300×440); иначе гибкий ряд без скролла */
+  const [projectsLargeDesktop, setProjectsLargeDesktop] = useState(
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 1440px)').matches : false
+  )
 
   const [callbackForm, setCallbackForm] = useState({
     name: '',
@@ -147,6 +148,18 @@ const MainPage: FC = () => {
     return () => mq.removeListener(apply)
   }, [])
 
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1440px)')
+    const sync = () => setProjectsLargeDesktop(mq.matches)
+    sync()
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', sync)
+      return () => mq.removeEventListener('change', sync)
+    }
+    mq.addListener(sync)
+    return () => mq.removeListener(sync)
+  }, [])
+
   const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
     setCallbackSuccess(false)
     setCallbackError('')
@@ -187,7 +200,8 @@ const MainPage: FC = () => {
   const smoothScroll = useSpring(scrollYProgress, springConfig)
   const smoothAbout = useSpring(aboutProgress, springConfig)
   
-  const testimonialsX = useTransform(testimonialsProgress, [0, 1], ["5%", "-65%"])
+  /** На узком десктопе (1000–1439px) карточки уже — меньший ход, без «пустоты» справа */
+  const testimonialsX = useTransform(testimonialsProgress, [0, 1], ['5%', '-56%'])
   const firstBlockY = useTransform(smoothScroll, [0, 1], ['60vh', '-60vh'])
   const secondBlockY = useTransform(smoothScroll, [0, 1], ['80vh', '-80vh'])
   const aboutCardY = useTransform(smoothAbout, [0, 1], ['100vh', '-120vh'])
@@ -306,7 +320,6 @@ const MainPage: FC = () => {
 
   const handleVideoEnd = () => {
     isHeroVideoPlayed = true
-    setIsVideoFinished(true)
   }
 
   // Смена слов
@@ -366,9 +379,9 @@ const MainPage: FC = () => {
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000`}
         />
         
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[min(35px,6vw)]">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[clamp(20px,4vw,48px)]">
           <motion.div
-            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(26px,7vw,64px)] font-semibold tracking-tighter uppercase md:flex-row md:items-center md:justify-between md:gap-4 md:text-left"
+            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase [text-shadow:0_2px_32px_rgba(0,0,0,0.78)] min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease }}
@@ -390,7 +403,7 @@ const MainPage: FC = () => {
                 </AnimatePresence>
               </div>
             </div>
-            <span className="leading-none">ВНЕДОРОЖНИКИ</span>
+            <span className="leading-none md:ml-auto md:flex-shrink-0 md:text-right">ВНЕДОРОЖНИКИ</span>
           </motion.div>
         </div>
 
@@ -411,72 +424,106 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 2: PARALLAX */}
-      <section ref={parallaxRef} className="relative h-[300vh] bg-[#f3f3f1]">
-        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden px-6 text-black sm:px-10">
-          <div className="text-center text-[clamp(44px,8vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter">
+      <section ref={parallaxRef} className="relative h-[300vh] border-0 border-b-0 bg-[#f3f3f1]">
+        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)]">
+          <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)]">
             Собираем и обслуживаем <span className="block text-[#FF8201] md:inline">внедорожники</span>
           </div>
           <motion.div
             style={{ y: firstBlockY }}
-            className="absolute left-[8%] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl sm:px-10 sm:py-6"
+            className="absolute left-[clamp(16px,6vw,8%)] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl min-[1000px]:max-[1439px]:px-4 min-[1000px]:max-[1439px]:py-3 min-[1000px]:max-[1439px]:text-[min(17px,2.35vw)] sm:px-10 sm:py-6"
           >
             ПИКАПСЕРВИС
           </motion.div>
           <motion.div
             style={{ y: secondBlockY }}
-            className="absolute right-[8%] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl sm:p-10"
+            className="absolute right-[clamp(16px,6vw,8%)] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl min-[1000px]:max-[1439px]:max-w-[min(340px,calc(100vw-48px))] min-[1000px]:max-[1439px]:p-5 min-[1000px]:max-[1439px]:text-[min(15px,2.1vw)] sm:p-10"
           >
             Бескомпромиссная подготовка к экспедициям и трофи-рейдам. Ваша уверенность в каждом километре пути.
           </motion.div>
         </div>
       </section>
 
-      {/* SECTION 3: PROJECTS */}
-      <section className="flex justify-center bg-[#f3f3f1] py-24 md:py-32">
-        {/* Desktop/tablet */}
+      {/* SECTION 3: ≥1440px — как изначально (540/300 × 620/440); 768–1439 — flex, чёрный блок уже */}
+      <section className="-mt-px flex justify-center overflow-hidden border-0 bg-[#f3f3f1] py-24 md:py-32 min-[1000px]:max-[1439px]:py-[clamp(4.5rem,8vw,8rem)]">
         <div
-          className="hidden h-[min(620px,72vh)] w-full items-end gap-5 px-[5%] md:flex"
+          className={`hidden h-[min(620px,72vh)] w-full items-end md:flex ${projectsLargeDesktop ? 'justify-center gap-5 px-[5%]' : 'gap-[clamp(8px,1vw,16px)] px-[clamp(18px,3.5vw,4.5rem)]'}`}
           onMouseLeave={() => setActiveProjectIndex(0)}
         >
-          {dynamicProjects.map((p, i) => (
+          {dynamicProjects.map((p, i) => {
+            const isInfo = p.type === 'info'
+            return (
             <motion.div
               key={i}
-              layout
               onMouseEnter={() => setActiveProjectIndex(i)}
-              animate={{
-                width: activeProjectIndex === i ? 540 : 300,
-                height: activeProjectIndex === i ? 620 : 440,
-              }}
-              className="relative cursor-pointer overflow-hidden bg-black shadow-2xl"
+              layout={projectsLargeDesktop}
+              animate={
+                projectsLargeDesktop
+                  ? {
+                      width: activeProjectIndex === i ? 540 : 300,
+                      height: activeProjectIndex === i ? 620 : 440,
+                    }
+                  : isInfo
+                    ? {
+                        flexGrow: 0,
+                        flexShrink: 0,
+                        flexBasis: 'clamp(200px, 18.5vw, 360px)',
+                        height: activeProjectIndex === i ? '100%' : '70.97%',
+                      }
+                    : {
+                        flexGrow: activeProjectIndex === i ? 1.8 : 1,
+                        flexBasis: 0,
+                        flexShrink: 1,
+                        height: activeProjectIndex === i ? '100%' : '70.97%',
+                      }
+              }
+              transition={{ duration: 0.45, ease }}
+              className={`relative cursor-pointer overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)] ${projectsLargeDesktop || isInfo ? 'shrink-0' : 'min-w-0'}`}
             >
               {p.type === 'info' ? (
-                <div className="relative flex h-full w-full flex-col p-[30px]">
+                <div
+                  className={`relative flex h-full w-full flex-col ${projectsLargeDesktop ? 'p-[30px]' : 'px-[clamp(18px,3.2vw,30px)] pb-[clamp(18px,3.2vw,30px)] pt-[clamp(18px,3.2vw,30px)]'}`}
+                >
                   <motion.h2
-                    className="mb-4 font-serif leading-tight"
-                    animate={{ fontSize: activeProjectIndex === i ? '46px' : '34px' }}
+                    className="mb-3 font-serif leading-[1.1] min-[1000px]:max-[1439px]:mb-2.5 md:mb-4"
+                    animate={{
+                      fontSize: projectsLargeDesktop
+                        ? activeProjectIndex === i
+                          ? '46px'
+                          : '34px'
+                        : activeProjectIndex === i
+                          ? 'clamp(26px, calc(2.1vw + 1rem), 46px)'
+                          : 'clamp(20px, calc(1.5vw + 0.75rem), 34px)',
+                    }}
+                    transition={{ duration: 0.45, ease }}
                   >
                     {p.title}
                   </motion.h2>
                   <AnimatePresence>
                     {activeProjectIndex === i && (
-                      <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-[#a0a0a0] text-[15px] leading-relaxed">
+                      <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0 }}
+                        className="text-pretty text-[clamp(13px,calc(1.1vw + 0.65rem),15px)] leading-relaxed text-[#a0a0a0] min-[1000px]:max-[1439px]:leading-snug"
+                      >
                         {p.description}
                       </motion.p>
                     )}
                   </AnimatePresence>
-                  <Link to='/portfolio'>
-                  <div className="absolute bottom-[15px] left-[15px] right-[15px]">
-                    <button className="flex h-[min(108px,12vh)] w-full cursor-pointer items-center justify-center gap-3 border border-white/5 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-[#FF8201]">
-                     ВСЕ РАБОТЫ   <Plus className="h-4 w-4" /> 
-                    </button>
-                  </div>
+                  <Link
+                    to="/portfolio"
+                    className={`absolute flex h-[min(108px,12vh)] cursor-pointer items-center justify-center gap-3 border border-white/5 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-[#FF8201] ${projectsLargeDesktop ? 'bottom-[15px] left-[15px] right-[15px]' : 'bottom-[clamp(18px,3.2vw,30px)] left-[clamp(18px,3.2vw,30px)] right-[clamp(18px,3.2vw,30px)]'}`}
+                  >
+                    ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
                   </Link>
                 </div>
               ) : (
                 <img src={p.image || ''} className="h-full w-full object-cover opacity-80" alt="" />
               )}
             </motion.div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Mobile: все блоки раскрыты, колонка */}
@@ -510,16 +557,16 @@ const MainPage: FC = () => {
 
       {/* SECTION 4: ABOUT */}
       <section ref={aboutRef} className="relative bg-[#f3f3f1] text-black md:h-[300vh]">
-        <div className="hidden md:flex sticky top-0 h-screen w-full items-center justify-center overflow-hidden px-[5%]">
-          <div className="pointer-events-none absolute left-[5%] z-0">
-            <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter">
+        <div className="sticky top-0 hidden h-screen w-full items-center justify-center overflow-hidden px-[5%] min-[1000px]:max-[1439px]:px-[4%] md:flex">
+          <div className="pointer-events-none absolute left-[5%] z-0 min-[1000px]:max-[1439px]:left-[3%]">
+            <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter min-[1000px]:max-[1439px]:text-[9.5vw]">
               <div>КТО</div>
               <div className="text-[#FF8201]">МЫ?</div>
             </div>
           </div>
 
-          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px]">
-            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5">
+          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px] min-[1000px]:max-[1439px]:max-w-[min(720px,86vw)]">
+            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5 min-[1000px]:max-[1439px]:max-h-[min(480px,52vh)]">
               {aboutImages.map((img, i) => (
                 <motion.img
                   key={i}
@@ -536,18 +583,23 @@ const MainPage: FC = () => {
               ))}
             </div>
 
-            <div className="mt-12 flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
-              <div className="max-w-[500px]">
-                <h3 className="mb-4 text-4xl font-bold uppercase tracking-tight">Инженерная эстетика оффроуда</h3>
-                <p className="text-lg leading-relaxed text-black/60">
+            <div className="mt-12 flex flex-col justify-between gap-6 min-[1000px]:max-[1439px]:mt-8 min-[1000px]:max-[1439px]:gap-5 xl:flex-row xl:items-end">
+              <div className="max-w-[500px] min-[1000px]:max-[1439px]:max-w-[420px]">
+                <h3 className="mb-4 text-4xl font-bold uppercase tracking-tight min-[1000px]:max-[1439px]:mb-3 min-[1000px]:max-[1439px]:text-[1.65rem]">
+                  Инженерная эстетика оффроуда
+                </h3>
+                <p className="text-lg leading-relaxed text-black/60 min-[1000px]:max-[1439px]:text-base">
                   Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
                   японское качество в каждой детали.
                 </p>
               </div>
 
-              <button className="flex h-[80px] w-full max-w-[300px] cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors duration-300 hover:bg-[#FF8201]">
+              <Link
+                to="/service"
+                className="flex h-[80px] w-full max-w-[300px] cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors duration-300 hover:bg-[#FF8201]"
+              >
                 УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
-              </button>
+              </Link>
             </div>
           </motion.div>
         </div>
@@ -585,9 +637,12 @@ const MainPage: FC = () => {
               Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
               японское качество в каждой детали.
             </p>
-              <button className="mt-4 flex h-[70px] w-full cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors active:bg-[#FF8201]">
-              <Link to="/service"> УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" /> </Link>
-            </button>
+              <Link
+                to="/service"
+                className="mt-4 flex h-[70px] w-full cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors active:bg-[#FF8201]"
+              >
+                УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
+              </Link>
             
 
           </motion.div>
@@ -595,13 +650,13 @@ const MainPage: FC = () => {
       </section>
       {/* SECTION 5: SERVICES */}
       <section ref={servicesStickyRef} className="relative w-full bg-[#f3f3f1] text-black md:h-[300vh]">
-        <div className="sticky top-0 hidden h-screen w-full flex-col items-center justify-center overflow-hidden py-8 md:flex">
-          <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10">
-            <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(2.5rem,4.5vw,4rem)]">
+        <div className="sticky top-0 hidden h-screen w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:py-6 md:flex">
+          <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10 min-[1000px]:max-[1439px]:mb-6">
+            <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]">
               Чем мы занимаемся
             </h2>
           </div>
-          <div className="flex w-[90%] flex-col border-t border-black/10">
+          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10">
             {dynamicServices.map((service, index) => (
               <ServiceCard
                 key={index}
@@ -638,13 +693,14 @@ const MainPage: FC = () => {
       {/* SECTION 6: TESTIMONIALS */}
       <section ref={testimonialsRef} className="relative bg-[#020202] md:h-[300vh]">
         {/* Desktop */}
-        <div className="hidden md:flex sticky top-0 flex h-screen w-full flex-col justify-center overflow-hidden">
-          <div className="mb-16 px-[5%]">
-            <h2 className="text-4xl font-black uppercase tracking-tighter md:text-6xl text-white">
-              Несколько слов <br /><span className="text-[#FF8201]">от наших клиентов</span>
+        <div className="sticky top-0 hidden h-screen w-full flex-col justify-center overflow-hidden md:flex">
+          <div className="mb-16 px-[5%] min-[1000px]:max-[1439px]:mb-12 min-[1000px]:max-[1439px]:px-[4%]">
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-white leading-tight md:text-[clamp(1.65rem,3.4vw,2.6rem)] min-[1440px]:text-6xl min-[1440px]:leading-none">
+              Несколько слов <br />
+              <span className="text-[#FF8201]">от наших клиентов</span>
             </h2>
           </div>
-          <motion.div style={{ x: testimonialsX }} className="flex gap-10 px-[5%] w-max">
+          <motion.div style={{ x: testimonialsX }} className="flex w-max gap-10 px-[5%] min-[1000px]:max-[1439px]:gap-6 min-[1000px]:max-[1439px]:px-[4%]">
             {testimonialsData.map((testimonial, i) => (
               <TestimonialCard
                 key={i}
@@ -653,7 +709,12 @@ const MainPage: FC = () => {
                 car={testimonial.car}
               />
             ))}
-            <a href="maps.yandex.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors text-[6vh]">
+            <a
+              href="https://maps.yandex.ru/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[clamp(1.75rem,5.5vh,3.75rem)] text-white transition-colors hover:text-gray-300 min-[1000px]:max-[1439px]:text-[clamp(1.5rem,4.2vh,2.75rem)]"
+            >
               {' '}
               все отзывы{' '}
             </a>
@@ -699,7 +760,7 @@ const MainPage: FC = () => {
           </div>
 
           <a
-            href="maps.yandex.ru"
+            href="https://maps.yandex.ru/"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-10 block text-white hover:text-gray-300 transition-colors text-base font-semibold"
