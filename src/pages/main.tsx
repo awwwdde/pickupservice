@@ -24,6 +24,7 @@ import { TestimonialCard } from '../components/reviewcard/TestimonialCard'
 import { InputField } from '../components/inputfields/InputField'
 import { fetchAccordionItems, fetchProjects, submitCallbackRequest } from '../api/backend'
 import { Link } from 'react-router-dom'
+import NewsHeroBlock from '../components/news/NewsCard'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
@@ -406,6 +407,7 @@ const MainPage: FC = () => {
             <span>прокрутите вниз, чтобы узнать больше</span>
           </motion.div>
         </div>
+        <NewsHeroBlock/>
       </section>
 
       {/* SECTION 2: PARALLAX */}

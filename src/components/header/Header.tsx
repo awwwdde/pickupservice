@@ -32,6 +32,7 @@ const Header: FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [pastHero, setPastHero] = useState(false)
 
+  // 1. Hero Visibility Observer
   useEffect(() => {
     const hero = document.getElementById('site-hero')
     if (!hero) {
@@ -50,7 +51,7 @@ const Header: FC = () => {
     return () => observer.disconnect()
   }, [location.pathname])
 
-  // Определяем, светлый или тёмный фон под хедером, и анимируем цвет текста
+  // 2. Dynamic Color Detection
   useEffect(() => {
     const getBackgroundColor = (el: HTMLElement | null): string | null => {
       let current: HTMLElement | null = el
@@ -76,6 +77,9 @@ const Header: FC = () => {
     }
 
     const updateBackground = () => {
+      // CRITICAL: If menu is open, do not recalculate. Keep the last known "good" color.
+      if (isMenuOpen) return
+
       const header = document.querySelector('header')
       if (!header) return
       const rect = header.getBoundingClientRect()
@@ -95,7 +99,7 @@ const Header: FC = () => {
       window.removeEventListener('scroll', updateBackground)
       window.removeEventListener('resize', updateBackground)
     }
-  }, [])
+  }, [isMenuOpen]) // Re-run when menu state changes to lock/unlock detection
 
   const closeMenu = () => setIsMenuOpen(false)
 
@@ -103,13 +107,14 @@ const Header: FC = () => {
     <motion.header
       className="fixed inset-x-0 top-3 z-[999] flex justify-center px-3 sm:top-5"
       animate={{
+        // Maintain color logic: White text on dark BG, Dark text on light BG
         color: isDarkBackground ? '#ffffff' : '#0a0a0a',
         opacity: pastHero ? 0.95 : 1,
       }}
       transition={colorTransition}
     >
       <nav className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-1 sm:gap-6 md:flex-col md:items-center md:gap-3">
-        {/* LOGO без блока, просто ссылка */}
+        {/* LOGO */}
         <Link
           to="/"
           className="flex shrink-0 items-center justify-center text-inherit leading-none"
@@ -118,7 +123,7 @@ const Header: FC = () => {
           <PickupLogo className="h-[3rem] w-auto sm:h-[3.5rem]" />
         </Link>
 
-        {/* ДЕСКТОПНЫЕ ССЫЛКИ (под логотипом на больших экранах) */}
+        {/* DESKTOP LINKS */}
         <div className="hidden items-center justify-center md:flex">
           <AnimatePresence mode="wait">
             <motion.ul
@@ -138,69 +143,73 @@ const Header: FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* БУРГЕР (справа на мобиле) — компактный блок */}
+        {/* BURGER BUTTON (MOBILE) */}
         <div className="flex shrink-0 items-center justify-end md:hidden">
           <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] border border-white/15 px-0.5 shadow-xl">
-          <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
+            <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
           </div>
         </div>
       </nav>
 
-      {/* FULLSCREEN MENU */}
+      {/* FULLSCREEN MENU PANEL */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            animate={{ opacity: 1, backdropFilter: 'blur(20px)' }}
-            exit={{ opacity: 0, backdropFilter: 'blur(0px)' }}
-            transition={{ duration: 0.5, ease: easeSwap }}
-            className="fixed inset-0 z-[2000] flex flex-col justify-between bg-[#02020202] p-6 md:hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: easeSwap }}
+            // Fix: Added high z-index and high-contrast background
+            className="fixed inset-0 z-[10000] flex flex-col justify-between bg-black/95 p-6 backdrop-blur-2xl md:hidden"
           >
-            {/* TOP */}
+            {/* TOP BAR */}
             <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.4, ease: easeSwap }}
-              className="flex justify-between text-white"
+              className="flex justify-between items-center text-white/80"
             >
-              <div>EU</div>
+              <div className="text-sm tracking-widest font-medium">EU</div>
 
-              <div className="flex gap-4 items-center">
-                <div>
+              <div className="flex gap-6 items-center">
+                <div className="text-sm tabular-nums">
                   {new Date().toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
                 </div>
 
-                <button onClick={() => setIsMenuOpen(false)}>
-                  <X />
+                <button 
+                  onClick={closeMenu}
+                  className="p-1 hover:opacity-70 transition-opacity"
+                >
+                  <X size={32} strokeWidth={1.5} className="text-white" />
                 </button>
               </div>
             </motion.div>
 
-            {/* LINKS */}
+            {/* LINKS - Forced White Text for dark overlay */}
             <motion.div
-              className="flex flex-col items-center gap-8 text-2xl text-white"
+              className="flex flex-col items-center gap-8 text-3xl font-light text-white"
               initial="hidden"
               animate="visible"
               variants={{
                 visible: {
                   transition: {
-                    staggerChildren: 0.08,
-                    delayChildren: 0.15,
+                    staggerChildren: 0.1,
+                    delayChildren: 0.2,
                   },
                 },
               }}
             >
-              {navLinks.map(link => (
+              {navLinks.map((link) => (
                 <motion.div
                   key={link.to}
                   variants={{
-                    hidden: { opacity: 0, y: 30, scale: 0.95 },
-                    visible: { opacity: 1, y: 0, scale: 1 },
+                    hidden: { opacity: 0, y: 30 },
+                    visible: { opacity: 1, y: 0 },
                   }}
-                  transition={{ duration: 0.45, ease: easeSwap }}
+                  transition={{ duration: 0.5, ease: easeSwap }}
                 >
                   <SimpleNavLink to={link.to} onClick={closeMenu}>
                     {link.label}
@@ -209,7 +218,8 @@ const Header: FC = () => {
               ))}
             </motion.div>
 
-            <div />
+            {/* BOTTOM SPACER */}
+            <div className="h-10" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -217,7 +227,7 @@ const Header: FC = () => {
   )
 }
 
-/* ================= SIMPLE NAV LINK (без магнита) ================= */
+/* ================= SIMPLE NAV LINK ================= */
 
 const SimpleNavLink: FC<{
   to: string
@@ -227,20 +237,23 @@ const SimpleNavLink: FC<{
   <Link
     to={to}
     onClick={onClick}
-    className="whitespace-nowrap text-inherit transition-opacity duration-200 hover:opacity-80"
+    className="whitespace-nowrap text-inherit transition-opacity duration-200 hover:opacity-70"
   >
     {children}
   </Link>
 )
 
-/* ================= BURGER ================= */
+/* ================= BURGER BUTTON ================= */
 
 const BurgerMenuButton: FC<{
   isMenuOpen: boolean
   setIsMenuOpen: Dispatch<SetStateAction<boolean>>
 }> = ({ isMenuOpen, setIsMenuOpen }) => (
-  <button onClick={() => setIsMenuOpen(prev => !prev)}>
-    {isMenuOpen ? <X /> : <Menu />}
+  <button 
+    onClick={() => setIsMenuOpen((prev) => !prev)}
+    className="flex items-center justify-center w-full h-full text-inherit"
+  >
+    {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
   </button>
 )
 
