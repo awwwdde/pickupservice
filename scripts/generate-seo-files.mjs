@@ -58,10 +58,10 @@ function patchIndexHtml() {
   html = html
     .replace(/<link rel="canonical" href="https?:\/\/[^"]*"\s*\/?>/, `<link rel="canonical" href="${siteUrl}/" />`)
     .replace(/<meta property="og:url" content="https?:\/\/[^"]*"\s*\/?>/, `<meta property="og:url" content="${siteUrl}/" />`)
-    .replace(/<meta property="og:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta property="og:image" content="${siteUrl}/vite.svg" />`)
-    .replace(/<meta name="twitter:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta name="twitter:image" content="${siteUrl}/vite.svg" />`)
+    .replace(/<meta property="og:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta property="og:image" content="${siteUrl}/pickup.svg" />`)
+    .replace(/<meta name="twitter:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta name="twitter:image" content="${siteUrl}/pickup.svg" />`)
     .replace(/"url":\s*"https?:\/\/[^"]*\/"/, `"url": "${siteUrl}/"`)
-    .replace(/"image":\s*"https?:\/\/[^"]*"/, `"image": "${siteUrl}/vite.svg"`)
+    .replace(/"image":\s*"https?:\/\/[^"]*"/, `"image": "${siteUrl}/pickup.svg"`)
 
   writeFileSync(indexPath, html)
 }
