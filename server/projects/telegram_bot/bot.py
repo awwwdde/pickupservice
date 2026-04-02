@@ -4,6 +4,7 @@ import asyncio
 import logging
 from dataclasses import dataclass
 
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.constants import ChatAction
@@ -99,6 +100,24 @@ def _split_telegram(text: str, limit: int = 3900) -> list[str]:
     return parts
 
 
+def _fetch_list_page(query: ListQuery) -> tuple[int, list[str], str]:
+    """Синхронная выборка из БД (вызывать через sync_to_async из async handlers)."""
+    offset = query.page * PAGE_SIZE
+    if query.request_type == "booking":
+        base = BookingRequest.objects.order_by("-created_at")
+        total = base.count()
+        items = list(base[offset : offset + PAGE_SIZE])
+        blocks = [format_booking(o) for o in items]
+        header = f"Последние заявки: Запись (стр. {query.page + 1})"
+    else:
+        base = CallbackRequest.objects.order_by("-created_at")
+        total = base.count()
+        items = list(base[offset : offset + PAGE_SIZE])
+        blocks = [format_callback(o) for o in items]
+        header = f"Последние заявки: Звонок (стр. {query.page + 1})"
+    return total, blocks, header
+
+
 async def _send_or_edit(update: Update, text: str, reply_markup: InlineKeyboardMarkup | None) -> None:
     if update.callback_query:
         try:
@@ -161,19 +180,7 @@ async def list_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    offset = query.page * PAGE_SIZE
-    if query.request_type == "booking":
-        base = BookingRequest.objects.order_by("-created_at")
-        total = base.count()
-        items = list(base[offset : offset + PAGE_SIZE])
-        blocks = [format_booking(o) for o in items]
-        header = f"Последние заявки: Запись (стр. {query.page + 1})"
-    else:
-        base = CallbackRequest.objects.order_by("-created_at")
-        total = base.count()
-        items = list(base[offset : offset + PAGE_SIZE])
-        blocks = [format_callback(o) for o in items]
-        header = f"Последние заявки: Звонок (стр. {query.page + 1})"
+    total, blocks, header = await sync_to_async(_fetch_list_page)(query)
 
     has_prev = query.page > 0
     has_next = offset + PAGE_SIZE < total
@@ -207,19 +214,23 @@ async def outbox_tick(context: ContextTypes.DEFAULT_TYPE) -> None:
     if not allowed_targets:
         return
 
-    pending = fetch_pending(limit=30)
+    pending = await sync_to_async(fetch_pending)(limit=30)
     for msg in pending:
         if msg.target_chat_id not in allowed_targets:
-            mark_failed(msg, "target_chat_id не в whitelist/notify списках", permanent=True)
+            await sync_to_async(mark_failed)(
+                msg, "target_chat_id не в whitelist/notify списках", permanent=True
+            )
             continue
 
-        mark_attempt(msg)
+        await sync_to_async(mark_attempt)(msg)
         try:
-            await context.bot.send_message(chat_id=msg.target_chat_id, text=msg.message_text)
-            mark_sent(msg)
+            await context.bot.send_message(
+                chat_id=msg.target_chat_id, text=msg.message_text
+            )
+            await sync_to_async(mark_sent)(msg)
         except Exception as exc:
             permanent = (msg.attempts + 1) >= MAX_OUTBOX_ATTEMPTS
-            mark_failed(msg, str(exc), permanent=permanent)
+            await sync_to_async(mark_failed)(msg, str(exc), permanent=permanent)
 
         await asyncio.sleep(0)
 
