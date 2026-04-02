@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     ProjectViewSet,
     AccordionItemViewSet,
+    NoveltyViewSet,
     ServiceGalleryImageViewSet,
     TestimonialViewSet,
     TestimonialsSettingsView,
@@ -36,6 +37,12 @@ urlpatterns = [
         "testimonials/settings/",
         TestimonialsSettingsView.as_view(),
         name="testimonials-settings",
+    ),
+    # до router: иначе ProjectViewSet с pk перехватит "novinki" как id проекта
+    path(
+        "novinki/",
+        NoveltyViewSet.as_view({"get": "list"}),
+        name="novelty-list",
     ),
 ] + router.urls
 

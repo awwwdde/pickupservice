@@ -14,6 +14,7 @@ require_cmd() {
 
 WORKDIR="${WORKDIR:-/var/www/pickupservice}"
 DJANGO_ENV_FILE="${DJANGO_ENV_FILE:-/etc/default/pickupservice.django.env}"
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 
 # Vite variables are baked into the build output.
 VITE_SITE_URL="${VITE_SITE_URL:-https://pickupservice.moscow}"
@@ -62,12 +63,14 @@ if [[ -n "${GITHUB_TOKEN:-}" ]]; then
   trap cleanup EXIT
 
   auth_url="https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${repo_slug}.git"
-  log "Pulling latest code via HTTPS token (origin updated temporarily)"
+  log "Fetching latest code via HTTPS token (origin updated temporarily)"
   git remote set-url origin "$auth_url" >/dev/null
-  git pull --ff-only
+  git fetch origin "$DEPLOY_BRANCH"
+  git reset --hard "origin/$DEPLOY_BRANCH"
 else
-  log "GITHUB_TOKEN not set; running plain git pull"
-  git pull
+  log "GITHUB_TOKEN not set; fetching and resetting to origin/$DEPLOY_BRANCH"
+  git fetch origin "$DEPLOY_BRANCH"
+  git reset --hard "origin/$DEPLOY_BRANCH"
 fi
 
 log "Building frontend (Vite)"

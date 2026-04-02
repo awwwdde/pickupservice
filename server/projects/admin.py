@@ -14,6 +14,7 @@ from .models import (
     ProjectImage,
     ProjectPreparationStage,
     AccordionItem,
+    Novelty,
     ServiceGalleryImage,
     BookingRequest,
     CallbackRequest,
@@ -134,6 +135,54 @@ class AccordionItemAdmin(admin.ModelAdmin):
     )
 
     def thumbnail(self, obj: AccordionItem) -> str:
+        if not obj.image:
+            return ""
+        return format_html(
+            '<img src="{}" style="max-height: 80px; max-width: 140px; object-fit: cover;" />',
+            obj.image.url,
+        )
+
+    thumbnail.short_description = "Фото"
+
+
+@admin.register(Novelty)
+class NoveltyAdmin(admin.ModelAdmin):
+    list_display = (
+        "thumbnail",
+        "title",
+        "starts_at",
+        "ends_at",
+        "order",
+        "published",
+        "created_at",
+    )
+    list_editable = ("order", "published")
+    list_filter = ("published", "starts_at", "ends_at")
+    search_fields = ("title", "description")
+    readonly_fields = ("thumbnail", "created_at", "updated_at")
+    fieldsets = (
+        (
+            "Контент",
+            {
+                "fields": (
+                    "title",
+                    "description",
+                    "image",
+                    "thumbnail",
+                )
+            },
+        ),
+        (
+            "Период предложения",
+            {"fields": ("starts_at", "ends_at")},
+        ),
+        (
+            "Публикация и порядок",
+            {"fields": ("order", "published", "created_at", "updated_at")},
+        ),
+    )
+
+    def thumbnail(self, obj: Novelty) -> str:
         if not obj.image:
             return ""
         return format_html(

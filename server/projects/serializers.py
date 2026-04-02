@@ -5,6 +5,7 @@ from .models import (
     ProjectImage,
     ProjectPreparationStage,
     AccordionItem,
+    Novelty,
     ServiceGalleryImage,
     BookingRequest,
     CallbackRequest,
@@ -80,6 +81,22 @@ class AccordionItemSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "image",
+            "order",
+        )
+
+
+class NoveltySerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(read_only=True)
+
+    class Meta:
+        model = Novelty
+        fields = (
+            "id",
+            "title",
+            "description",
+            "image",
+            "starts_at",
+            "ends_at",
             "order",
         )
 

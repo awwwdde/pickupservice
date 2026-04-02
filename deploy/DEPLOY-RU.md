@@ -230,6 +230,8 @@ sudo chown -R www-data:www-data /var/www/pickupservice/server
 - `TELEGRAM_WHITELIST_USER_IDS` — user_id, кому разрешены команды (через запятую).
 - `TELEGRAM_WHITELIST_CHAT_IDS` — chat_id разрешённых групп/каналов (через запятую).
 - `TELEGRAM_NOTIFY_CHAT_IDS` — куда слать авто-уведомления о новых заявках (через запятую). Если пусто, используется фолбэк на whitelist.
+- `TELEGRAM_PROXY_URL` — прокси для Bot API, если с сервера нет прямого доступа к Telegram. Формат: `http://USER:PASS@HOST:PORT` или `socks5://USER:PASS@HOST:PORT` (в зависимости от провайдера; в `requirements.txt` уже есть `python-telegram-bot[...,socks]`).
+- `TELEGRAM_GET_UPDATES_PROXY_URL` — отдельный прокси для long polling (`getUpdates`). Если пусто, используется `TELEGRAM_PROXY_URL`. Имеет смысл, когда у провайдера разные порты для HTTP и SOCKS5.
 
 ### 8.2 systemd unit
 

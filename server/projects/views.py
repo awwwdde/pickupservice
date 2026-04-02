@@ -3,6 +3,7 @@ import logging
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from django.utils import timezone
 from rest_framework import status, viewsets, mixins
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from rest_framework.views import APIView
 from .models import (
     Project,
     AccordionItem,
+    Novelty,
     ServiceGalleryImage,
     ContactSettings,
     Testimonial,
@@ -23,6 +25,7 @@ from .serializers import (
     ProjectListSerializer,
     ProjectDetailSerializer,
     AccordionItemSerializer,
+    NoveltySerializer,
     ServiceGalleryImageSerializer,
     BookingRequestCreateSerializer,
     CallbackRequestCreateSerializer,
@@ -135,6 +138,25 @@ class AccordionItemViewSet(
 
     # отключаем пагинацию только для этого списка, чтобы вернуть простой массив
     pagination_class = None
+
+
+class NoveltyViewSet(
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = NoveltySerializer
+    pagination_class = None
+
+    def get_queryset(self):
+        now = timezone.now()
+        return (
+            Novelty.objects.filter(
+                published=True,
+                starts_at__lte=now,
+                ends_at__gte=now,
+            )
+            .order_by("order", "-starts_at", "-created_at")
+        )
 
 
 class ServiceGalleryImageViewSet(

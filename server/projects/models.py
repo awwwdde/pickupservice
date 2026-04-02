@@ -98,6 +98,36 @@ class AccordionItem(models.Model):
         return self.title
 
 
+class Novelty(models.Model):
+    """Новинка / ограниченное по времени предложение для блока на сайте."""
+
+    title = models.CharField("Название", max_length=255)
+    description = models.TextField("Описание", blank=True)
+    image = models.ImageField("Фото", upload_to="novelties/")
+    starts_at = models.DateTimeField("Время запуска предложения")
+    ends_at = models.DateTimeField("Окончание предложения")
+    order = models.PositiveIntegerField("Порядок отображения", default=0)
+    published = models.BooleanField("Опубликован", default=True)
+    created_at = models.DateTimeField("Создан", auto_now_add=True)
+    updated_at = models.DateTimeField("Обновлён", auto_now=True)
+
+    class Meta:
+        ordering = ["order", "-starts_at", "-created_at"]
+        verbose_name = "Новинка"
+        verbose_name_plural = "Новинки"
+
+    def __str__(self) -> str:
+        return self.title
+
+    def clean(self):
+        from django.core.exceptions import ValidationError
+
+        if self.starts_at and self.ends_at and self.ends_at <= self.starts_at:
+            raise ValidationError(
+                {"ends_at": "Должно быть позже времени запуска предложения."}
+            )
+
+
 class ServiceGalleryImage(models.Model):
     image = models.ImageField("Фото", upload_to="service/gallery/")
     order = models.PositiveIntegerField("Порядок отображения", default=0)
