@@ -1,10 +1,11 @@
-import { type FC, type FormEvent, useEffect, useState } from 'react'
+import { type FC, type FormEvent, useCallback, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import Lenis from 'lenis'
 import { InputField } from '../components/inputfields/InputField'
 import { useParams } from 'react-router-dom'
 import { fetchProjectById, submitCallbackRequest } from '../api/backend'
+import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
 
 import image1 from '../assets/img/image1.png'
 import image2 from '../assets/img/image2.png'
@@ -45,8 +46,9 @@ const ProjectPage: FC = () => {
     website: '',
   })
   const [callbackSubmitting, setCallbackSubmitting] = useState(false)
-  const [callbackSuccess, setCallbackSuccess] = useState(false)
-  const [callbackError, setCallbackError] = useState('')
+  const [formToast, setFormToast] = useState<FormToastPayload>(null)
+
+  const dismissFormToast = useCallback(() => setFormToast(null), [])
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
@@ -63,16 +65,14 @@ const ProjectPage: FC = () => {
   }, [])
 
   const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
-    setCallbackSuccess(false)
-    setCallbackError('')
+    setFormToast(null)
     setCallbackForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleCallbackSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (callbackSubmitting) return
-    setCallbackError('')
-    setCallbackSuccess(false)
+    setFormToast(null)
     setCallbackSubmitting(true)
     try {
       await submitCallbackRequest({
@@ -80,10 +80,15 @@ const ProjectPage: FC = () => {
         phone: callbackForm.phone.trim(),
         website: callbackForm.website,
       })
-      setCallbackSuccess(true)
+      setFormToast({
+        variant: 'success',
+        message: 'Заявка отправлена. Мы свяжемся с вами в ближайшее время.',
+      })
       setCallbackForm({ name: '', phone: '', website: '' })
     } catch (err) {
-      setCallbackError(err instanceof Error ? err.message : 'Ошибка отправки.')
+      const msg =
+        err instanceof Error ? err.message : 'Не удалось отправить заявку. Проверьте соединение и попробуйте снова.'
+      setFormToast({ variant: 'error', message: msg })
     } finally {
       setCallbackSubmitting(false)
     }
@@ -244,19 +249,11 @@ const ProjectPage: FC = () => {
               {callbackSubmitting ? 'Отправка…' : 'Отправить заявку'}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
             </motion.button>
-            {callbackSuccess && (
-              <p className="w-full text-sm text-emerald-400/90 mt-4 md:mt-0 md:ml-auto" role="status">
-                Заявка отправлена. Мы свяжемся с вами в ближайшее время.
-              </p>
-            )}
-            {callbackError && (
-              <p className="w-full text-sm text-red-400/90 mt-4 md:mt-0 md:ml-auto" role="alert">
-                {callbackError}
-              </p>
-            )}
           </form>
         </div>
       </section>
+
+      <FormToast toast={formToast} onDismiss={dismissFormToast} durationMs={5000} />
     </div>
   )
 }

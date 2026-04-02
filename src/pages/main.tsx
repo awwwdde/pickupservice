@@ -1,5 +1,5 @@
 import type { FC, FormEvent } from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   AnimatePresence,
   motion,
@@ -22,9 +22,15 @@ import image4 from '../assets/img/images4.png'
 import { ServiceCard } from '../components/accordeoncard/ServiceCard'
 import { TestimonialCard } from '../components/reviewcard/TestimonialCard'
 import { InputField } from '../components/inputfields/InputField'
-import { fetchAccordionItems, fetchProjects, submitCallbackRequest } from '../api/backend'
+import {
+  fetchAccordionItems,
+  fetchProjects,
+  fetchTestimonials,
+  submitCallbackRequest
+} from '../api/backend'
 import { Link } from 'react-router-dom'
 import NewsHeroBlock from '../components/news/NewsCard'
+import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
@@ -63,18 +69,23 @@ const servicesData = [
   }
 ]
 
-const testimonialsData = [
+type HomeTestimonial = { id: string | number; quote: string; name: string; car: string }
+
+const testimonialsData: HomeTestimonial[] = [
   {
+    id: 'local-0',
     quote: "Ребята из Пикапсервис превратили мой обычный крузак в настоящего монстра бездорожья. Качество сварных швов и внимание к деталям просто поражают. Прошел Кольский полуостров без единой поломки.",
     name: "Алексей Смирнов",
     car: "Toyota Land Cruiser 200"
   },
   {
+    id: 'local-1',
     quote: "Идеальная работа с подвеской. Машина перестала 'козлить' на грейдере, а энергоемкость теперь позволяет не сбрасывать газ там, где остальные ползут. Лучший сервис для подготовки.",
     name: "Дмитрий Волков",
     car: "Nissan Patrol Y61"
   },
   {
+    id: 'local-2',
     quote: "Делали полный ребилд салона и устанавливали спальник с органайзером. Теперь в экспедициях сплю как дома, все вещи на своих местах. Очень грамотный инженерный подход.",
     name: "Михаил Захаров",
     car: "Toyota Hilux"
@@ -101,6 +112,8 @@ const MainPage: FC = () => {
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
   const [dynamicServices, setDynamicServices] = useState(servicesData)
+  const [displayTestimonials, setDisplayTestimonials] = useState<HomeTestimonial[]>(testimonialsData)
+  const [allReviewsUrl, setAllReviewsUrl] = useState('https://yandex.ru/maps/org/pikapservis_msk/121304824267/reviews/?ll=37.679951%2C55.758331&z=16')
   /** ≥1440px — исходная вёрстка проектов (540×620 / 300×440); иначе гибкий ряд без скролла */
   const [projectsLargeDesktop, setProjectsLargeDesktop] = useState(
     typeof window !== 'undefined' ? window.matchMedia('(min-width: 1440px)').matches : false
@@ -112,8 +125,9 @@ const MainPage: FC = () => {
     website: '',
   })
   const [callbackSubmitting, setCallbackSubmitting] = useState(false)
-  const [callbackSuccess, setCallbackSuccess] = useState(false)
-  const [callbackError, setCallbackError] = useState('')
+  const [formToast, setFormToast] = useState<FormToastPayload>(null)
+
+  const dismissFormToast = useCallback(() => setFormToast(null), [])
 
   useEffect(() => {
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
@@ -161,16 +175,14 @@ const MainPage: FC = () => {
   }, [])
 
   const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
-    setCallbackSuccess(false)
-    setCallbackError('')
+    setFormToast(null)
     setCallbackForm((prev) => ({ ...prev, [key]: value }))
   }
 
   const handleCallbackSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (callbackSubmitting) return
-    setCallbackError('')
-    setCallbackSuccess(false)
+    setFormToast(null)
     setCallbackSubmitting(true)
     try {
       await submitCallbackRequest({
@@ -178,10 +190,15 @@ const MainPage: FC = () => {
         phone: callbackForm.phone.trim(),
         website: callbackForm.website,
       })
-      setCallbackSuccess(true)
+      setFormToast({
+        variant: 'success',
+        message: 'Заявка отправлена. Мы свяжемся с вами в ближайшее время.',
+      })
       setCallbackForm({ name: '', phone: '', website: '' })
     } catch (err) {
-      setCallbackError(err instanceof Error ? err.message : 'Ошибка отправки.')
+      const msg =
+        err instanceof Error ? err.message : 'Не удалось отправить заявку. Проверьте соединение и попробуйте снова.'
+      setFormToast({ variant: 'error', message: msg })
     } finally {
       setCallbackSubmitting(false)
     }
@@ -359,6 +376,24 @@ const MainPage: FC = () => {
         // Фолбэк — локальные карточки.
       })
 
+    fetchTestimonials()
+      .then((data) => {
+        if (cancelled || !data?.results?.length) return
+        setDisplayTestimonials(
+          data.results.map((t) => ({
+            id: t.id,
+            quote: t.quote,
+            name: t.name,
+            car: t.car || ''
+          }))
+        )
+        const url = data.settings?.yandex_widget_url?.trim()
+        if (url) setAllReviewsUrl(url)
+      })
+      .catch(() => {
+        // Фолбэк — testimonialsData из константы.
+      })
+
     return () => {
       cancelled = true
     }
@@ -426,18 +461,18 @@ const MainPage: FC = () => {
       {/* SECTION 2: PARALLAX */}
       <section ref={parallaxRef} className="relative h-[300vh] border-0 border-b-0 bg-[#f3f3f1]">
         <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)]">
-          <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)]">
+          <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)] min-[1440px]:max-w-[min(980px,94vw)] min-[1440px]:text-[clamp(40px,7vw,104px)]">
             Собираем и обслуживаем <span className="block text-[#FF8201] md:inline">внедорожники</span>
           </div>
           <motion.div
             style={{ y: firstBlockY }}
-            className="absolute left-[clamp(16px,6vw,8%)] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl min-[1000px]:max-[1439px]:px-4 min-[1000px]:max-[1439px]:py-3 min-[1000px]:max-[1439px]:text-[min(17px,2.35vw)] sm:px-10 sm:py-6"
+            className="absolute left-[clamp(16px,6vw,8%)] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl min-[1000px]:max-[1439px]:px-4 min-[1000px]:max-[1439px]:py-3 min-[1000px]:max-[1439px]:text-[min(17px,2.35vw)] min-[1440px]:px-10 min-[1440px]:py-6 min-[1440px]:text-[min(24px,4.5vw)] sm:px-10 sm:py-6"
           >
             ПИКАПСЕРВИС
           </motion.div>
           <motion.div
             style={{ y: secondBlockY }}
-            className="absolute right-[clamp(16px,6vw,8%)] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl min-[1000px]:max-[1439px]:max-w-[min(340px,calc(100vw-48px))] min-[1000px]:max-[1439px]:p-5 min-[1000px]:max-[1439px]:text-[min(15px,2.1vw)] sm:p-10"
+            className="absolute right-[clamp(16px,6vw,8%)] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl min-[1000px]:max-[1439px]:max-w-[min(340px,calc(100vw-48px))] min-[1000px]:max-[1439px]:p-5 min-[1000px]:max-[1439px]:text-[min(15px,2.1vw)] min-[1440px]:max-w-[min(520px,36vw)] min-[1440px]:p-9 min-[1440px]:text-[clamp(1.125rem,calc(1.15vw + 0.85rem),1.5rem)] min-[1440px]:leading-relaxed sm:p-10"
           >
             Бескомпромиссная подготовка к экспедициям и трофи-рейдам. Ваша уверенность в каждом километре пути.
           </motion.div>
@@ -701,16 +736,16 @@ const MainPage: FC = () => {
             </h2>
           </div>
           <motion.div style={{ x: testimonialsX }} className="flex w-max gap-10 px-[5%] min-[1000px]:max-[1439px]:gap-6 min-[1000px]:max-[1439px]:px-[4%]">
-            {testimonialsData.map((testimonial, i) => (
+            {displayTestimonials.map((testimonial) => (
               <TestimonialCard
-                key={i}
+                key={testimonial.id}
                 quote={testimonial.quote}
                 name={testimonial.name}
                 car={testimonial.car}
               />
             ))}
             <a
-              href="https://maps.yandex.ru/"
+              href={allReviewsUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="text-[clamp(1.75rem,5.5vh,3.75rem)] text-white transition-colors hover:text-gray-300 min-[1000px]:max-[1439px]:text-[clamp(1.5rem,4.2vh,2.75rem)]"
@@ -733,9 +768,9 @@ const MainPage: FC = () => {
             className="mt-10 overflow-x-auto snap-x snap-mandatory pb-4 -mx-[6%] px-[6%]"
           >
             <div className="flex gap-4 w-max">
-              {testimonialsData.map((testimonial, i) => (
+              {displayTestimonials.map((testimonial, slideIndex) => (
                 <div
-                  key={i}
+                  key={testimonial.id}
                   data-testimonial-slide
                   className="snap-start flex-none"
                   style={{ width: 'min(85vw, 380px)' }}
@@ -743,8 +778,8 @@ const MainPage: FC = () => {
                   <motion.div
                     initial={false}
                     animate={{
-                      scale: activeTestimonialIndex === i ? 1 : 0.98,
-                      opacity: activeTestimonialIndex === i ? 1 : 0.75
+                      scale: activeTestimonialIndex === slideIndex ? 1 : 0.98,
+                      opacity: activeTestimonialIndex === slideIndex ? 1 : 0.75
                     }}
                     transition={{ duration: 0.25 }}
                   >
@@ -760,7 +795,7 @@ const MainPage: FC = () => {
           </div>
 
           <a
-            href="https://maps.yandex.ru/"
+            href={allReviewsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="mt-10 block text-white hover:text-gray-300 transition-colors text-base font-semibold"
@@ -823,19 +858,11 @@ const MainPage: FC = () => {
               {callbackSubmitting ? 'Отправка…' : 'Отправить заявку'}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
             </motion.button>
-            {callbackSuccess && (
-              <p className="w-full text-sm text-emerald-400/90 mt-4 md:mt-0 md:ml-auto" role="status">
-                Заявка отправлена. Мы свяжемся с вами в ближайшее время.
-              </p>
-            )}
-            {callbackError && (
-              <p className="w-full text-sm text-red-400/90 mt-4 md:mt-0 md:ml-auto" role="alert">
-                {callbackError}
-              </p>
-            )}
           </form>
         </div>
       </section>
+
+      <FormToast toast={formToast} onDismiss={dismissFormToast} durationMs={5000} />
     </div>
   )
 }

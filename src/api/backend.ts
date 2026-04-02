@@ -104,9 +104,41 @@ export async function fetchContactSettings(): Promise<ApiContactSettings> {
   return await getJson<ApiContactSettings>('/api/projects/contact/')
 }
 
+export interface ApiTestimonial {
+  id: number
+  quote: string
+  name: string
+  car: string
+  rating: number | null
+  source: string
+  yandex_author_url: string
+  order: number
+}
+
+export interface ApiTestimonialsSettings {
+  mode: string
+  yandex_widget_url: string
+}
+
+export interface ApiTestimonialsResponse {
+  settings: ApiTestimonialsSettings
+  results: ApiTestimonial[]
+}
+
+/**
+ * Отзывы для блока на главной + настройки (ссылка «все отзывы» с Яндекс.Карт).
+ */
+export async function fetchTestimonials(): Promise<ApiTestimonialsResponse | null> {
+  try {
+    return await getJson<ApiTestimonialsResponse>('/api/projects/testimonials/')
+  } catch {
+    return null
+  }
+}
+
 /**
  * Главная новость / новинка для виджета на главной.
- * Бэкенд (позже): GET /api/projects/news/featured/ — один объект JSON.
+ * GET /api/projects/news/featured/ — один объект JSON.
  * Поля в snake_case, как в DRF:
  *   id, title, date_display, excerpt, content, image (путь или URL, может быть null)
  */

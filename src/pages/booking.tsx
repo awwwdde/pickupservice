@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import type { FC, FormEvent } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { InputField } from '../components/inputfields/InputField'
 import { submitBookingRequest } from '../api/backend'
+import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
 import image5 from '../assets/img/image5.png'
 import image6 from '../assets/img/image6.png'
 import image7 from '../assets/img/image7.png'
@@ -48,8 +49,9 @@ const BookingPage: FC = () => {
   })
   const [isFocused, setIsFocused] = useState(false)
   const [submitting, setSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
-  const [submitError, setSubmitError] = useState('')
+  const [formToast, setFormToast] = useState<FormToastPayload>(null)
+
+  const dismissFormToast = useCallback(() => setFormToast(null), [])
 
   const [enableTrail, setEnableTrail] = useState(false)
 
@@ -107,15 +109,14 @@ const BookingPage: FC = () => {
   }
 
   const handleChange = (key: string, value: string) => {
-    setSubmitSuccess(false)
+    setFormToast(null)
     setForm(prev => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (submitting) return
-    setSubmitError('')
-    setSubmitSuccess(false)
+    setFormToast(null)
     setSubmitting(true)
     try {
       await submitBookingRequest({
@@ -128,7 +129,10 @@ const BookingPage: FC = () => {
         message: form.message.trim(),
         website: form.website,
       })
-      setSubmitSuccess(true)
+      setFormToast({
+        variant: 'success',
+        message: 'Заявка отправлена. Мы свяжемся с вами в ближайшее время.',
+      })
       setForm({
         name: '',
         phone: '',
@@ -140,7 +144,9 @@ const BookingPage: FC = () => {
         website: '',
       })
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Ошибка отправки.')
+      const msg =
+        err instanceof Error ? err.message : 'Не удалось отправить заявку. Проверьте соединение и попробуйте снова.'
+      setFormToast({ variant: 'error', message: msg })
     } finally {
       setSubmitting(false)
     }
@@ -287,17 +293,6 @@ const BookingPage: FC = () => {
               </label>
             </motion.div>
 
-            {submitSuccess && (
-              <p className="text-sm text-emerald-400/90" role="status">
-                Заявка отправлена. Мы свяжемся с вами в ближайшее время.
-              </p>
-            )}
-            {submitError && (
-              <p className="text-sm text-red-400/90" role="alert">
-                {submitError}
-              </p>
-            )}
-
             <motion.button
               whileHover={submitting ? undefined : { backgroundColor: '#fff', color: '#000' }}
               whileTap={submitting ? undefined : { scale: 0.98 }}
@@ -310,6 +305,8 @@ const BookingPage: FC = () => {
           </div>
         </motion.form>
       </section>
+
+      <FormToast toast={formToast} onDismiss={dismissFormToast} durationMs={5000} />
     </main>
   )
 }

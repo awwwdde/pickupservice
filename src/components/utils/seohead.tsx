@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'
 
 const BASE_URL = (
   import.meta.env.VITE_SITE_URL ||
-  (typeof window !== 'undefined' ? window.location.origin : 'https://pickupservicetest.netlify.app')
+  (typeof window !== 'undefined' ? window.location.origin : 'https://pickupservice.moscow')
 ).replace(/\/+$/, '')
 
 type SeoConfig = {
@@ -12,16 +12,16 @@ type SeoConfig = {
 }
 
 const DEFAULT_SEO: SeoConfig = {
-  title: 'ПикапСервис - ремонт и тюнинг пикапов и внедорожников',
+  title: 'Пикап Сервис Москва — ремонт и тюнинг пикапов и внедорожников',
   description:
-    'ПикапСервис: обслуживание, ремонт и тюнинг пикапов и внедорожников в Москве. Подготовка к экспедициям и трофи-рейдам, диагностика и техобслуживание.'
+    'Пикап Сервис (ПикапСервис) в Москве: обслуживание, ремонт и тюнинг пикапов, джипов и внедорожников. Подготовка к экспедициям, трофи-рейды, диагностика и ТО.'
 }
 
 const SEO_BY_ROUTE: Record<string, SeoConfig> = {
   '/': {
-    title: 'ПикапСервис - сервис, ремонт и тюнинг внедорожников в Москве',
+    title: 'Пикап Сервис — ремонт, тюнинг и обслуживание внедорожников в Москве | pickupservice.moscow',
     description:
-      'Обслуживание, ремонт и подготовка внедорожников и пикапов. Экспедиционные проекты, трофи-рейды, доработка и диагностика.'
+      'Официальный сайт Пикап Сервис в Москве: сервис пикапов и джипов, ремонт и модификация внедорожников, экспедиционная подготовка. Запись и контакты на pickupservice.moscow.'
   },
   '/service': {
     title: 'Услуги ПикапСервис - обслуживание и ремонт внедорожников',
@@ -97,6 +97,12 @@ export default function SeoHead() {
     setOg('og:description', config.description)
     setOg('og:url', canonicalUrl)
     setCanonical(canonicalUrl)
+
+    const keywords =
+      pathname === '/'
+        ? 'Пикап Сервис, ПикапСервис, пикап сервис Москва, ремонт пикапов Москва, тюнинг внедорожников, сервис джипов, обслуживание пикапов, pickupservice.moscow'
+        : 'Пикап Сервис, ПикапСервис, ремонт внедорожников Москва, тюнинг пикапов'
+    setMeta('keywords', keywords)
   }, [pathname])
 
   return null
