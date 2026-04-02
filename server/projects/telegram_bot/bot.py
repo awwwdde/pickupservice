@@ -15,13 +15,17 @@ from telegram.ext import (
     ContextTypes,
 )
 
-from projects.models import BookingRequest, CallbackRequest, TelegramOutboxMessage
+from projects.models import BookingRequest, CallbackRequest
 
 from .formatters import format_booking, format_callback, join_items
 from .outbox import fetch_pending, mark_attempt, mark_failed, mark_sent
 from .security import check_access, require_token
 
 logger = logging.getLogger(__name__)
+
+def _db_async(function):
+    """sync_to_async с thread_sensitive=False — ORM в worker-thread, не в event loop."""
+    return sync_to_async(function, thread_sensitive=False)
 
 PAGE_SIZE = 20
 MAX_OUTBOX_ATTEMPTS = 5
@@ -180,8 +184,9 @@ async def list_cb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
-    total, blocks, header = await sync_to_async(_fetch_list_page)(query)
+    total, blocks, header = await _db_async(_fetch_list_page)(query)
 
+    offset = query.page * PAGE_SIZE
     has_prev = query.page > 0
     has_next = offset + PAGE_SIZE < total
     text = join_items(blocks, header=header)
@@ -214,23 +219,23 @@ async def outbox_tick(context: ContextTypes.DEFAULT_TYPE) -> None:
     if not allowed_targets:
         return
 
-    pending = await sync_to_async(fetch_pending)(limit=30)
+    pending = await _db_async(fetch_pending)(limit=30)
     for msg in pending:
         if msg.target_chat_id not in allowed_targets:
-            await sync_to_async(mark_failed)(
+            await _db_async(mark_failed)(
                 msg, "target_chat_id не в whitelist/notify списках", permanent=True
             )
             continue
 
-        await sync_to_async(mark_attempt)(msg)
+        await _db_async(mark_attempt)(msg)
         try:
             await context.bot.send_message(
                 chat_id=msg.target_chat_id, text=msg.message_text
             )
-            await sync_to_async(mark_sent)(msg)
+            await _db_async(mark_sent)(msg)
         except Exception as exc:
             permanent = (msg.attempts + 1) >= MAX_OUTBOX_ATTEMPTS
-            await sync_to_async(mark_failed)(msg, str(exc), permanent=permanent)
+            await _db_async(mark_failed)(msg, str(exc), permanent=permanent)
 
         await asyncio.sleep(0)
 
