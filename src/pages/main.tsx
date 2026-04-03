@@ -25,6 +25,7 @@ import { InputField } from '../components/inputfields/InputField'
 import {
   fetchAccordionItems,
   fetchProjects,
+  fetchServiceGalleryImages,
   fetchTestimonials,
   submitCallbackRequest
 } from '../api/backend'
@@ -34,7 +35,7 @@ import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
 import { isPrerenderEnv } from '../utils/isPrerender'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
-const aboutImages = [image1, image2, image3, image4]
+const fallbackAboutImages = [image1, image2, image3, image4]
 
 let isHeroVideoPlayed = typeof window !== 'undefined' && window.location.pathname !== '/'
 
@@ -110,6 +111,7 @@ const MainPage: FC = () => {
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [activeProjectIndex, setActiveProjectIndex] = useState(0)
   const [aboutImageIndex, setAboutImageIndex] = useState(0)
+  const [aboutImages, setAboutImages] = useState<string[]>(fallbackAboutImages)
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
@@ -133,7 +135,14 @@ const MainPage: FC = () => {
 
   useEffect(() => {
     if (isPrerender) return
-    const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
+    const lenis = new Lenis({
+      duration: 1.35,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 0.75,
+      touchMultiplier: 1,
+      prevent: (node) => !!(node as HTMLElement).closest?.('[data-lenis-prevent]')
+    })
     let rafId: number
     const raf = (time: number) => { 
       lenis.raf(time)
@@ -281,6 +290,11 @@ const MainPage: FC = () => {
   }, [isMobile])
 
   useEffect(() => {
+    if (aboutImageIndex < aboutImages.length) return
+    setAboutImageIndex(0)
+  }, [aboutImageIndex, aboutImages.length])
+
+  useEffect(() => {
     if (!isMobile) return
     const container = testimonialsCarouselRef.current
     if (!container) return
@@ -383,12 +397,36 @@ const MainPage: FC = () => {
         // Фолбэк — локальные карточки.
       })
 
+    fetchServiceGalleryImages()
+      .then((items) => {
+        if (cancelled || !items.length) return
+        const urls = [...items]
+          .sort((a, b) => a.order - b.order)
+          .map((item) => item.image)
+          .filter(Boolean)
+        if (!urls.length) return
+        setAboutImages(urls)
+      })
+      .catch(() => {
+        // Фолбэк — локальные about-изображения.
+      })
+
     fetchTestimonials()
       .then((data) => {
         if (cancelled || !data?.results?.length) return
 
-        const sorted = [...data.results].sort((a, b) => a.order - b.order)
-        const latestThree = sorted.slice(-3)
+        const latestThree = [...data.results]
+          .sort((a, b) => {
+            const timeA = a.created_at ? Date.parse(a.created_at) : NaN
+            const timeB = b.created_at ? Date.parse(b.created_at) : NaN
+
+            // Приоритет: дата создания (если есть), затем id как прокси "последнего добавленного".
+            if (!Number.isNaN(timeA) && !Number.isNaN(timeB)) return timeB - timeA
+            if (!Number.isNaN(timeA)) return -1
+            if (!Number.isNaN(timeB)) return 1
+            return b.id - a.id
+          })
+          .slice(0, 3)
 
         setDisplayTestimonials(
           latestThree.map((t) => ({
@@ -427,7 +465,7 @@ const MainPage: FC = () => {
         
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[clamp(20px,4vw,48px)]">
           <motion.h1
-            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase [text-shadow:0_2px_32px_rgba(0,0,0,0.78)] min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
+            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase  min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease }}
@@ -438,10 +476,10 @@ const MainPage: FC = () => {
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={currentWordIndex}
-                    initial={{ y: '100%' }}
-                    animate={{ y: 0 }}
-                    exit={{ y: '-100%' }}
-                    transition={{ duration: 0.6, ease }}
+                    initial={{ y: '115%', opacity: 0 }}
+                    animate={{ y: '0%', opacity: 1 }}
+                    exit={{ y: '-115%', opacity: 0 }}
+                    transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                     className="inline-block whitespace-nowrap"
                   >
                     {words[currentWordIndex]}

@@ -35,9 +35,12 @@ const ContactPage: FC = () => {
   useEffect(() => {
     if (isPrerender) return
     const lenis = new Lenis({
-      duration: 1.2,
-      lerp: 0.1,
+      duration: 1.35,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
+      wheelMultiplier: 0.75,
+      touchMultiplier: 1,
+      prevent: (node) => !!(node as HTMLElement).closest?.('[data-lenis-prevent]')
     });
 
     let rafId: number;
@@ -86,8 +89,6 @@ const ContactPage: FC = () => {
   });
 
 
-  const mapY = useTransform(scrollYProgress, [0, 1], ["-10%", "10%"]);
-  const mapScale = useTransform(scrollYProgress, [0, 1], [1.1, 1]);
   const hudOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]);
 
   return (
@@ -175,7 +176,10 @@ const ContactPage: FC = () => {
             <h2 className="text-3xl font-bold uppercase tracking-tighter">Координаты</h2>
           </div>
 
-          <div className="relative w-full h-[52vh] bg-[#050505] border border-white/5 overflow-hidden">
+          <div
+            data-lenis-prevent
+            className="relative w-full h-[52vh] bg-[#050505] border border-white/5 overflow-hidden"
+          >
             <iframe
               key={mapKey}
               title="map"
@@ -202,20 +206,20 @@ const ContactPage: FC = () => {
                <h2 className="text-4xl font-bold uppercase tracking-tighter">Координаты</h2>
             </motion.div>
           </div>
-          <div className="relative w-[90%] mx-auto h-[65vh] md:h-[70vh] bg-[#050505] border border-white/5 cursor-crosshair overflow-hidden">
-            <motion.div 
-              style={{ y: mapY, scale: mapScale }}
-              className="absolute inset-[-15%] w-[130%] h-[130%] z-10"
-            >
-            <iframe
-              key={mapKey}
-              title="map"
-              src={contact.mapEmbedUrl}
-              className="w-full h-full border-none opacity-80 pointer-events-auto"
-              allowFullScreen
-              loading="lazy"
-            />
-            </motion.div>
+          <div
+            data-lenis-prevent
+            className="relative w-[90%] mx-auto h-[65vh] md:h-[70vh] bg-[#050505] border border-white/5 cursor-crosshair overflow-hidden"
+          >
+            <div className="absolute inset-0 z-10">
+              <iframe
+                key={mapKey}
+                title="map"
+                src={contact.mapEmbedUrl}
+                className="w-full h-full border-none opacity-80 pointer-events-auto"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
 
             <motion.div 
               style={{ opacity: hudOpacity }}

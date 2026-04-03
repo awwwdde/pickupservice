@@ -113,6 +113,7 @@ export interface ApiTestimonial {
   source: string
   yandex_author_url: string
   order: number
+  created_at?: string
 }
 
 export interface ApiTestimonialsSettings {

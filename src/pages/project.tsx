@@ -54,7 +54,14 @@ const ProjectPage: FC = () => {
 
   useEffect(() => {
     if (isPrerender) return
-    const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
+    const lenis = new Lenis({
+      duration: 1.35,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 0.75,
+      touchMultiplier: 1,
+      prevent: (node) => !!(node as HTMLElement).closest?.('[data-lenis-prevent]')
+    })
     let rafId: number
     const raf = (time: number) => {
       lenis.raf(time)
