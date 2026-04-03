@@ -160,6 +160,10 @@ const ProjectPage: FC = () => {
              <p className="text-3xl md:text-5xl font-medium leading-tight tracking-tight">
                {projectData.description}
              </p>
+
+             <p className="mt-6 text-base leading-relaxed text-black/60">
+               Комплексный ремонт и тюнинг внедорожников: диагностика, ТО, усиление подвески, электрика и подготовка под экспедиции.
+             </p>
           </div>
         </div>
       </section>

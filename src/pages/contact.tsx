@@ -114,7 +114,7 @@ const ContactPage: FC = () => {
               viewport={{ once: true }}
             >
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-neutral-400 max-w-[280px] leading-relaxed">
-                // Профессиональное обслуживание и тюнинг японских внедорожников. База PICKUPSERVICE — точка сборки экспедиционных проектов.
+                Профессиональное обслуживание и тюнинг японских внедорожников: ремонт, диагностика и экспедиционная подготовка.
               </p>
             </motion.div>
             <div className="hidden md:block font-mono text-[9px] uppercase tracking-[0.4em] text-neutral-700">

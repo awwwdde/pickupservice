@@ -98,7 +98,7 @@ const NewsHeroBlock: React.FC = () => {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.9, filter: 'blur(10px)' }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-header absolute right-4 top-24 z-[100] w-[300px] overflow-hidden border border-white/10 p-3 shadow-2xl sm:w-[340px] md:bottom-8 md:right-[min(35px,6vw)] md:top-auto md:w-[400px] md:p-4 min-[1000px]:max-[1439px]:w-[min(320px,26vw)] min-[1000px]:max-[1439px]:max-w-[min(320px,26vw)] min-[1000px]:max-[1439px]:p-3 min-[1000px]:max-[1439px]:md:bottom-7 min-[1440px]:lg:w-[440px]"
+            className="glass-header absolute left-1/2 bottom-24 z-[100] w-[min(340px,92vw)] -translate-x-1/2 overflow-hidden border border-white/10 p-3 shadow-2xl sm:bottom-28 sm:w-[340px] lg:right-[min(35px,6vw)] lg:bottom-8 lg:left-auto lg:translate-x-0 lg:top-auto lg:w-[400px] lg:p-4 min-[1000px]:max-[1439px]:w-[min(320px,26vw)] min-[1000px]:max-[1439px]:max-w-[min(320px,26vw)] min-[1000px]:max-[1439px]:p-3 min-[1000px]:max-[1439px]:bottom-7 min-[1440px]:lg:w-[440px]"
           >
             <button
               onClick={() => setIsVisible(false)}

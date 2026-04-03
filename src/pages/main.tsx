@@ -379,8 +379,12 @@ const MainPage: FC = () => {
     fetchTestimonials()
       .then((data) => {
         if (cancelled || !data?.results?.length) return
+
+        const sorted = [...data.results].sort((a, b) => a.order - b.order)
+        const latestThree = sorted.slice(-3)
+
         setDisplayTestimonials(
-          data.results.map((t) => ({
+          latestThree.map((t) => ({
             id: t.id,
             quote: t.quote,
             name: t.name,
@@ -442,6 +446,8 @@ const MainPage: FC = () => {
           </motion.div>
         </div>
 
+        <NewsHeroBlock/>
+
         <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex justify-center">
           <motion.div
             className="glass-header flex items-center gap-2 px-4 py-2 text-[14px]"
@@ -455,7 +461,6 @@ const MainPage: FC = () => {
             <span>прокрутите вниз, чтобы узнать больше</span>
           </motion.div>
         </div>
-        <NewsHeroBlock/>
       </section>
 
       {/* SECTION 2: PARALLAX */}
@@ -572,9 +577,12 @@ const MainPage: FC = () => {
                 <div className="flex flex-col gap-4 p-6">
                   <h2 className="font-serif text-[32px] leading-tight text-black">{p.title}</h2>
                   <p className="text-[15px] leading-relaxed text-[#a0a0a0]">{p.description}</p>
-                  <button className="mt-2 flex h-14 w-full cursor-pointer items-center justify-center gap-3 border border-black/10 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest text-white transition-colors hover:bg-[#FF8201]">
+                  <Link
+                    to="/portfolio"
+                    className="mt-2 flex h-14 w-full cursor-pointer items-center justify-center gap-3 border border-black/10 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest text-white transition-colors hover:bg-[#FF8201]"
+                  >
                     ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
-                  </button>
+                  </Link>
                 </div>
               ) : (
                 <div className="relative min-h-[280px] w-full">
@@ -625,7 +633,7 @@ const MainPage: FC = () => {
                 </h3>
                 <p className="text-lg leading-relaxed text-black/60 min-[1000px]:max-[1439px]:text-base">
                   Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
-                  японское качество в каждой детали.
+                  японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: от диагностики и ТО до усиления подвески и экспедиционной подготовки.
                 </p>
               </div>
 
@@ -669,8 +677,7 @@ const MainPage: FC = () => {
           >
             <h3 className="mb-1 text-2xl font-bold uppercase tracking-tight">Инженерная эстетика оффроуда</h3>
             <p className="text-base leading-relaxed text-black/60">
-              Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
-              японское качество в каждой детали.
+              Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: диагностика, ТО и модернизация под бездорожье.
             </p>
               <Link
                 to="/service"

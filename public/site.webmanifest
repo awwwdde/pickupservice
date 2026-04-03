@@ -1,6 +1,6 @@
 {
   "name": "ПикапСервис",
-  "short_name": "ПикапСервис",
+  "short_name": "Пикап Сервис",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020202",

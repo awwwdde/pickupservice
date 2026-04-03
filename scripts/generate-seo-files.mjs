@@ -6,9 +6,51 @@ const rawUrl = process.env.VITE_SITE_URL || 'https://pickupservice.moscow/'
 const siteUrl = rawUrl.replace(/\/+$/, '')
 const host = siteUrl.replace(/^https?:\/\//, '')
 
-const routes = ['/', '/service', '/portfolio', '/contact', '/booking', '/portfolio/f1', '/portfolio/f2', '/portfolio/f3']
+// Если VITE_BACKEND_ORIGIN не задан, пробуем считать backend тем же доменом, что и сайт.
+// Это помогает собрать sitemap по /portfolio/:id в прод/стейдж окружениях.
+const BACKEND_ORIGIN = (process.env.VITE_BACKEND_ORIGIN || siteUrl || 'http://localhost:8000').replace(/\/+$/, '')
+
+async function fetchJson(path) {
+  const response = await fetch(`${BACKEND_ORIGIN}${path}`, {
+    headers: { Accept: 'application/json' }
+  })
+  if (!response.ok) throw new Error(`API ${path} failed: ${response.status}`)
+  return await response.json()
+}
+
+function asList(payload) {
+  if (Array.isArray(payload)) return payload
+  if (payload && Array.isArray(payload.results)) return payload.results
+  return []
+}
+
+async function buildRoutes() {
+  const baseRoutes = ['/', '/service', '/portfolio', '/contact', '/booking']
+  const featured = ['/portfolio/f1', '/portfolio/f2', '/portfolio/f3']
+
+  try {
+    const projects = await fetchJson('/api/projects/')
+    const list = asList(projects)
+    const projectRoutes = list
+      .map((p) => String(p.id))
+      .filter(Boolean)
+      .map((id) => `/portfolio/${id}`)
+
+    // Убираем дубли, сохраняем порядок: базовые -> featured -> остальные
+    const uniq = [...baseRoutes, ...featured, ...projectRoutes]
+    return Array.from(new Set(uniq))
+  } catch {
+    return [...baseRoutes, ...featured]
+  }
+}
 
 function buildSitemap() {
+  // Важно: функция ниже вызывается синхронно в текущем скрипте.
+  // Поэтому routes вычисляем заранее в топ-левеле через async IIFE (см. ниже).
+  throw new Error('buildSitemap() must be called with prepared routes')
+}
+
+function buildSitemapWithRoutes(routes) {
   const priorities = {
     '/': '1.0',
     '/service': '0.9',
@@ -37,8 +79,8 @@ function buildSitemap() {
       return [
         '  <url>',
         `    <loc>${loc}</loc>`,
-        `    <changefreq>${freq[route]}</changefreq>`,
-        `    <priority>${priorities[route]}</priority>`,
+        `    <changefreq>${freq[route] ?? 'monthly'}</changefreq>`,
+        `    <priority>${priorities[route] ?? '0.7'}</priority>`,
         '  </url>'
       ].join('\n')
     })
@@ -66,8 +108,11 @@ function patchIndexHtml() {
   writeFileSync(indexPath, html)
 }
 
-writeFileSync(resolve(root, 'public', 'sitemap.xml'), buildSitemap())
-writeFileSync(resolve(root, 'public', 'robots.txt'), buildRobots())
-patchIndexHtml()
+(async () => {
+  const routes = await buildRoutes()
+  writeFileSync(resolve(root, 'public', 'sitemap.xml'), buildSitemapWithRoutes(routes))
+  writeFileSync(resolve(root, 'public', 'robots.txt'), buildRobots())
+  patchIndexHtml()
 
-console.log(`SEO files generated for ${siteUrl}`)
+  console.log(`SEO files generated for ${siteUrl} (${routes.length} routes)`)
+})()

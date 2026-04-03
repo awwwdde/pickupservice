@@ -116,6 +116,11 @@ const ProjectsPage: FC = () => {
             <span className="text-neutral-500 italic font-light tracking-tight">Проекты.</span>
           </h1>
         </motion.div>
+
+        <p className="mt-8 max-w-2xl text-neutral-400 text-base leading-relaxed">
+          Ремонт и тюнинг внедорожников: диагностика, усиление подвески, экспедиционная подготовка и модернизация 4x4 — по
+          проектам ПикапСервис.
+        </p>
       </header>
 
       {/* 2. ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
