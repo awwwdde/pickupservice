@@ -203,10 +203,6 @@ const BookingPage: FC = () => {
           <br />
           <span className="text-[#FF8201] font-bold">записаться к нам</span>
         </motion.h1>
-
-        <p className="relative z-10 mt-6 text-center text-neutral-400 text-base leading-relaxed pointer-events-none max-w-2xl mx-auto">
-          Запись на ремонт и тюнинг внедорожников: диагностика, ТО и модернизация 4x4 под экспедиции и бездорожье.
-        </p>
       </section>
 
       {/* ФОРМА */}
