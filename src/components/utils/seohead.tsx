@@ -1,12 +1,13 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { isPrerenderEnv } from '../../utils/isPrerender'
 
 const BASE_URL = (
   import.meta.env.VITE_SITE_URL ||
-  (typeof window !== 'undefined' ? window.location.origin : 'https://pickupservice.moscow')
+  (isPrerenderEnv() ? 'https://pickupservice.moscow' : typeof window !== 'undefined' ? window.location.origin : 'https://pickupservice.moscow')
 ).replace(/\/+$/, '')
 
-const DEFAULT_OG_IMAGE = `${BASE_URL}/pickup.svg`
+const DEFAULT_OG_IMAGE = `${BASE_URL}/pickup.png`
 
 type SeoConfig = {
   title: string
@@ -99,8 +100,8 @@ export default function SeoHead() {
     setOg('og:description', config.description)
     setOg('og:url', canonicalUrl)
     setOg('og:image', DEFAULT_OG_IMAGE)
-    setOg('og:image:width', '630')
-    setOg('og:image:height', '389')
+    setOg('og:image:width', '100')
+    setOg('og:image:height', '100')
     setMeta('twitter:image', DEFAULT_OG_IMAGE)
     setCanonical(canonicalUrl)
 

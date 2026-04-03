@@ -4,8 +4,10 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import Lenis from 'lenis';
 
 import { fetchContactSettings } from '../api/backend'
+import { isPrerenderEnv } from '../utils/isPrerender'
 
 const ContactPage: FC = () => {
+  const isPrerender = isPrerenderEnv()
   const containerRef = useRef<HTMLDivElement>(null);
   const stickyTrackRef = useRef<HTMLDivElement>(null); 
   const [mapKey] = useState(0);
@@ -31,6 +33,7 @@ const ContactPage: FC = () => {
   })
 
   useEffect(() => {
+    if (isPrerender) return
     const lenis = new Lenis({
       duration: 1.2,
       lerp: 0.1,
@@ -48,9 +51,10 @@ const ContactPage: FC = () => {
       lenis.destroy();
       cancelAnimationFrame(rafId);
     };
-  }, []);
+  }, [isPrerender]);
 
   useEffect(() => {
+    if (isPrerender) return
     let cancelled = false
 
     fetchContactSettings()
@@ -74,7 +78,7 @@ const ContactPage: FC = () => {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isPrerender])
 
   const { scrollYProgress } = useScroll({
     target: stickyTrackRef,

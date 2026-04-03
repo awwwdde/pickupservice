@@ -9,6 +9,7 @@ import image6 from '../assets/img/image6.png'
 import image7 from '../assets/img/image7.png'
 import image8 from '../assets/img/image8.png'
 import image9 from '../assets/img/image9.png'
+import { isPrerenderEnv } from '../utils/isPrerender'
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
@@ -37,6 +38,7 @@ interface TrailItem {
 }
 
 const BookingPage: FC = () => {
+  const isPrerender = isPrerenderEnv()
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -62,6 +64,7 @@ const BookingPage: FC = () => {
   const headerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (isPrerender) return
     const mq = window.matchMedia('(pointer: coarse)')
     const apply = () => {
       // На телефонах/планшетах трейл отключаем, чтобы не было дерганий и лишней нагрузки.
@@ -79,7 +82,7 @@ const BookingPage: FC = () => {
 
     mq.addListener(apply)
     return () => mq.removeListener(apply)
-  }, [])
+  }, [isPrerender])
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!headerRef.current) return

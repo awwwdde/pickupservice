@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, X, Calendar, MessageSquare, ImageIcon } from 'lucide-react';
 import { fetchFeaturedNews } from '../../api/backend';
+import { isPrerenderEnv } from '../../utils/isPrerender'
 
 interface NewsItem {
   id: string;
@@ -69,8 +70,10 @@ const NewsHeroBlock: React.FC = () => {
   const [news, setNews] = useState<NewsItem>(FALLBACK_NEWS);
   const [isVisible, setIsVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isPrerender = isPrerenderEnv()
 
   useEffect(() => {
+    if (isPrerender) return
     let cancelled = false;
     (async () => {
       const api = await fetchFeaturedNews();
@@ -87,7 +90,7 @@ const NewsHeroBlock: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isPrerender]);
 
   return (
     <>

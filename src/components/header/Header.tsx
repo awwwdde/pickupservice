@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import PickupLogo from './PickupLogo.tsx'
+import { isPrerenderEnv } from '../../utils/isPrerender'
 
 const navLinks = [
   { to: '/service', label: 'Сервис' },
@@ -31,9 +32,11 @@ const Header: FC = () => {
   const [isDarkBackground, setIsDarkBackground] = useState(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [pastHero, setPastHero] = useState(false)
+  const isPrerender = isPrerenderEnv()
 
   // 1. Hero Visibility Observer
   useEffect(() => {
+    if (isPrerender) return
     const hero = document.getElementById('site-hero')
     if (!hero) {
       setPastHero(false)
@@ -49,10 +52,11 @@ const Header: FC = () => {
 
     observer.observe(hero)
     return () => observer.disconnect()
-  }, [location.pathname])
+  }, [location.pathname, isPrerender])
 
   // 2. Dynamic Color Detection
   useEffect(() => {
+    if (isPrerender) return
     const getBackgroundColor = (el: HTMLElement | null): string | null => {
       let current: HTMLElement | null = el
       while (current) {
@@ -99,7 +103,7 @@ const Header: FC = () => {
       window.removeEventListener('scroll', updateBackground)
       window.removeEventListener('resize', updateBackground)
     }
-  }, [isMenuOpen]) // Re-run when menu state changes to lock/unlock detection
+  }, [isMenuOpen, isPrerender]) // Re-run when menu state changes to lock/unlock detection
 
   const closeMenu = () => setIsMenuOpen(false)
 

@@ -21,6 +21,7 @@ import image7 from '../assets/img/image7.png'
 import image8 from '../assets/img/image8.png'
 import image9 from '../assets/img/image9.png'
 import { Link } from 'react-router-dom'
+import { isPrerenderEnv } from '../utils/isPrerender'
 
 const servicesData = [
   {
@@ -57,6 +58,7 @@ const titleLineVariants = {
 }
 
 const ServicePage: FC = () => {
+  const isPrerender = isPrerenderEnv()
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
   const [serviceItems, setServiceItems] = useState(servicesData)
   const [trackRow1, setTrackRow1] = useState<string[]>(() => [...FALLBACK_TRACK_ROW1])
@@ -68,6 +70,7 @@ const ServicePage: FC = () => {
   const isMobileRef = useRef(false)
 
   useEffect(() => {
+    if (isPrerender) return
     const lenis = new Lenis({
       duration: 1.5,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), 
@@ -86,9 +89,10 @@ const ServicePage: FC = () => {
       cancelAnimationFrame(rafId)
       lenis.destroy()
     }
-  }, [])
+  }, [isPrerender])
 
   useEffect(() => {
+    if (isPrerender) return
     let cancelled = false
     fetchAccordionItems()
       .then((items: ApiAccordionItem[]) => {
@@ -106,9 +110,10 @@ const ServicePage: FC = () => {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isPrerender])
 
   useEffect(() => {
+    if (isPrerender) return
     let cancelled = false
     fetchServiceGalleryImages()
       .then((items) => {
@@ -124,9 +129,10 @@ const ServicePage: FC = () => {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isPrerender])
 
   useEffect(() => {
+    if (isPrerender) return
     const mq = window.matchMedia('(max-width: 767px)')
     const apply = () => {
       isMobileRef.current = mq.matches
@@ -141,7 +147,7 @@ const ServicePage: FC = () => {
 
     mq.addListener(apply)
     return () => mq.removeListener(apply)
-  }, [])
+  }, [isPrerender])
 
   const { scrollYProgress: heroScrollProgress } = useScroll({
     target: heroRef,

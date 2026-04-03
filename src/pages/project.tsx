@@ -6,6 +6,7 @@ import { InputField } from '../components/inputfields/InputField'
 import { useParams } from 'react-router-dom'
 import { fetchProjectById, submitCallbackRequest } from '../api/backend'
 import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
+import { isPrerenderEnv } from '../utils/isPrerender'
 
 import image1 from '../assets/img/image1.png'
 import image2 from '../assets/img/image2.png'
@@ -39,6 +40,7 @@ const PROJECT_CONTENT = {
 
 const ProjectPage: FC = () => {
   const { id } = useParams()
+  const isPrerender = isPrerenderEnv()
   const [projectData, setProjectData] = useState(PROJECT_CONTENT)
   const [callbackForm, setCallbackForm] = useState({
     name: '',
@@ -51,6 +53,7 @@ const ProjectPage: FC = () => {
   const dismissFormToast = useCallback(() => setFormToast(null), [])
 
   useEffect(() => {
+    if (isPrerender) return
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
     let rafId: number
     const raf = (time: number) => {
@@ -62,7 +65,7 @@ const ProjectPage: FC = () => {
       cancelAnimationFrame(rafId)
       lenis.destroy()
     }
-  }, [])
+  }, [isPrerender])
 
   const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
     setFormToast(null)
@@ -95,6 +98,7 @@ const ProjectPage: FC = () => {
   }
 
   useEffect(() => {
+    if (isPrerender) return
     if (!id) return
     let cancelled = false
     fetchProjectById(id)
@@ -130,7 +134,7 @@ const ProjectPage: FC = () => {
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [id, isPrerender])
 
   return (
     <div className="bg-[#f3f3f1] text-black selection:bg-[#FF8201] selection:text-white">

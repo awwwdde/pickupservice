@@ -1,16 +1,20 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { isPrerenderEnv } from '../../utils/isPrerender'
 
 const ScrollToTop = () => {
   const { pathname } = useLocation()
+  const isPrerender = isPrerenderEnv()
 
   useEffect(() => {
+    if (isPrerender) return
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
     }
-  }, [])
+  }, [isPrerender])
 
   useEffect(() => {
+    if (isPrerender) return
     const doScrollTop = () => {
       window.scrollTo(0, 0)
       document.documentElement.scrollTop = 0
@@ -28,7 +32,7 @@ const ScrollToTop = () => {
       const maybe = (ScrollToTop as unknown as { __raf2?: number }).__raf2
       if (typeof maybe === 'number') cancelAnimationFrame(maybe)
     }
-  }, [pathname])
+  }, [pathname, isPrerender])
 
   return null
 }

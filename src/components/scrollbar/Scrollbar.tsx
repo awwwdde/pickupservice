@@ -1,13 +1,17 @@
 import type { FC } from 'react'
 import { motion, useScroll, useSpring } from 'framer-motion'
+import { isPrerenderEnv } from '../../utils/isPrerender'
 
 const Scrollbar: FC = () => {
+  const isPrerender = isPrerenderEnv()
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
     damping: 30,
     restDelta: 0.001
   })
+
+  if (isPrerender) return null
 
   return (
     <motion.div

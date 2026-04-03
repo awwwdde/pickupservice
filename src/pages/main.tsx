@@ -31,6 +31,7 @@ import {
 import { Link } from 'react-router-dom'
 import NewsHeroBlock from '../components/news/NewsCard'
 import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
+import { isPrerenderEnv } from '../utils/isPrerender'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const aboutImages = [image1, image2, image3, image4]
@@ -95,6 +96,7 @@ const testimonialsData: HomeTestimonial[] = [
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 const MainPage: FC = () => {
+  const isPrerender = isPrerenderEnv()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const parallaxRef = useRef<HTMLDivElement | null>(null)
   const aboutRef = useRef<HTMLDivElement | null>(null)
@@ -130,6 +132,7 @@ const MainPage: FC = () => {
   const dismissFormToast = useCallback(() => setFormToast(null), [])
 
   useEffect(() => {
+    if (isPrerender) return
     const lenis = new Lenis({ lerp: 0.05, smoothWheel: true })
     let rafId: number
     const raf = (time: number) => { 
@@ -141,9 +144,10 @@ const MainPage: FC = () => {
       cancelAnimationFrame(rafId)
       lenis.destroy()
     }
-  }, [])
+  }, [isPrerender])
 
   useEffect(() => {
+    if (isPrerender) return
     const mq = window.matchMedia('(max-width: 767px)')
     const apply = () => {
       isMobileRef.current = mq.matches
@@ -160,9 +164,10 @@ const MainPage: FC = () => {
     // Для старых реализаций
     mq.addListener(apply)
     return () => mq.removeListener(apply)
-  }, [])
+  }, [isPrerender])
 
   useEffect(() => {
+    if (isPrerender) return
     const mq = window.matchMedia('(min-width: 1440px)')
     const sync = () => setProjectsLargeDesktop(mq.matches)
     sync()
@@ -172,7 +177,7 @@ const MainPage: FC = () => {
     }
     mq.addListener(sync)
     return () => mq.removeListener(sync)
-  }, [])
+  }, [isPrerender])
 
   const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
     setFormToast(null)
@@ -315,6 +320,7 @@ const MainPage: FC = () => {
 
   // Управление видео
   useEffect(() => {
+    if (isPrerender) return
     const video = videoRef.current
     if (!video) return
 
@@ -333,7 +339,7 @@ const MainPage: FC = () => {
         video.addEventListener('loadedmetadata', setToLastFrame, { once: true })
       }
     }
-  }, [])
+  }, [isPrerender])
 
   const handleVideoEnd = () => {
     isHeroVideoPlayed = true
@@ -346,6 +352,7 @@ const MainPage: FC = () => {
   }, [])
 
   useEffect(() => {
+    if (isPrerender) return
     let cancelled = false
 
     fetchProjects()
@@ -401,7 +408,7 @@ const MainPage: FC = () => {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [isPrerender])
 
   return (
     <div className="bg-black text-white selection:bg-[#FF8201]">
@@ -419,7 +426,7 @@ const MainPage: FC = () => {
         />
         
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[clamp(20px,4vw,48px)]">
-          <motion.div
+          <motion.h1
             className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase [text-shadow:0_2px_32px_rgba(0,0,0,0.78)] min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -443,7 +450,7 @@ const MainPage: FC = () => {
               </div>
             </div>
             <span className="leading-none md:ml-auto md:flex-shrink-0 md:text-right">ВНЕДОРОЖНИКИ</span>
-          </motion.div>
+          </motion.h1>
         </div>
 
         <NewsHeroBlock/>

@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import Lenis from 'lenis';
 import { Link } from 'react-router-dom';
 import { fetchProjects } from '../api/backend';
+import { isPrerenderEnv } from '../utils/isPrerender'
 
 import image1 from '../assets/img/image1.png';
 import image2 from '../assets/img/image2.png';
@@ -34,6 +35,7 @@ const otherProjects: Project[] = [
 ];
 
 const ProjectsPage: FC = () => {
+  const isPrerender = isPrerenderEnv()
   const horizontalRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [xRange, setXRange] = useState(0);
@@ -41,6 +43,7 @@ const ProjectsPage: FC = () => {
   const [others, setOthers] = useState<Project[]>(otherProjects);
 
   useEffect(() => {
+    if (isPrerender) return
     const lenis = new Lenis({
       duration: 1.2,
       lerp: 0.1, 
@@ -57,9 +60,10 @@ const ProjectsPage: FC = () => {
       cancelAnimationFrame(rafId)
       lenis.destroy()
     }
-  }, []);
+  }, [isPrerender]);
 
   useEffect(() => {
+    if (isPrerender) return
     let cancelled = false;
     fetchProjects()
       .then((items) => {
@@ -79,9 +83,10 @@ const ProjectsPage: FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isPrerender]);
 
   useLayoutEffect(() => {
+    if (isPrerender) return
     const calculateRange = () => {
       if (trackRef.current) {
         const totalWidth = trackRef.current.scrollWidth;
@@ -94,7 +99,7 @@ const ProjectsPage: FC = () => {
     calculateRange();
     window.addEventListener('resize', calculateRange);
     return () => window.removeEventListener('resize', calculateRange);
-  }, []);
+  }, [isPrerender]);
 
   const { scrollYProgress } = useScroll({
     target: horizontalRef,

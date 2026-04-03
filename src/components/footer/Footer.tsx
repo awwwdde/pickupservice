@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
 
   const socialLinks = [
     { name: 'Вконтакте', href: 'vk.com' },
-    { name: 'MAX', href: 'max.ru' },
+    { name: 'MAX', href: 'https://max.ru/join/59jJOJzaZzcmPjaHHXVgMIzq9YUShK916qO09lWobWE' },
   ];
 
   return (
