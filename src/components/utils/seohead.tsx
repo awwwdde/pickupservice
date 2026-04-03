@@ -6,6 +6,8 @@ const BASE_URL = (
   (typeof window !== 'undefined' ? window.location.origin : 'https://pickupservice.moscow')
 ).replace(/\/+$/, '')
 
+const DEFAULT_OG_IMAGE = `${BASE_URL}/pickup.svg`
+
 type SeoConfig = {
   title: string
   description: string
@@ -96,6 +98,10 @@ export default function SeoHead() {
     setOg('og:title', config.title)
     setOg('og:description', config.description)
     setOg('og:url', canonicalUrl)
+    setOg('og:image', DEFAULT_OG_IMAGE)
+    setOg('og:image:width', '630')
+    setOg('og:image:height', '389')
+    setMeta('twitter:image', DEFAULT_OG_IMAGE)
     setCanonical(canonicalUrl)
 
     const keywords =
