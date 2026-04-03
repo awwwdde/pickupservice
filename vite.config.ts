@@ -1,8 +1,15 @@
 import { defineConfig } from 'vite'
+import type { PluginOption } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
 import fs from 'node:fs'
-import vitePrerender from 'vite-plugin-prerender'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+type VitePrerenderFn = ((options: unknown) => PluginOption) & {
+  PuppeteerRenderer: new (options: unknown) => unknown
+}
+const vitePrerender = require('vite-plugin-prerender') as VitePrerenderFn
 
 // https://vite.dev/config/
 function readSitemapRoutes() {
@@ -29,9 +36,7 @@ function readSitemapRoutes() {
 }
 
 const prerenderRoutes = readSitemapRoutes()
-const PuppeteerRenderer = (vitePrerender as unknown as {
-  PuppeteerRenderer: new (options: unknown) => unknown
-}).PuppeteerRenderer
+const PuppeteerRenderer = vitePrerender.PuppeteerRenderer
 
 export default defineConfig({
   build: {

@@ -3,13 +3,14 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "packageManager": "pnpm@10.24.0",
   "scripts": {
     "seo:generate": "node ./scripts/generate-seo-files.mjs",
-    "predev": "npm run seo:generate",
+    "predev": "pnpm run seo:generate",
     "dev": "vite",
-    "prebuild": "npm run seo:generate",
+    "prebuild": "pnpm run seo:generate",
     "build": "tsc -b && vite build",
-    "prepreview": "npm run seo:generate",
+    "prepreview": "pnpm run seo:generate",
     "lint": "eslint .",
     "preview": "vite preview"
   },

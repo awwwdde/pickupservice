@@ -1,9 +1,9 @@
-import React from 'react';
+import type { FC } from 'react';
 import { motion } from 'framer-motion';
 import { Plus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const Footer: React.FC = () => {
+const Footer: FC = () => {
   const currentYear = new Date().getFullYear();
 
   const quickLinks = [
