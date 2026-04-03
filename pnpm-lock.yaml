@@ -45,6 +45,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.2.1
         version: 4.2.1
+      '@types/node':
+        specifier: ^25.5.2
+        version: 25.5.2
       '@types/react':
         specifier: ^19.2.14
         version: 19.2.14
@@ -53,7 +56,7 @@ importers:
         version: 19.1.5(@types/react@19.2.14)
       '@vitejs/plugin-react':
         specifier: ^4.4.1
-        version: 4.5.0(vite@6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1))
+        version: 4.5.0(vite@6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1))
       autoprefixer:
         specifier: ^10.4.27
         version: 10.4.27(postcss@8.5.8)
@@ -83,10 +86,10 @@ importers:
         version: 8.33.1(eslint@9.28.0(jiti@2.6.1))(typescript@5.8.3)
       vite:
         specifier: ^6.3.5
-        version: 6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)
+        version: 6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)
       vite-plugin-prerender:
         specifier: ^1.0.8
-        version: 1.0.8(vite@6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1))
+        version: 1.0.8(vite@6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1))
 
 packages:
 
@@ -790,8 +793,8 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/node@25.5.0':
-    resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
+  '@types/node@25.5.2':
+    resolution: {integrity: sha512-tO4ZIRKNC+MDWV4qKVZe3Ql/woTnmHDr5JD8UI5hn2pwBrHEwOEMZK7WlNb5RKB6EoJ02gwmQS9OrjuFnZYdpg==}
 
   '@types/react-dom@19.1.5':
     resolution: {integrity: sha512-CMCjrWucUBZvohgZxkjd6S9h0nZxXjzus6yDfUb+xLxYM7VvjKNH1tQrE9GWLql1XoOP4/Ds3bwFqShHUYraGg==}
@@ -3148,13 +3151,13 @@ snapshots:
 
   '@types/jsdom@21.1.7':
     dependencies:
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
       '@types/tough-cookie': 4.0.5
       parse5: 7.3.0
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/node@25.5.0':
+  '@types/node@25.5.2':
     dependencies:
       undici-types: 7.18.2
 
@@ -3271,7 +3274,7 @@ snapshots:
       '@typescript-eslint/types': 8.33.1
       eslint-visitor-keys: 4.2.0
 
-  '@vitejs/plugin-react@4.5.0(vite@6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1))':
+  '@vitejs/plugin-react@4.5.0(vite@6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1))':
     dependencies:
       '@babel/core': 7.27.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.27.4)
@@ -3279,7 +3282,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.9
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)
+      vite: 6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -4922,7 +4925,7 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite-plugin-prerender@1.0.8(vite@6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)):
+  vite-plugin-prerender@1.0.8(vite@6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)):
     dependencies:
       '@prerenderer/prerenderer': 0.7.2(debug@4.4.1)
       '@prerenderer/renderer-puppeteer': 0.2.0
@@ -4930,13 +4933,13 @@ snapshots:
       debug: 4.4.1
       html-minifier: 3.5.21
       mkdirp: 1.0.4
-      vite: 6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)
+      vite: 6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
       - utf-8-validate
 
-  vite@6.3.5(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1):
+  vite@6.3.5(@types/node@25.5.2)(jiti@2.6.1)(lightningcss@1.31.1)(sass@1.89.1):
     dependencies:
       esbuild: 0.25.5
       fdir: 6.4.5(picomatch@4.0.2)
@@ -4945,7 +4948,7 @@ snapshots:
       rollup: 4.41.1
       tinyglobby: 0.2.14
     optionalDependencies:
-      '@types/node': 25.5.0
+      '@types/node': 25.5.2
       fsevents: 2.3.3
       jiti: 2.6.1
       lightningcss: 1.31.1

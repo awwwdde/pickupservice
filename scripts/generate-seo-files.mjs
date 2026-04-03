@@ -90,7 +90,23 @@ function buildSitemapWithRoutes(routes) {
 }
 
 function buildRobots() {
-  return `User-agent: *\nAllow: /\n\nHost: ${host}\nSitemap: ${siteUrl}/sitemap.xml\n`
+  return [
+    'User-agent: *',
+    'Allow: /',
+    '',
+    'User-agent: Googlebot',
+    'Allow: /',
+    '',
+    'User-agent: Bingbot',
+    'Allow: /',
+    '',
+    'User-agent: Yandex',
+    'Allow: /',
+    '',
+    `Host: ${host}`,
+    `Sitemap: ${siteUrl}/sitemap.xml`,
+    ''
+  ].join('\n')
 }
 
 function patchIndexHtml() {
@@ -99,17 +115,30 @@ function patchIndexHtml() {
 
   html = html
     .replace(/<link rel="canonical" href="https?:\/\/[^"]*"\s*\/?>/, `<link rel="canonical" href="${siteUrl}/" />`)
+    .replace(
+      /<link rel="alternate" hreflang="ru" href="https?:\/\/[^"]*"\s*\/?>/,
+      `<link rel="alternate" hreflang="ru" href="${siteUrl}/" />`
+    )
+    .replace(
+      /<link rel="alternate" hreflang="x-default" href="https?:\/\/[^"]*"\s*\/?>/,
+      `<link rel="alternate" hreflang="x-default" href="${siteUrl}/" />`
+    )
     .replace(/<meta property="og:url" content="https?:\/\/[^"]*"\s*\/?>/, `<meta property="og:url" content="${siteUrl}/" />`)
-    .replace(/<meta property="og:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta property="og:image" content="${siteUrl}/pickup.svg" />`)
-    .replace(/<meta name="twitter:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta name="twitter:image" content="${siteUrl}/pickup.svg" />`)
+    .replace(/<meta property="og:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta property="og:image" content="${siteUrl}/pickup.png" />`)
+    .replace(/<meta name="twitter:image" content="https?:\/\/[^"]*"\s*\/?>/, `<meta name="twitter:image" content="${siteUrl}/pickup.png" />`)
     .replace(/"url":\s*"https?:\/\/[^"]*\/"/, `"url": "${siteUrl}/"`)
-    .replace(/"image":\s*"https?:\/\/[^"]*"/, `"image": "${siteUrl}/pickup.svg"`)
+    .replace(/"image":\s*"https?:\/\/[^"]*"/, `"image": "${siteUrl}/pickup.png"`)
 
   writeFileSync(indexPath, html)
 }
 
-(async () => {
+;(async () => {
   const routes = await buildRoutes()
+  routes.sort((a, b) => {
+    if (a === '/') return -1
+    if (b === '/') return 1
+    return a.localeCompare(b)
+  })
   writeFileSync(resolve(root, 'public', 'sitemap.xml'), buildSitemapWithRoutes(routes))
   writeFileSync(resolve(root, 'public', 'robots.txt'), buildRobots())
   patchIndexHtml()

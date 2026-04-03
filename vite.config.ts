@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { defineConfig } from 'vite'
 import type { PluginOption } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -16,7 +17,7 @@ function readSitemapRoutes() {
   const sitemapPath = path.join(process.cwd(), 'public', 'sitemap.xml')
   try {
     const xml = fs.readFileSync(sitemapPath, 'utf8')
-    const locs = Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g)).map((m) => m[1])
+    const locs = Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), (m: RegExpMatchArray) => m[1])
     const routes = locs
       .map((loc) => {
         try {
@@ -38,6 +39,13 @@ function readSitemapRoutes() {
 const prerenderRoutes = readSitemapRoutes()
 const PuppeteerRenderer = vitePrerender.PuppeteerRenderer
 
+/**
+ * Prerender требует скачанный Chromium (puppeteer). В CI/на сервере без браузера
+ * сборка падала. Включите вручную: VITE_PRERENDER=1 pnpm run build
+ */
+const enablePrerender =
+  process.env.VITE_PRERENDER === 'true' || process.env.VITE_PRERENDER === '1'
+
 export default defineConfig({
   build: {
     // Понижаем таргет сборки, чтобы даже старый Chromium Puppeteer смог
@@ -46,23 +54,23 @@ export default defineConfig({
   },
   plugins: [
     react(),
-    vitePrerender({
-      staticDir: path.join(process.cwd(), 'dist'),
-      routes: prerenderRoutes,
-      // Ждём, пока React реально отрисует контент (минимум один h1).
-      // Иначе prerenderer сохраняет пустой root.
-      renderer: new PuppeteerRenderer({
-        headless: true,
-        injectProperty: '__PRERENDER_INJECTED',
-        inject: { isPrerender: true },
-        // Ждём немного времени, чтобы React успел смонтировать контент.
-        // Тег h1 на главной может отсутствовать на текущем этапе, поэтому не ждём его.
-        renderAfterTime: 8000,
-      }),
-      server: {
-        host: '127.0.0.1',
-        port: 8001
-      }
-    })
-  ],
+    ...(enablePrerender
+      ? [
+          vitePrerender({
+            staticDir: path.join(process.cwd(), 'dist'),
+            routes: prerenderRoutes,
+            renderer: new PuppeteerRenderer({
+              headless: true,
+              injectProperty: '__PRERENDER_INJECTED',
+              inject: { isPrerender: true },
+              renderAfterTime: 8000
+            }),
+            server: {
+              host: '127.0.0.1',
+              port: 8001
+            }
+          })
+        ]
+      : [])
+  ]
 })

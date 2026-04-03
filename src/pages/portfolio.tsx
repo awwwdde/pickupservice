@@ -41,6 +41,10 @@ const ProjectsPage: FC = () => {
   const [xRange, setXRange] = useState(0);
   const [featured, setFeatured] = useState<Project[]>(featuredProjects);
   const [others, setOthers] = useState<Project[]>(otherProjects);
+  /** Число проектов с бэкенда; до загрузки — локальный фолбэк. */
+  const [totalFromBackend, setTotalFromBackend] = useState(
+    featuredProjects.length + otherProjects.length
+  );
 
   useEffect(() => {
     if (isPrerender) return
@@ -70,7 +74,9 @@ const ProjectsPage: FC = () => {
     let cancelled = false;
     fetchProjects()
       .then((items) => {
-        if (cancelled || !items.length) return;
+        if (cancelled) return;
+        setTotalFromBackend(items.length);
+        if (!items.length) return;
         const mapped: Project[] = items.map((item) => ({
           id: String(item.id),
           title: item.title,
@@ -202,7 +208,12 @@ const ProjectsPage: FC = () => {
       <section className="w-[90%] mx-auto py-24 md:py-60">
         <div className="flex justify-between items-end mb-32 border-b border-white/10 pb-10">
           <h2 className="text-5xl font-bold uppercase tracking-tighter">Все проекты</h2>
-          <span className="font-mono text-[10px] uppercase tracking-widest opacity-30">/ Total: 07</span>
+          <span className="font-mono text-[10px] uppercase tracking-widest opacity-30">
+            / Total:{' '}
+            {totalFromBackend < 100
+              ? String(totalFromBackend).padStart(2, '0')
+              : totalFromBackend}
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-16 md:gap-y-32 md:gap-x-20">

@@ -1,5 +1,9 @@
 const BACKEND_ORIGIN = (import.meta.env.VITE_BACKEND_ORIGIN || 'http://localhost:8000').replace(/\/+$/, '')
 
+/** Не дергать accordion/service-gallery (например, если nginx не проксирует эти пути на проде). */
+const SKIP_OPTIONAL_API =
+  import.meta.env.VITE_SKIP_OPTIONAL_API === 'true' || import.meta.env.VITE_SKIP_OPTIONAL_API === '1'
+
 function toAbsoluteMediaUrl(url: string): string {
   if (!url) return ''
   if (/^https?:\/\//i.test(url)) return url
@@ -16,6 +20,19 @@ async function getJson<T>(path: string): Promise<T> {
   }
 
   return (await response.json()) as T
+}
+
+/** GET JSON без исключения при 404/5xx — для опциональных эндпоинтов. */
+async function getJsonOptional<T>(path: string): Promise<T | null> {
+  try {
+    const response = await fetch(`${BACKEND_ORIGIN}${path}`, {
+      headers: { Accept: 'application/json' }
+    })
+    if (!response.ok) return null
+    return (await response.json()) as T
+  } catch {
+    return null
+  }
 }
 
 function asList<T>(payload: T[] | { results?: T[] } | null | undefined): T[] {
@@ -86,14 +103,20 @@ export async function fetchProjectById(id: string): Promise<ApiProjectDetail> {
 }
 
 export async function fetchAccordionItems(): Promise<ApiAccordionItem[]> {
-  const payload = await getJson<ApiAccordionItem[] | { results?: ApiAccordionItem[] }>('/api/projects/accordion/')
+  if (SKIP_OPTIONAL_API) return []
+  const payload = await getJsonOptional<ApiAccordionItem[] | { results?: ApiAccordionItem[] }>(
+    '/api/projects/accordion/'
+  )
+  if (!payload) return []
   return asList(payload).map((item) => ({ ...item, image: toAbsoluteMediaUrl(item.image) }))
 }
 
 export async function fetchServiceGalleryImages(): Promise<ApiServiceGalleryItem[]> {
-  const payload = await getJson<
+  if (SKIP_OPTIONAL_API) return []
+  const payload = await getJsonOptional<
     ApiServiceGalleryItem[] | { results?: ApiServiceGalleryItem[] }
   >('/api/projects/service-gallery/')
+  if (!payload) return []
   return asList(payload).map((item) => ({
     ...item,
     image: toAbsoluteMediaUrl(item.image)
@@ -137,11 +160,37 @@ export async function fetchTestimonials(): Promise<ApiTestimonialsResponse | nul
   }
 }
 
+/** Активные новинки с бэка (GET /api/projects/novinki/). */
+export interface ApiNovelty {
+  id: number
+  title: string
+  description: string
+  image: string
+  starts_at: string
+  ends_at: string
+  order: number
+}
+
+function formatNoveltyDate(iso: string): string {
+  try {
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  } catch {
+    return ''
+  }
+}
+
+function excerptFromDescription(text: string, maxLen = 220): string {
+  const t = (text || '').trim()
+  if (t.length <= maxLen) return t
+  return `${t.slice(0, maxLen).trimEnd()}…`
+}
+
 /**
  * Главная новость / новинка для виджета на главной.
- * GET /api/projects/news/featured/ — один объект JSON.
- * Поля в snake_case, как в DRF:
- *   id, title, date_display, excerpt, content, image (путь или URL, может быть null)
+ * 1) GET /api/projects/novinki/ — первая активная новинка (как в Django).
+ * 2) при отсутствии — GET /api/projects/news/featured/ (если когда-то появится).
  */
 export interface ApiNewsFeatured {
   id: number
@@ -152,15 +201,34 @@ export interface ApiNewsFeatured {
   image: string | null
 }
 
+export async function fetchNovinki(): Promise<ApiNovelty[]> {
+  const raw = await getJsonOptional<ApiNovelty[]>('/api/projects/novinki/')
+  if (!raw || !Array.isArray(raw)) return []
+  return raw.map((n) => ({
+    ...n,
+    image: n.image ? toAbsoluteMediaUrl(n.image) : ''
+  }))
+}
+
 export async function fetchFeaturedNews(): Promise<ApiNewsFeatured | null> {
-  try {
-    const data = await getJson<ApiNewsFeatured>('/api/projects/news/featured/')
+  const list = await fetchNovinki()
+  if (list.length > 0) {
+    const n = list[0]
     return {
-      ...data,
-      image: data.image ? toAbsoluteMediaUrl(data.image) : null
+      id: n.id,
+      title: n.title,
+      date_display: formatNoveltyDate(n.starts_at),
+      excerpt: excerptFromDescription(n.description),
+      content: n.description,
+      image: n.image?.trim() ? n.image : null
     }
-  } catch {
-    return null
+  }
+
+  const legacy = await getJsonOptional<ApiNewsFeatured>('/api/projects/news/featured/')
+  if (!legacy) return null
+  return {
+    ...legacy,
+    image: legacy.image ? toAbsoluteMediaUrl(legacy.image) : null
   }
 }
 

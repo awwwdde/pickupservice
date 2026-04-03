@@ -6,12 +6,7 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://pickupservice.moscow/service</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://pickupservice.moscow/portfolio</loc>
+    <loc>https://pickupservice.moscow/booking</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -21,9 +16,19 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://pickupservice.moscow/booking</loc>
+    <loc>https://pickupservice.moscow/portfolio</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://pickupservice.moscow/portfolio/1</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://pickupservice.moscow/portfolio/2</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://pickupservice.moscow/portfolio/f1</loc>
@@ -41,13 +46,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://pickupservice.moscow/portfolio/2</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://pickupservice.moscow/portfolio/1</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <loc>https://pickupservice.moscow/service</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

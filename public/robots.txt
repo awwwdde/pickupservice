@@ -1,5 +1,14 @@
 User-agent: *
 Allow: /
 
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
 Host: pickupservice.moscow
 Sitemap: https://pickupservice.moscow/sitemap.xml
