@@ -16,12 +16,6 @@ from .views import (
 
 router = DefaultRouter()
 router.register("", ProjectViewSet, basename="project")
-router.register("accordion", AccordionItemViewSet, basename="accordion-item")
-router.register(
-    "service-gallery",
-    ServiceGalleryImageViewSet,
-    basename="service-gallery",
-)
 
 urlpatterns = [
     path("contact/", ContactSettingsView.as_view(), name="contact-settings"),
@@ -43,6 +37,16 @@ urlpatterns = [
         "novinki/",
         NoveltyViewSet.as_view({"get": "list"}),
         name="novelty-list",
+    ),
+    path(
+        "accordion/",
+        AccordionItemViewSet.as_view({"get": "list"}),
+        name="accordion-item-list",
+    ),
+    path(
+        "service-gallery/",
+        ServiceGalleryImageViewSet.as_view({"get": "list"}),
+        name="service-gallery-list",
     ),
 ] + router.urls
 
