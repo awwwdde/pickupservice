@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, X, Calendar, MessageSquare, ImageIcon } from 'lucide-react';
-import { fetchFeaturedNews } from '../../api/backend';
+import { fetchFeaturedNews, type ApiNewsFeatured } from '../../api/backend';
 import { isPrerenderEnv } from '../../utils/isPrerender'
 
 interface NewsItem {
@@ -13,15 +13,23 @@ interface NewsItem {
   image: string;
 }
 
-/** Тексты до появления бэкенда; фото — заглушка (пустой image). */
-const FALLBACK_NEWS: NewsItem = {
-  id: '0',
-  title: 'Экспедиция в Арктику: Подготовка внедорожников',
-  date: '12 апреля, 2026',
-  excerpt: 'Узнайте, как мы готовим технику к экстремальным температурам и полной автономии.',
-  content: 'Здесь располагается полный текст статьи. В рамках подготовки мы модернизировали подвеску, установили дополнительные системы обогрева и протестировали электронику при -45°C. Наш подход к инженерии позволяет достигать результатов, которые ранее казались невозможными. Мы используем только проверенные компоненты и кастомные решения для каждого конкретного случая.',
-  image: ''
-};
+function isValidFeaturedNews(api: ApiNewsFeatured | null): api is ApiNewsFeatured {
+  if (!api) return false;
+  if (!api.title?.trim()) return false;
+  if (!(api.content?.trim() || api.excerpt?.trim())) return false;
+  return true;
+}
+
+function mapApiToNews(api: ApiNewsFeatured): NewsItem {
+  return {
+    id: String(api.id),
+    title: api.title.trim(),
+    date: api.date_display,
+    excerpt: api.excerpt,
+    content: api.content,
+    image: api.image?.trim() ?? ''
+  };
+}
 
 function NewsImagePlaceholder({ className }: { className?: string }) {
   return (
@@ -66,42 +74,50 @@ function NewsMedia({
   );
 }
 
+const POLL_MS = 45_000;
+
 const NewsHeroBlock: React.FC = () => {
-  const [news, setNews] = useState<NewsItem>(FALLBACK_NEWS);
+  const [news, setNews] = useState<NewsItem | null>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const isPrerender = isPrerenderEnv()
+  const isPrerender = isPrerenderEnv();
+  const loadedRef = useRef(false);
 
   useEffect(() => {
-    if (isPrerender) return
+    if (isPrerender) return;
     let cancelled = false;
+
+    const tryApply = (api: ApiNewsFeatured | null) => {
+      if (cancelled || !isValidFeaturedNews(api)) return;
+      loadedRef.current = true;
+      setNews(mapApiToNews(api));
+    };
+
     (async () => {
-      const api = await fetchFeaturedNews();
-      if (cancelled || !api) return;
-      setNews({
-        id: String(api.id),
-        title: api.title,
-        date: api.date_display,
-        excerpt: api.excerpt,
-        content: api.content,
-        image: api.image?.trim() ?? ''
-      });
+      tryApply(await fetchFeaturedNews());
     })();
+
+    const id = window.setInterval(async () => {
+      if (cancelled || loadedRef.current) return;
+      tryApply(await fetchFeaturedNews());
+    }, POLL_MS);
+
     return () => {
       cancelled = true;
+      window.clearInterval(id);
     };
   }, [isPrerender]);
 
   return (
     <>
       <AnimatePresence>
-        {isVisible && (
+        {isVisible && news && (
           <motion.div
             initial={{ opacity: 0, x: 30, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.9, filter: 'blur(10px)' }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-header absolute left-1/2 bottom-24 z-[100] w-[min(340px,92vw)] -translate-x-1/2 overflow-hidden border border-white/10 p-3 shadow-2xl sm:bottom-28 sm:w-[340px] lg:right-[min(35px,6vw)] lg:bottom-8 lg:left-auto lg:translate-x-0 lg:top-auto lg:w-[400px] lg:p-4 min-[1000px]:max-[1439px]:w-[min(320px,26vw)] min-[1000px]:max-[1439px]:max-w-[min(320px,26vw)] min-[1000px]:max-[1439px]:p-3 min-[1000px]:max-[1439px]:bottom-7 min-[1440px]:lg:w-[440px]"
+            className="glass-header pointer-events-auto absolute z-[100] overflow-hidden border border-white/10 shadow-2xl max-md:right-3 max-md:bottom-[4.75rem] max-md:left-auto max-md:w-[min(248px,76vw)] max-md:translate-x-0 max-md:p-2.5 sm:max-md:bottom-[5.25rem] md:bottom-28 md:left-1/2 md:w-[min(340px,92vw)] md:-translate-x-1/2 md:p-3 lg:right-[min(35px,6vw)] lg:bottom-8 lg:left-auto lg:translate-x-0 lg:top-auto lg:w-[400px] lg:p-4 min-[1000px]:max-[1439px]:bottom-7 min-[1000px]:max-[1439px]:w-[min(320px,26vw)] min-[1000px]:max-[1439px]:max-w-[min(320px,26vw)] min-[1000px]:max-[1439px]:p-3 min-[1440px]:lg:w-[440px]"
           >
             <button
               onClick={() => setIsVisible(false)}
@@ -111,35 +127,35 @@ const NewsHeroBlock: React.FC = () => {
               <X size={14} />
             </button>
 
-            <div className="relative mb-3 h-28 w-full overflow-hidden rounded-lg sm:h-32 md:mb-4 md:h-40 lg:h-44">
+            <div className="relative mb-2 h-20 w-full overflow-hidden rounded-md md:mb-4 md:h-40 lg:h-44">
               <NewsMedia
                 src={news.image}
                 alt={news.title}
                 className="h-full w-full"
                 imgClassName="h-full w-full object-cover transition-transform duration-700 hover:scale-110"
               />
-              <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-sm bg-orange-500/90 px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter text-white backdrop-blur-sm sm:bottom-2.5 sm:left-2.5 md:gap-2 md:px-2.5 md:py-1 md:text-[10px]">
+              <div className="absolute bottom-1.5 left-1.5 flex items-center gap-1 rounded-sm bg-orange-500/90 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-tighter text-white backdrop-blur-sm md:bottom-2 md:left-2 md:gap-2 md:px-2.5 md:py-1 md:text-[10px]">
                 <MessageSquare className="shrink-0" size={10} strokeWidth={2.5} aria-hidden />
                 <span className="leading-none">Актуально</span>
               </div>
             </div>
 
-            <div className="space-y-1.5 md:space-y-2">
-              <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-white/40 md:gap-2.5 md:text-[11px]">
-                <Calendar className="shrink-0 opacity-90" size={12} strokeWidth={2} aria-hidden />
+            <div className="space-y-1 max-md:space-y-1 md:space-y-2">
+              <div className="flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-white/40 max-md:gap-1.5 md:gap-2.5 md:text-[11px]">
+                <Calendar className="shrink-0 opacity-90" size={11} strokeWidth={2} aria-hidden />
                 <span className="leading-none">{news.date}</span>
               </div>
-              <h3 className="line-clamp-2 text-sm font-bold leading-snug text-white sm:text-base md:text-lg min-[1000px]:max-[1399px]:md:text-base">
+              <h3 className="line-clamp-2 font-bold leading-snug text-white max-md:text-[13px] max-md:leading-tight md:text-lg min-[1000px]:max-[1399px]:md:text-base">
                 {news.title}
               </h3>
               
-              <div className="pt-2 md:pt-3">
+              <div className="pt-1.5 md:pt-3">
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-white/5 bg-white/5 py-2 text-xs font-semibold text-white transition-all hover:border-white/20 hover:bg-white/10 sm:text-sm md:py-2.5 md:text-[0.95rem]"
+                  className="group flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-white/5 bg-white/5 py-1.5 text-[11px] font-semibold text-white transition-all hover:border-white/20 hover:bg-white/10 max-md:gap-1 sm:text-sm md:gap-2 md:py-2.5 md:text-[0.95rem]"
                 >
                   Читать полностью
-                  <ArrowRight className="shrink-0 transition-transform group-hover:translate-x-1" size={15} aria-hidden />
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-1 md:h-[15px] md:w-[15px]" aria-hidden />
                 </button>
               </div>
             </div>
@@ -148,7 +164,7 @@ const NewsHeroBlock: React.FC = () => {
       </AnimatePresence>
 
       <AnimatePresence>
-        {isModalOpen && (
+        {isModalOpen && news && (
           <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}

@@ -633,9 +633,6 @@ const MainPage: FC = () => {
                 <div className="relative min-h-[280px] w-full">
                   <img src={p.image || ''} className="absolute inset-0 h-full w-full object-cover" alt="" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                  <div className="absolute bottom-4 left-4">
-                    <span className="text-5xl font-black text-[#FF8201]">0{i + 1}</span>
-                  </div>
                 </div>
               )}
             </div>
