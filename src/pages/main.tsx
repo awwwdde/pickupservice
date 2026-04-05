@@ -69,7 +69,23 @@ const servicesData = [
     subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
     image: image3
   }
-]
+] as const
+
+type AccordionServiceRow = {
+  accordionKey: string
+  title: string
+  subtitle: string
+  image: string
+}
+
+function staticServiceRows(): AccordionServiceRow[] {
+  return servicesData.map((s, i) => ({
+    accordionKey: `static-${i}`,
+    title: s.title,
+    subtitle: s.subtitle,
+    image: s.image as string
+  }))
+}
 
 type HomeTestimonial = { id: string | number; quote: string; name: string; car: string }
 
@@ -115,7 +131,7 @@ const MainPage: FC = () => {
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
-  const [dynamicServices, setDynamicServices] = useState(servicesData)
+  const [dynamicServices, setDynamicServices] = useState<AccordionServiceRow[]>(staticServiceRows)
   const [displayTestimonials, setDisplayTestimonials] = useState<HomeTestimonial[]>(testimonialsData)
   const [allReviewsUrl, setAllReviewsUrl] = useState('https://yandex.ru/maps/org/pikapservis_msk/121304824267/reviews/?ll=37.679951%2C55.758331&z=16')
   /** ≥1440px — исходная вёрстка проектов (540×620 / 300×440); иначе гибкий ряд без скролла */
@@ -384,14 +400,19 @@ const MainPage: FC = () => {
 
     fetchAccordionItems()
       .then((items) => {
-        if (cancelled || !items.length) return
-        setDynamicServices(
-          items.map((item) => ({
+        if (cancelled) return
+        if (!items.length) return
+        const sorted = [...items].sort((a, b) => a.order - b.order || a.id - b.id)
+        const fromApi: AccordionServiceRow[] = sorted.map((item) => {
+          const url = (item.image && String(item.image).trim()) || ''
+          return {
+            accordionKey: `api-${item.id}`,
             title: item.title,
-            subtitle: item.description,
-            image: item.image
-          }))
-        )
+            subtitle: item.description ?? '',
+            image: url || (image1 as string)
+          }
+        })
+        setDynamicServices([...staticServiceRows(), ...fromApi])
       })
       .catch(() => {
         // Фолбэк — локальные карточки.
@@ -743,7 +764,7 @@ const MainPage: FC = () => {
           <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10">
             {dynamicServices.map((service, index) => (
               <ServiceCard
-                key={index}
+                key={service.accordionKey}
                 index={index}
                 title={service.title}
                 subtitle={service.subtitle}
@@ -760,7 +781,7 @@ const MainPage: FC = () => {
           <div className="mt-10 flex flex-col border-t border-black/10">
             {dynamicServices.map((service, index) => (
               <ServiceCard
-                key={index}
+                key={service.accordionKey}
                 index={index}
                 title={service.title}
                 subtitle={service.subtitle}

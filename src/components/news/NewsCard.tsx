@@ -117,7 +117,7 @@ const NewsHeroBlock: React.FC = () => {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: 20, scale: 0.9, filter: 'blur(10px)' }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-header pointer-events-auto absolute z-[100] overflow-hidden border border-white/10 shadow-2xl max-md:right-3 max-md:bottom-[4.75rem] max-md:left-auto max-md:w-[min(248px,76vw)] max-md:translate-x-0 max-md:p-2.5 sm:max-md:bottom-[5.25rem] md:bottom-28 md:left-1/2 md:w-[min(340px,92vw)] md:-translate-x-1/2 md:p-3 lg:right-[min(35px,6vw)] lg:bottom-8 lg:left-auto lg:translate-x-0 lg:top-auto lg:w-[400px] lg:p-4 min-[1000px]:max-[1439px]:bottom-7 min-[1000px]:max-[1439px]:w-[min(320px,26vw)] min-[1000px]:max-[1439px]:max-w-[min(320px,26vw)] min-[1000px]:max-[1439px]:p-3 min-[1440px]:lg:w-[440px]"
+            className="glass-header pointer-events-auto fixed z-[100] overflow-hidden border border-white/10 shadow-2xl max-md:right-3 max-md:bottom-[4.75rem] max-md:left-auto max-md:w-[min(248px,76vw)] max-md:translate-x-0 max-md:p-2.5 sm:max-md:bottom-[5.25rem] md:bottom-28 md:left-1/2 md:w-[min(340px,92vw)] md:-translate-x-1/2 md:p-3 lg:right-[min(35px,6vw)] lg:bottom-8 lg:left-auto lg:translate-x-0 lg:top-auto lg:w-[400px] lg:p-4 min-[1000px]:max-[1439px]:bottom-7 min-[1000px]:max-[1439px]:w-[min(320px,26vw)] min-[1000px]:max-[1439px]:max-w-[min(320px,26vw)] min-[1000px]:max-[1439px]:p-3 min-[1440px]:lg:w-[440px]"
           >
             <button
               onClick={() => setIsVisible(false)}
