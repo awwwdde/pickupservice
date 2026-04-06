@@ -1,5 +1,18 @@
 @import 'tailwindcss';
 
+/* Планшет: книжная / альбомная ориентация (главная и её блоки) */
+@custom-variant tablet-portrait {
+  @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    @slot;
+  }
+}
+
+@custom-variant tablet-landscape {
+  @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+    @slot;
+  }
+}
+
 ::-webkit-scrollbar {
   display: none;
 }

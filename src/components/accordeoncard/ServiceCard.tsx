@@ -1,6 +1,8 @@
 import type { FC } from 'react'
 import { motion, cubicBezier } from 'framer-motion'
 
+import { useTabletLayoutMode } from '../../hooks/useTabletLayoutMode'
+
 const customEase = cubicBezier(0.22, 1, 0.36, 1)
 
 interface ServiceCardProps {
@@ -24,13 +26,28 @@ export const ServiceCard: FC<ServiceCardProps> = ({
   alwaysExpanded = false,
 }) => {
   const open = alwaysExpanded || isActive
+  const tabletMode = useTabletLayoutMode()
+
+  const rowOpenHeight =
+    tabletMode === 'portrait'
+      ? 'min(340px,52vh)'
+      : tabletMode === 'landscape'
+        ? 'min(300px,44vh)'
+        : 'min(400px,60vh)'
+  const rowClosedHeight =
+    tabletMode === 'portrait'
+      ? 'min(112px,17vh)'
+      : tabletMode === 'landscape'
+        ? 'min(100px,15vh)'
+        : 'min(130px,20vh)'
+  const imageColWidth = tabletMode === 'portrait' ? '38%' : tabletMode === 'landscape' ? '32%' : '35%'
 
   return (
     <motion.div
       onClick={alwaysExpanded ? undefined : onClick}
       initial={false}
       animate={{
-        height: open ? 'min(400px,60vh)' : 'min(130px,20vh)',
+        height: open ? rowOpenHeight : rowClosedHeight,
         backgroundColor: open ? '#ffffff' : '#f3f3f1',
       }}
       transition={{ duration: 0.8, ease: customEase }}
@@ -64,7 +81,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       <motion.div
         initial={false}
         animate={{
-          width: open ? '35%' : '0%',
+          width: open ? imageColWidth : '0%',
           opacity: open ? 1 : 0,
         }}
         transition={{ duration: 0.8, ease: customEase }}
@@ -83,8 +100,8 @@ export const ServiceCard: FC<ServiceCardProps> = ({
         </div>
       </motion.div>
 
-      <div className="relative z-10 hidden flex-1 flex-col justify-center px-6 sm:px-10 min-[1000px]:max-[1439px]:px-6 md:flex">
-        <h3 className="text-4xl font-black uppercase tracking-tighter text-black md:text-[clamp(1.75rem,3.5vw,3.25rem)] min-[1440px]:text-6xl">
+      <div className="relative z-10 hidden flex-1 flex-col justify-center px-6 sm:px-10 min-[1000px]:max-[1439px]:px-6 tablet-portrait:px-5 tablet-landscape:px-5 md:flex">
+        <h3 className="text-4xl font-black uppercase tracking-tighter text-black md:text-[clamp(1.75rem,3.5vw,3.25rem)] min-[1440px]:text-6xl tablet-portrait:text-[clamp(1.35rem,3.8vw,2rem)] tablet-landscape:text-[clamp(1.25rem,2.8vw,1.75rem)]">
           {title}
         </h3>
 
@@ -93,11 +110,11 @@ export const ServiceCard: FC<ServiceCardProps> = ({
           initial={false}
           animate={{
             opacity: open ? 1 : 0,
-            maxHeight: open ? 320 : 0,
-            marginTop: open ? 24 : 0,
+            maxHeight: open ? (tabletMode === 'landscape' ? 220 : tabletMode === 'portrait' ? 260 : 320) : 0,
+            marginTop: open ? (tabletMode === 'landscape' ? 16 : 24) : 0,
           }}
           transition={{ duration: 0.55, ease: customEase }}
-          className="max-w-xl overflow-hidden text-lg font-medium leading-tight text-black/50 min-[1000px]:max-[1439px]:max-w-[min(28rem,42vw)] min-[1000px]:max-[1439px]:text-base"
+          className="max-w-xl overflow-hidden text-lg font-medium leading-tight text-black/50 min-[1000px]:max-[1439px]:max-w-[min(28rem,42vw)] min-[1000px]:max-[1439px]:text-base tablet-portrait:max-w-[min(24rem,48vw)] tablet-portrait:text-[0.95rem] tablet-landscape:max-w-[min(20rem,36vw)] tablet-landscape:text-[0.9rem] tablet-landscape:leading-snug"
         >
           {subtitle}
         </motion.p>
@@ -123,9 +140,9 @@ export const ServiceCard: FC<ServiceCardProps> = ({
         </motion.p>
       </div>
 
-      <div className="hidden flex-shrink-0 items-center justify-end pr-6 min-[1000px]:max-[1439px]:pr-5 sm:pr-10 md:flex">
+      <div className="hidden flex-shrink-0 items-center justify-end pr-6 min-[1000px]:max-[1439px]:pr-5 tablet-portrait:pr-4 tablet-landscape:pr-4 sm:pr-10 md:flex">
         <span
-          className={`text-6xl font-black transition-colors duration-500 md:text-[clamp(3.25rem,7vw,5rem)] min-[1440px]:text-8xl ${
+          className={`text-6xl font-black transition-colors duration-500 md:text-[clamp(3.25rem,7vw,5rem)] min-[1440px]:text-8xl tablet-portrait:text-[clamp(2.5rem,6vw,3.5rem)] tablet-landscape:text-[clamp(2.25rem,5vw,3rem)] ${
             open ? 'text-[#FF8201]' : 'text-black/5'
           }`}
         >
