@@ -364,7 +364,7 @@ const ServicePage: FC = () => {
       {/* SECTION 4: STICKY BLOCKS */}
       <section ref={stickySectionRef} className="relative bg-[#fcfcfc] text-black border-t border-neutral-200 md:h-[300vh]">
         {/* Desktop */}
-        <div className="hidden md:flex sticky top-0 h-screen w-full flex-col items-center justify-center overflow-hidden">
+        <div className="hidden md:flex sticky top-0 h-[100svh] w-full flex-col items-center justify-center overflow-hidden">
           <div className="w-[90%] mb-[clamp(1.5rem,4vw,4rem)] grid grid-cols-1 md:grid-cols-[1fr,auto] gap-4 items-end">
             <h2 className="text-[clamp(2rem,5vw,5rem)] font-black uppercase tracking-[-0.04em] text-black leading-[0.88]">
               Направления <br /> <span className="text-[#FF8201]">сервиса</span>

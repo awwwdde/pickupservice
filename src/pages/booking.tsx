@@ -1,38 +1,17 @@
-import { useCallback, useEffect, useState, useRef } from 'react'
+import { useCallback, useState } from 'react'
 import type { FC, FormEvent } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { InputField } from '../components/inputfields/InputField'
 import { submitBookingRequest } from '../api/backend'
 import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
 import image5 from '../assets/img/image5.png'
 import image6 from '../assets/img/image6.png'
-import image7 from '../assets/img/image7.png'
-import image8 from '../assets/img/image8.png'
-import image9 from '../assets/img/image9.png'
-import { isPrerenderEnv } from '../utils/isPrerender'
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
 
 
-// Список фото для эффекта
-const trailImages = [
-  image5,
-  image6,
-  image7,
-  image8,
-  image9
-]
-
-interface TrailItem {
-  id: number;
-  x: number;
-  y: number;
-  imgIndex: number;
-}
-
 const BookingPage: FC = () => {
-  const isPrerender = isPrerenderEnv()
   const [form, setForm] = useState({
     name: '',
     phone: '',
@@ -46,64 +25,9 @@ const BookingPage: FC = () => {
   const [isFocused, setIsFocused] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formToast, setFormToast] = useState<FormToastPayload>(null)
+  const bookingHeroImage = image6 || image5
 
   const dismissFormToast = useCallback(() => setFormToast(null), [])
-
-  const [enableTrail, setEnableTrail] = useState(false)
-
-  // СОСТОЯНИЕ ДЛЯ ЭФФЕКТА МЫШИ
-  const [trail, setTrail] = useState<TrailItem[]>([])
-  const lastMousePos = useRef({ x: 0, y: 0 })
-  const imageIndex = useRef(0)
-  const headerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (isPrerender) return
-    const mq = window.matchMedia('(pointer: coarse)')
-    const apply = () => {
-      // На телефонах/планшетах трейл отключаем, чтобы не было дерганий и лишней нагрузки.
-      const nextEnable = !mq.matches
-      setEnableTrail(nextEnable)
-      if (!nextEnable) setTrail([])
-    }
-
-    apply()
-
-    if (typeof mq.addEventListener === 'function') {
-      mq.addEventListener('change', apply)
-      return () => mq.removeEventListener('change', apply)
-    }
-
-    mq.addListener(apply)
-    return () => mq.removeListener(apply)
-  }, [isPrerender])
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!headerRef.current) return
-
-    // Получаем координаты относительно хедера
-    const rect = headerRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left
-    const y = e.clientY - rect.top
-
-    // Считаем расстояние от последнего созданного фото
-    const distance = Math.hypot(x - lastMousePos.current.x, y - lastMousePos.current.y)
-
-    // Если мышь прошла больше 100px — создаем новое фото
-    if (distance > 100) {
-      const newId = Date.now()
-      const newImgIndex = imageIndex.current % trailImages.length
-      
-      setTrail(prev => [...prev, { id: newId, x, y, imgIndex: newImgIndex }])
-      
-      lastMousePos.current = { x, y }
-      imageIndex.current++
-
-      setTimeout(() => {
-        setTrail(prev => prev.filter(item => item.id !== newId))
-      }, 500)
-    }
-  }
 
   const handleChange = (key: string, value: string) => {
     setFormToast(null)
@@ -152,46 +76,23 @@ const BookingPage: FC = () => {
   return (
     <main className="bg-[#020202] text-white min-h-screen selection:bg-[#FF8201] selection:text-black">
       
-      {/* HEADER SECTION С ЭФФЕКТОМ ТРЕЙЛА */}
-      <section 
-        ref={headerRef}
-        onMouseMove={enableTrail ? handleMouseMove : undefined}
-        className="relative w-full h-[80vh] flex items-center justify-center overflow-hidden border-b border-white/5"
+      {/* HERO */}
+      <section
+        className="relative flex h-[80svh] w-full items-center justify-center overflow-hidden border-b border-white/5"
       >
-        {/* АНИМИРОВАННЫЙ СЛЕД ИЗ ФОТО */}
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <AnimatePresence>
-            {trail.map((item) => (
-              <motion.img
-                key={item.id}
-                src={trailImages[item.imgIndex]}
-                initial={{ opacity: 0, scale: 0.5, rotate: -10 }}
-                animate={{ opacity: 0.7, scale: 1, rotate: 0 }}
-                exit={{ opacity: 0, scale: 1.2, filter: "blur(10px)" }}
-                transition={{ duration: 0.6, ease }}
-                style={{
-                  position: 'absolute',
-                  left: item.x,
-                  top: item.y,
-                  // Делаем трей адаптивным: на больших экранах сохраняем прежний размер,
-                  // на телефонах/телевизорах ограничиваем по viewport.
-                  width: 'min(200px, 40vw)',
-                  height: 'min(250px, 45vh)',
-                  objectFit: 'cover',
-                  transform: 'translate(-50%, -50%)', // Центрируем по мышке
-                }}
-                className="grayscale-[0.5] shadow-2xl border border-white/10"
-              />
-            ))}
-          </AnimatePresence>
-        </div>
+        <img
+          src={bookingHeroImage}
+          alt="Фото сервиса PickupService"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-black/20 to-black/45" />
 
-        {/* ТЕКСТ (теперь поверх фото за счет z-10) */}
         <motion.h1
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, ease }}
-          className="relative z-10 text-center text-[7vw] leading-[1.0] uppercase tracking-tighter pointer-events-none"
+          className="relative z-10 px-6 text-center text-[clamp(2.2rem,7vw,6.5rem)] leading-[1] uppercase tracking-tighter pointer-events-none"
         >
           <span className="italic font-light text-neutral-400">Здесь вы можете</span>
           <br />
@@ -200,12 +101,12 @@ const BookingPage: FC = () => {
       </section>
 
       {/* ФОРМА */}
-      <section className="w-[90%] mx-auto pb-40 pt-20">
+      <section className="w-[90%] mx-auto pb-40 pt-20 tablet-portrait:w-[92%] tablet-landscape:w-[92%]">
         <motion.form
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           transition={{ duration: 1 }}
-          className="relative grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12"
+          className="relative grid grid-cols-1 tablet-landscape:grid-cols-2 lg:grid-cols-2 gap-x-16 gap-y-12 tablet-portrait:gap-y-10 tablet-landscape:gap-x-12"
           onSubmit={handleSubmit}
         >
           <input

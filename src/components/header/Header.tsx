@@ -3,19 +3,24 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, X, Send } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import PickupLogo from './PickupLogo.tsx'
 import { isPrerenderEnv } from '../../utils/isPrerender'
 import { fetchContactSettings } from '../../api/backend'
 
 const navLinks = [
   // { to: '/service', label: 'Сервис' },
-  { to: '/portfolio', label: 'Портфолио' },
+  { to: '/portfolio', label: 'Проекты' },
   { to: '/contact', label: 'Контакты' },
   { to: '/booking', label: 'Записаться' },
 ] as const
 
 const linksPanelClassName =
-  'glass-header inline-flex items-center gap-4 rounded-[0.2rem] border border-white/10 px-5 py-2 shadow-xl sm:gap-5 sm:px-6 sm:py-2.5'
+  'glass-header inline-flex items-center gap-4 rounded-[0.2rem] border border-white/10 px-5 py-2 shadow-xl sm:gap-5 sm:px-6 sm:py-2.5 tablet-portrait:gap-3.5 tablet-portrait:px-4 tablet-portrait:py-2 tablet-landscape:gap-4 tablet-landscape:px-5 tablet-landscape:py-2'
+const desktopPanelTypographyClassName =
+  'text-[15px] sm:text-[17px] md:text-[18px] min-[1000px]:max-[1279px]:text-[16px] tablet-portrait:text-[15px] tablet-landscape:text-[16px]'
+const compactContactPanelClassName =
+  'glass-header inline-flex items-center gap-3 rounded-[0.2rem] border border-white/10 px-3.5 py-1.5 text-[12px] shadow-xl sm:gap-3.5 sm:px-4 sm:py-2 sm:text-[13px] md:text-[14px] min-[1000px]:max-[1279px]:gap-2.5 min-[1000px]:max-[1279px]:px-3 min-[1000px]:max-[1279px]:py-1.5 min-[1000px]:max-[1279px]:text-[12px] tablet-portrait:gap-2 tablet-portrait:px-3 tablet-portrait:py-1.5 tablet-portrait:text-[12px] tablet-landscape:gap-2.5 tablet-landscape:px-3.5 tablet-landscape:py-1.5 tablet-landscape:text-[12px]'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
@@ -139,29 +144,30 @@ const Header: FC = () => {
   const closeMenu = () => setIsMenuOpen(false)
 
   return (
-    <motion.header
-      className="fixed inset-x-0 top-3 z-[999] flex justify-center sm:top-5"
-      animate={{
-        color: isDarkBackground ? '#ffffff' : '#0a0a0a',
-        opacity: pastHero ? 0.95 : 1,
-      }}
-      transition={colorTransition}
-    >
-      <nav className="relative w-full flex items-center justify-between" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+    <>
+      <motion.header
+        className="fixed inset-x-0 top-3 z-[999] flex justify-center sm:top-5"
+        animate={{
+          color: isDarkBackground ? '#ffffff' : '#0a0a0a',
+          opacity: pastHero ? 0.95 : 1,
+        }}
+        transition={colorTransition}
+      >
+        <nav className="relative flex w-full items-center justify-between px-[clamp(14px,3vw,28px)] tablet-portrait:px-[clamp(12px,3.5vw,20px)] tablet-landscape:px-[clamp(16px,2.8vw,26px)]">
         {/* LEFT: LOGO */}
         <Link
           to="/"
           className="flex shrink-0 items-center justify-center text-inherit leading-none"
           aria-label="PickupService"
         >
-          <PickupLogo className="h-[3rem] w-auto sm:h-[3.5rem]" />
+          <PickupLogo className="h-[2.75rem] w-auto sm:h-[3.2rem] tablet-portrait:h-[2.6rem] tablet-landscape:h-[2.75rem]" />
         </Link>
 
         {/* CENTER: NAVIGATION LINKS (DESKTOP) - Absolutely centered */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center">
+        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center tablet-landscape:flex xl:flex">
           <AnimatePresence mode="wait">
             <motion.ul
-              className={`${linksPanelClassName} justify-center text-[15px] sm:text-[17px] md:text-[18px]`}
+              className={`${linksPanelClassName} ${desktopPanelTypographyClassName} justify-center`}
               variants={desktopLinksVariants}
               initial="initial"
               animate="animate"
@@ -178,8 +184,10 @@ const Header: FC = () => {
         </div>
 
         {/* RIGHT: CONTACT INFO (DESKTOP) - ROW LAYOUT */}
-        <div className="hidden md:flex flex-shrink-0">
-          <div className={`${linksPanelClassName} flex-row items-center gap-4 text-[15px] sm:text-[17px] md:text-[18px]`}>
+        <div className="hidden tablet-landscape:flex xl:flex flex-shrink-0">
+          <div
+            className={compactContactPanelClassName}
+          >
             <a
               href={`tel:${contact.phoneTel}`}
               className="font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
@@ -187,7 +195,7 @@ const Header: FC = () => {
             >
               {contact.phoneDisplay}
             </a>
-            <span className="text-white/70 whitespace-nowrap">
+            <span className="whitespace-nowrap min-[1000px]:max-[1279px]:hidden min-[1280px]:inline tablet-landscape:hidden min-[1280px]:tablet-landscape:inline">
               {contact.address}
             </span>
             {contact.telegramUrl && (
@@ -195,10 +203,10 @@ const Header: FC = () => {
                 href={contact.telegramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex h-8 w-8 items-center justify-center rounded-[0.2rem] bg-[#FF8201] border border-white/15 transition-opacity hover:opacity-70 shadow-xl"
+                className="flex h-5 w-5 flex-shrink-0 items-center justify-center text-inherit transition-opacity hover:opacity-70"
                 title="Telegram"
               >
-                <Send size={14} className="text-white" />
+                <Send size={14} />
               </a>
             )}
             <Link
@@ -211,145 +219,158 @@ const Header: FC = () => {
         </div>
 
         {/* BURGER BUTTON (MOBILE) */}
-        <div className="flex shrink-0 items-center justify-end md:hidden">
-          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] border border-white/15 px-0.5 shadow-xl">
+        <div className="flex shrink-0 items-center justify-end tablet-landscape:hidden xl:hidden">
+          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] border border-white/15 px-0.5 shadow-xl tablet-portrait:h-10 tablet-portrait:w-10">
             <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
           </div>
         </div>
       </nav>
+      </motion.header>
 
-      {/* FULLSCREEN MENU PANEL */}
-      <AnimatePresence>
-        {isMenuOpen && (
+      {/* Мобильное полноэкранное меню — в портале, чтобы не ломалось z-index на iPad */}
+      <div className="tablet-landscape:hidden xl:hidden">
+        <MobileMenuPortal isOpen={isMenuOpen} onClose={closeMenu} contact={contact} />
+      </div>
+    </>
+  )
+}
+
+const MobileMenuPortal: FC<{
+  isOpen: boolean
+  onClose: () => void
+  contact: {
+    phoneDisplay: string
+    phoneTel: string
+    telegramUrl: string
+    address: string
+  }
+}> = ({ isOpen, onClose, contact }) => {
+  if (typeof document === 'undefined') return null
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.4, ease: easeSwap }}
+          className="fixed inset-0 z-[20000] flex flex-col justify-between bg-black/95 p-6 backdrop-blur-2xl"
+        >
+          {/* TOP BAR */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.4, ease: easeSwap }}
-            className="fixed inset-0 z-[10000] flex flex-col justify-between bg-black/95 p-6 backdrop-blur-2xl md:hidden"
+            className="flex justify-between items-center text-white/80"
           >
-            {/* TOP BAR */}
-            <motion.div
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.4, ease: easeSwap }}
-              className="flex justify-between items-center text-white/80"
-            >
-              <div className="text-sm tracking-widest font-medium">EU</div>
+            <div className="text-sm tracking-widest font-medium">EU</div>
 
-              <div className="flex gap-6 items-center">
-                <div className="text-sm tabular-nums">
-                  {new Date().toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </div>
-
-                <button
-                  onClick={closeMenu}
-                  className="p-1 hover:opacity-70 transition-opacity"
-                >
-                  <X size={32} strokeWidth={1.5} className="text-white" />
-                </button>
+            <div className="flex gap-6 items-center">
+              <div className="text-sm tabular-nums">
+                {new Date().toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </div>
-            </motion.div>
 
-            {/* LINKS - Forced White Text for dark overlay */}
-            <motion.div
-              className="flex flex-col items-center gap-8 text-3xl font-light text-white"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                visible: {
-                  transition: {
-                    staggerChildren: 0.1,
-                    delayChildren: 0.2,
-                  },
-                },
-              }}
-            >
-              {navLinks.map((link) => (
-                <motion.div
-                  key={link.to}
-                  variants={{
-                    hidden: { opacity: 0, y: 30 },
-                    visible: { opacity: 1, y: 0 },
-                  }}
-                  transition={{ duration: 0.5, ease: easeSwap }}
-                >
-                  <SimpleNavLink to={link.to} onClick={closeMenu}>
-                    {link.label}
-                  </SimpleNavLink>
-                </motion.div>
-              ))}
-            </motion.div>
+              <button onClick={onClose} className="p-1 hover:opacity-70 transition-opacity" aria-label="Закрыть меню">
+                <X size={32} strokeWidth={1.5} className="text-white" />
+              </button>
+            </div>
+          </motion.div>
 
-            {/* CONTACT INFO - Mobile - PINNED TO BOTTOM */}
-            <motion.div
-              className="flex flex-col items-center gap-4 text-white text-sm border-t border-white/10 pt-6"
-              initial="hidden"
-              animate="visible"
-              variants={{
-                visible: {
-                  transition: {
-                    staggerChildren: 0.1,
-                    delayChildren: 0.4,
-                  },
+          {/* LINKS */}
+          <motion.div
+            className="flex flex-col items-center gap-8 text-3xl font-light text-white"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: {
+                transition: {
+                  staggerChildren: 0.1,
+                  delayChildren: 0.2,
                 },
-              }}
-            >
-              <motion.a
-                href={`tel:${contact.phoneTel}`}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.5, ease: easeSwap }}
-                className="font-medium hover:opacity-70 transition-opacity"
-              >
-                {contact.phoneDisplay}
-              </motion.a>
-              <motion.span
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{ duration: 0.5, ease: easeSwap }}
-                className="text-white/70"
-              >
-                {contact.address}
-              </motion.span>
+              },
+            }}
+          >
+            {navLinks.map((link) => (
               <motion.div
+                key={link.to}
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 30 },
                   visible: { opacity: 1, y: 0 },
                 }}
                 transition={{ duration: 0.5, ease: easeSwap }}
-                className="flex items-center gap-4 pt-2"
               >
-                {contact.telegramUrl && (
-                  <a
-                    href={contact.telegramUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex h-10 w-10 items-center justify-center rounded-[0.2rem] bg-[#FF8201] border border-white/15 transition-opacity hover:opacity-70"
-                  >
-                    <Send size={18} className="text-white" />
-                  </a>
-                )}
-                <Link
-                  to="/booking"
-                  className="font-medium hover:opacity-70 transition-opacity"
-                  onClick={closeMenu}
-                >
-                  Записаться
-                </Link>
+                <SimpleNavLink to={link.to} onClick={onClose}>
+                  {link.label}
+                </SimpleNavLink>
               </motion.div>
+            ))}
+          </motion.div>
+
+          {/* CONTACT INFO */}
+          <motion.div
+            className="flex flex-col items-center gap-4 text-white text-sm border-t border-white/10 pt-6"
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: {
+                transition: {
+                  staggerChildren: 0.1,
+                  delayChildren: 0.4,
+                },
+              },
+            }}
+          >
+            <motion.a
+              href={`tel:${contact.phoneTel}`}
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.5, ease: easeSwap }}
+              className="font-medium hover:opacity-70 transition-opacity"
+            >
+              {contact.phoneDisplay}
+            </motion.a>
+            <motion.span
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.5, ease: easeSwap }}
+              className="text-white/70"
+            >
+              {contact.address}
+            </motion.span>
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: 20 },
+                visible: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.5, ease: easeSwap }}
+              className="flex items-center gap-4 pt-2"
+            >
+              {contact.telegramUrl && (
+                <a
+                  href={contact.telegramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-10 w-10 items-center justify-center rounded-[0.2rem] bg-[#FF8201] border border-white/15 transition-opacity hover:opacity-70"
+                >
+                  <Send size={18} className="text-white" />
+                </a>
+              )}
+              <Link to="/booking" className="font-medium hover:opacity-70 transition-opacity" onClick={onClose}>
+                Записаться
+              </Link>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.header>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body,
   )
 }
 

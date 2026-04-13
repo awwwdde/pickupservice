@@ -34,6 +34,7 @@ import NewsHeroBlock from '../components/news/NewsCard'
 import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
 import { useTabletLayoutMode } from '../hooks/useTabletLayoutMode'
 import { isPrerenderEnv } from '../utils/isPrerender'
+import '../styles/tablet-adaptive.css'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
 const fallbackAboutImages = [image1, image2, image3, image4]
@@ -56,17 +57,22 @@ const projectsData = [
 
 const servicesData = [
   {
-    title: 'Модифицируем внедорожники',
+    title: 'Техническое обслуживание',
     subtitle: 'Индивидуальные проекты, переоборудование салона, установка дополнительного света, спальников и экспедиционных багажников.',
     image: image1
   },
   {
-    title: 'Техническое обслуживание',
+    title: 'Полный цикл обслуживания и ремонта',
     subtitle: 'Комплексное ТО, глубокая диагностика ходовой части и двигателя, замена масел и фильтров для японских внедорожников.',
     image: image2
   },
   {
-    title: 'Ремонт внедорожников',
+      title: 'Молярные, жестяные и сварочные работы',
+      subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
+      image: image3
+  },
+  {    
+    title: 'Подготовка к экспедициям и трофи-рейдам',
     subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
     image: image3
   }
@@ -121,14 +127,19 @@ const MainPage: FC = () => {
   const testimonialsRef = useRef<HTMLDivElement | null>(null)
   const aboutCarouselRef = useRef<HTMLDivElement | null>(null)
   const testimonialsCarouselRef = useRef<HTMLDivElement | null>(null)
+  const projectsTabletCarouselRef = useRef<HTMLDivElement | null>(null)
+  const aboutTabletCarouselRef = useRef<HTMLDivElement | null>(null)
+  const servicesTabletCarouselRef = useRef<HTMLDivElement | null>(null)
 
   const [isMobile, setIsMobile] = useState(false)
   const isMobileRef = useRef(false)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [activeProjectIndex, setActiveProjectIndex] = useState(0)
   const [aboutImageIndex, setAboutImageIndex] = useState(0)
+  const [activeAboutSlideIndex, setActiveAboutSlideIndex] = useState(0)
   const [aboutImages, setAboutImages] = useState<string[]>(fallbackAboutImages)
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
+  const [activeServiceSlideIndex, setActiveServiceSlideIndex] = useState(0)
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
   const [dynamicServices, setDynamicServices] = useState<AccordionServiceRow[]>(staticServiceRows)
@@ -147,6 +158,8 @@ const MainPage: FC = () => {
   const [callbackSubmitting, setCallbackSubmitting] = useState(false)
   const [formToast, setFormToast] = useState<FormToastPayload>(null)
   const tabletLayoutMode = useTabletLayoutMode()
+  const isTablet = tabletLayoutMode !== 'none'
+  const showMobileLikeSections = isMobile
 
   const dismissFormToast = useCallback(() => setFormToast(null), [])
 
@@ -255,10 +268,137 @@ const MainPage: FC = () => {
         ? ['4%', '-50%']
         : ['5%', '-56%']
   const testimonialsX = useTransform(testimonialsProgress, [0, 1], testimonialsXRange)
-  const firstBlockY = useTransform(smoothScroll, [0, 1], ['60vh', '-60vh'])
-  const secondBlockY = useTransform(smoothScroll, [0, 1], ['80vh', '-80vh'])
-  const aboutCardY = useTransform(smoothAbout, [0, 1], ['100vh', '-120vh'])
+  const aboutCardYRange: [string, string] =
+    tabletLayoutMode === 'portrait'
+      ? ['55svh', '-90svh']
+      : tabletLayoutMode === 'landscape'
+        ? ['45svh', '-95svh']
+        : ['100svh', '-120svh']
+  const aboutCardY = useTransform(smoothAbout, [0, 1], aboutCardYRange)
   const aboutIndexRaw = useTransform(smoothAbout, [0.2, 0.8], [0, aboutImages.length - 1])
+
+  // iPad/планшеты без hover: делаем "сжатую" высоту карточек менее агрессивной,
+  // иначе ряд выглядит криво (особенно при align-items:end).
+  const projectsCollapsedHeight =
+    tabletLayoutMode === 'portrait' ? '90%' : tabletLayoutMode === 'landscape' ? '86%' : '70.97%'
+
+  const showTabletProjects = false
+  const showDesktopProjects = !isMobile
+  const showTabletSwipeSections = false
+  const showDesktopStickySections = !isMobile
+
+  // iPad/планшеты: активный слайд определяется свайпом как на моб. отзывах
+  useEffect(() => {
+    if (!showTabletProjects) return
+    const container = projectsTabletCarouselRef.current
+    if (!container) return
+
+    let rafId: number | null = null
+    const updateIndex = () => {
+      rafId = null
+      const slides = Array.from(container.querySelectorAll<HTMLElement>('[data-project-slide]'))
+      if (!slides.length) return
+      const containerLeft = container.getBoundingClientRect().left
+      let bestIndex = 0
+      let bestDist = Number.POSITIVE_INFINITY
+      slides.forEach((el, idx) => {
+        const dist = Math.abs(el.getBoundingClientRect().left - containerLeft)
+        if (dist < bestDist) {
+          bestDist = dist
+          bestIndex = idx
+        }
+      })
+      setActiveProjectIndex(bestIndex)
+    }
+
+    const onScroll = () => {
+      if (rafId != null) return
+      rafId = requestAnimationFrame(updateIndex)
+    }
+
+    container.addEventListener('scroll', onScroll, { passive: true })
+    updateIndex()
+    return () => {
+      container.removeEventListener('scroll', onScroll)
+      if (rafId != null) cancelAnimationFrame(rafId)
+    }
+  }, [showTabletProjects])
+
+  useEffect(() => {
+    if (!showTabletSwipeSections) return
+    const container = aboutTabletCarouselRef.current
+    if (!container) return
+
+    let rafId: number | null = null
+    const updateIndex = () => {
+      rafId = null
+      const slides = Array.from(container.querySelectorAll<HTMLElement>('[data-about-tablet-slide]'))
+      if (!slides.length) return
+      const containerLeft = container.getBoundingClientRect().left
+      let bestIndex = 0
+      let bestDist = Number.POSITIVE_INFINITY
+      slides.forEach((el, idx) => {
+        const dist = Math.abs(el.getBoundingClientRect().left - containerLeft)
+        if (dist < bestDist) {
+          bestDist = dist
+          bestIndex = idx
+        }
+      })
+      setActiveAboutSlideIndex(bestIndex)
+      // 0 — это инфо-слайд, дальше фото
+      setAboutImageIndex(Math.max(0, bestIndex - 1))
+    }
+
+    const onScroll = () => {
+      if (rafId != null) return
+      rafId = requestAnimationFrame(updateIndex)
+    }
+
+    container.addEventListener('scroll', onScroll, { passive: true })
+    updateIndex()
+    return () => {
+      container.removeEventListener('scroll', onScroll)
+      if (rafId != null) cancelAnimationFrame(rafId)
+    }
+  }, [showTabletSwipeSections])
+
+  useEffect(() => {
+    if (!showTabletSwipeSections) return
+    const container = servicesTabletCarouselRef.current
+    if (!container) return
+
+    let rafId: number | null = null
+    const updateIndex = () => {
+      rafId = null
+      const slides = Array.from(container.querySelectorAll<HTMLElement>('[data-service-tablet-slide]'))
+      if (!slides.length) return
+      const containerLeft = container.getBoundingClientRect().left
+      let bestIndex = 0
+      let bestDist = Number.POSITIVE_INFINITY
+      slides.forEach((el, idx) => {
+        const dist = Math.abs(el.getBoundingClientRect().left - containerLeft)
+        if (dist < bestDist) {
+          bestDist = dist
+          bestIndex = idx
+        }
+      })
+      setActiveServiceSlideIndex(bestIndex)
+      // 0 — интро-слайд, дальше услуги
+      setActiveServiceIndex(Math.max(0, bestIndex - 1))
+    }
+
+    const onScroll = () => {
+      if (rafId != null) return
+      rafId = requestAnimationFrame(updateIndex)
+    }
+
+    container.addEventListener('scroll', onScroll, { passive: true })
+    updateIndex()
+    return () => {
+      container.removeEventListener('scroll', onScroll)
+      if (rafId != null) cancelAnimationFrame(rafId)
+    }
+  }, [showTabletSwipeSections])
 
   useMotionValueEvent(aboutIndexRaw, 'change', (latest) => {
     if (isMobileRef.current) return
@@ -476,10 +616,10 @@ const MainPage: FC = () => {
   }, [isPrerender])
 
   return (
-    <div className="bg-black text-white selection:bg-[#FF8201]">
+    <div className="tablet-adaptive-main bg-black text-white selection:bg-[#FF8201]">
       
       {/* SECTION 1: HERO */}
-      <section id="site-hero" className="relative h-screen w-full overflow-hidden">
+      <section id="site-hero" className="relative h-[100svh] w-full overflow-hidden">
         <video
           ref={videoRef}
           src={herovid}
@@ -536,110 +676,160 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 2: PARALLAX */}
-      <section ref={parallaxRef} className="relative h-[300vh] border-0 border-b-0 bg-[#f3f3f1]">
-        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)] tablet-portrait:px-[clamp(14px,3.5vw,28px)] tablet-landscape:px-[clamp(16px,3vw,36px)]">
+      <section  className="relative h-[300vh] border-0 border-b-0 bg-[#f3f3f1]">
+        <div className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)] tablet-portrait:px-[clamp(14px,3.5vw,28px)] tablet-landscape:px-[clamp(16px,3vw,36px)]">
           <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)] min-[1440px]:max-w-[min(980px,94vw)] min-[1440px]:text-[clamp(40px,7vw,104px)] tablet-portrait:max-w-[min(640px,88vw)] tablet-portrait:text-[clamp(26px,5.2vw,52px)] tablet-portrait:leading-[0.95] tablet-landscape:max-w-[min(780px,78vw)] tablet-landscape:text-[clamp(28px,4.2vw,64px)]">
-            Собираем и обслуживаем <span className="block text-[#FF8201] md:inline">внедорожники</span>
+            МЫ ДЕЛАЕМ <span className="block text-[#FF8201] md:inline">ВЕЩИ</span>
           </div>
-          <motion.div
-            style={{ y: firstBlockY }}
-            className="absolute left-[clamp(16px,6vw,8%)] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl min-[1000px]:max-[1439px]:px-4 min-[1000px]:max-[1439px]:py-3 min-[1000px]:max-[1439px]:text-[min(17px,2.35vw)] min-[1440px]:px-10 min-[1440px]:py-6 min-[1440px]:text-[min(24px,4.5vw)] sm:px-10 sm:py-6 tablet-portrait:left-[clamp(12px,4vw,6%)] tablet-portrait:px-3.5 tablet-portrait:py-3 tablet-portrait:text-[min(15px,2.8vw)] tablet-landscape:left-[clamp(14px,4vw,7%)] tablet-landscape:px-4 tablet-landscape:py-3 tablet-landscape:text-[min(16px,2.2vw)]"
-          >
-            ПИКАПСЕРВИС
-          </motion.div>
-          <motion.div
-            style={{ y: secondBlockY }}
-            className="absolute right-[clamp(16px,6vw,8%)] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl min-[1000px]:max-[1439px]:max-w-[min(340px,calc(100vw-48px))] min-[1000px]:max-[1439px]:p-5 min-[1000px]:max-[1439px]:text-[min(15px,2.1vw)] min-[1440px]:max-w-[min(520px,36vw)] min-[1440px]:p-9 min-[1440px]:text-[clamp(1.125rem,calc(1.15vw + 0.85rem),1.5rem)] min-[1440px]:leading-relaxed sm:p-10 tablet-portrait:right-[clamp(12px,4vw,6%)] tablet-portrait:max-w-[min(300px,calc(100vw-40px))] tablet-portrait:p-4 tablet-portrait:text-[min(14px,2.6vw)] tablet-portrait:leading-snug tablet-landscape:max-w-[min(360px,34vw)] tablet-landscape:p-4 tablet-landscape:text-[min(14px,1.9vw)] tablet-landscape:leading-snug"
-          >
-            Бескомпромиссная подготовка к экспедициям и трофи-рейдам. Ваша уверенность в каждом километре пути.
-          </motion.div>
         </div>
       </section>
 
       {/* SECTION 3: ≥1440px — как изначально (540/300 × 620/440); 768–1439 — flex, чёрный блок уже */}
-      <section className="-mt-px flex justify-center overflow-hidden border-0 bg-[#f3f3f1] py-24 md:py-32 min-[1000px]:max-[1439px]:py-[clamp(4.5rem,8vw,8rem)] tablet-portrait:py-[clamp(3.25rem,10vw,5rem)] tablet-landscape:py-[clamp(3.5rem,7vw,5.5rem)]">
-        <div
-          className={`hidden h-[min(620px,72vh)] w-full items-end md:flex tablet-portrait:h-[min(520px,58vh)] tablet-landscape:h-[min(540px,62vh)] ${projectsLargeDesktop ? 'justify-center gap-5 px-[5%]' : 'gap-[clamp(8px,1vw,16px)] px-[clamp(18px,3.5vw,4.5rem)] tablet-portrait:gap-[clamp(6px,1.2vw,12px)] tablet-portrait:px-[clamp(14px,3vw,2rem)] tablet-landscape:gap-[clamp(6px,0.9vw,14px)] tablet-landscape:px-[clamp(16px,2.5vw,3rem)]'}`}
-          onMouseLeave={() => setActiveProjectIndex(0)}
-        >
-          {dynamicProjects.map((p, i) => {
-            const isInfo = p.type === 'info'
-            return (
-            <motion.div
-              key={i}
-              onMouseEnter={() => setActiveProjectIndex(i)}
-              layout={projectsLargeDesktop}
-              animate={
-                projectsLargeDesktop
-                  ? {
-                      width: activeProjectIndex === i ? 540 : 300,
-                      height: activeProjectIndex === i ? 620 : 440,
-                    }
-                  : isInfo
+      <section className="tablet-adaptive-projects-section -mt-px flex justify-center overflow-hidden border-0 bg-[#f3f3f1] py-24 md:py-32 min-[1000px]:max-[1439px]:py-[clamp(4.5rem,8vw,8rem)] tablet-portrait:py-12 tablet-landscape:py-14">
+        {/* Desktop (не планшет): hover-ряд */}
+        {showDesktopProjects && (
+          <div
+            className={`tablet-adaptive-projects-row hidden h-[min(620px,72vh)] w-full items-end md:flex ${projectsLargeDesktop ? 'justify-center gap-5 px-[5%]' : 'gap-[clamp(8px,1vw,16px)] px-[clamp(18px,3.5vw,4.5rem)]'}`}
+            onMouseLeave={() => setActiveProjectIndex(0)}
+          >
+            {dynamicProjects.map((p, i) => {
+              const isInfo = p.type === 'info'
+              return (
+              <motion.div
+                key={i}
+                onMouseEnter={() => setActiveProjectIndex(i)}
+                onClick={() => setActiveProjectIndex(i)}
+                layout={projectsLargeDesktop}
+                animate={
+                  projectsLargeDesktop
                     ? {
-                        flexGrow: 0,
-                        flexShrink: 0,
-                        flexBasis: 'clamp(200px, 18.5vw, 360px)',
-                        height: activeProjectIndex === i ? '100%' : '70.97%',
+                        width: activeProjectIndex === i ? 540 : 300,
+                        height: activeProjectIndex === i ? 620 : 440,
                       }
-                    : {
-                        flexGrow: activeProjectIndex === i ? 1.8 : 1,
-                        flexBasis: 0,
-                        flexShrink: 1,
-                        height: activeProjectIndex === i ? '100%' : '70.97%',
-                      }
-              }
-              transition={{ duration: 0.45, ease }}
-              className={`relative cursor-pointer overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)] ${projectsLargeDesktop || isInfo ? 'shrink-0' : 'min-w-0'}`}
-            >
-              {p.type === 'info' ? (
+                    : isInfo
+                      ? {
+                          flexGrow: 0,
+                          flexShrink: 0,
+                          flexBasis: 'clamp(200px, 18.5vw, 360px)',
+                          height: activeProjectIndex === i ? '100%' : projectsCollapsedHeight,
+                        }
+                      : {
+                          flexGrow: activeProjectIndex === i ? 1.8 : 1,
+                          flexBasis: 0,
+                          flexShrink: 1,
+                          height: activeProjectIndex === i ? '100%' : projectsCollapsedHeight,
+                        }
+                }
+                transition={{ duration: 0.45, ease }}
+                className={`relative cursor-pointer overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)] ${projectsLargeDesktop || isInfo ? 'shrink-0' : 'min-w-0'}`}
+              >
+                {p.type === 'info' ? (
+                  <div
+                    className={`relative flex h-full w-full flex-col ${projectsLargeDesktop ? 'p-[30px]' : 'px-[clamp(18px,3.2vw,30px)] pb-[clamp(18px,3.2vw,30px)] pt-[clamp(18px,3.2vw,30px)]'}`}
+                  >
+                    <motion.h2
+                      className="mb-3 font-serif leading-[1.1] min-[1000px]:max-[1439px]:mb-2.5 md:mb-4"
+                      animate={{
+                        fontSize: projectsLargeDesktop
+                          ? activeProjectIndex === i
+                            ? '46px'
+                            : '34px'
+                          : activeProjectIndex === i
+                            ? 'clamp(26px, calc(2.1vw + 1rem), 46px)'
+                            : 'clamp(20px, calc(1.5vw + 0.75rem), 34px)',
+                      }}
+                      transition={{ duration: 0.45, ease }}
+                    >
+                      {p.title}
+                    </motion.h2>
+                    <AnimatePresence>
+                      {activeProjectIndex === i && (
+                        <motion.p
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="text-pretty text-[clamp(13px,calc(1.1vw + 0.65rem),15px)] leading-relaxed text-[#a0a0a0] min-[1000px]:max-[1439px]:leading-snug"
+                        >
+                          {p.description}
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                    <Link
+                      to="/portfolio"
+                      className={`absolute flex h-[min(108px,12vh)] cursor-pointer items-center justify-center gap-3 border border-white/5 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-[#FF8201] ${projectsLargeDesktop ? 'bottom-[15px] left-[15px] right-[15px]' : 'bottom-[clamp(18px,3.2vw,30px)] left-[clamp(18px,3.2vw,30px)] right-[clamp(18px,3.2vw,30px)]'}`}
+                    >
+                      ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
+                    </Link>
+                  </div>
+                ) : (
+                  <img src={p.image || ''} className="h-full w-full object-cover opacity-80" alt="" />
+                )}
+              </motion.div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Tablet: свайп вправо (snap), первый блок по центру */}
+        {showTabletProjects && (
+          <div
+            ref={projectsTabletCarouselRef}
+            className="w-full overflow-x-auto snap-x snap-mandatory pb-4 px-[6%] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
+            data-lenis-prevent
+          >
+            <div className="flex gap-3 w-max">
+              {dynamicProjects.map((p, i) => (
                 <div
-                  className={`relative flex h-full w-full flex-col ${projectsLargeDesktop ? 'p-[30px]' : 'px-[clamp(18px,3.2vw,30px)] pb-[clamp(18px,3.2vw,30px)] pt-[clamp(18px,3.2vw,30px)]'}`}
+                  key={i}
+                  data-project-slide
+                  className="snap-start flex-none"
+                  style={{ width: '88vw' }}
                 >
-                  <motion.h2
-                    className="mb-3 font-serif leading-[1.1] min-[1000px]:max-[1439px]:mb-2.5 md:mb-4"
+                  <motion.div
+                    initial={false}
                     animate={{
-                      fontSize: projectsLargeDesktop
-                        ? activeProjectIndex === i
-                          ? '46px'
-                          : '34px'
-                        : activeProjectIndex === i
-                          ? 'clamp(26px, calc(2.1vw + 1rem), 46px)'
-                          : 'clamp(20px, calc(1.5vw + 0.75rem), 34px)',
+                      scale: activeProjectIndex === i ? 1 : 0.98,
+                      opacity: activeProjectIndex === i ? 1 : 0.78
                     }}
-                    transition={{ duration: 0.45, ease }}
+                    transition={{ duration: 0.25 }}
                   >
-                    {p.title}
-                  </motion.h2>
-                  <AnimatePresence>
-                    {activeProjectIndex === i && (
-                      <motion.p
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        className="text-pretty text-[clamp(13px,calc(1.1vw + 0.65rem),15px)] leading-relaxed text-[#a0a0a0] min-[1000px]:max-[1439px]:leading-snug"
-                      >
-                        {p.description}
-                      </motion.p>
+                    {p.type === 'info' ? (
+                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]">
+                        <div className="relative flex h-full w-full flex-col px-6 pb-6 pt-6 tablet-portrait:px-7 tablet-portrait:pb-7 tablet-landscape:px-7 tablet-landscape:pb-7">
+                          <div className="mb-4 font-serif text-[clamp(30px,4.6vw,44px)] leading-[1.05] text-white">
+                            {p.title}
+                          </div>
+                          <div className="text-[15px] leading-relaxed text-[#a0a0a0]">
+                            {p.description}
+                          </div>
+                          <Link
+                            to="/portfolio"
+                            className="mt-auto flex h-16 items-center justify-center gap-3 border border-white/5 bg-[#1c1c1c] text-[12px] font-bold uppercase tracking-widest text-white transition-colors hover:bg-[#FF8201]"
+                          >
+                            ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]">
+                        <img
+                          src={p.image || ''}
+                          alt=""
+                          className="absolute inset-0 h-full w-full object-cover opacity-90"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-black/0 to-black/0" />
+                      </div>
                     )}
-                  </AnimatePresence>
-                  <Link
-                    to="/portfolio"
-                    className={`absolute flex h-[min(108px,12vh)] cursor-pointer items-center justify-center gap-3 border border-white/5 bg-[#1c1c1c] text-[11px] font-bold uppercase tracking-widest transition-all hover:bg-[#FF8201] ${projectsLargeDesktop ? 'bottom-[15px] left-[15px] right-[15px]' : 'bottom-[clamp(18px,3.2vw,30px)] left-[clamp(18px,3.2vw,30px)] right-[clamp(18px,3.2vw,30px)]'}`}
-                  >
-                    ВСЕ РАБОТЫ <Plus className="h-4 w-4" />
-                  </Link>
+                  </motion.div>
                 </div>
-              ) : (
-                <img src={p.image || ''} className="h-full w-full object-cover opacity-80" alt="" />
-              )}
-            </motion.div>
-            )
-          })}
-        </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Mobile: все блоки раскрыты, колонка */}
-        <div className="flex w-[90%] flex-col gap-8 md:hidden">
+        <div className={`${showMobileLikeSections ? 'flex' : 'hidden'} w-[90%] flex-col gap-8`}>
           {dynamicProjects.map((p, i) => (
             <div
               key={i}
@@ -668,8 +858,13 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 4: ABOUT */}
-      <section ref={aboutRef} className="relative bg-[#f3f3f1] text-black md:h-[300vh]">
-        <div className="sticky top-0 hidden h-screen w-full items-center justify-center overflow-hidden px-[5%] min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:px-[4%] tablet-landscape:px-[clamp(3.5%,4vw,5%)] md:flex">
+      <section
+        ref={aboutRef}
+        className={`tablet-adaptive-sticky-section relative bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+      >
+        {/* Desktop sticky */}
+        {showDesktopStickySections && (
+        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full items-center justify-center overflow-hidden px-[5%] min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:px-[4%] tablet-landscape:px-[clamp(3.5%,4vw,5%)] md:flex">
           <div className="pointer-events-none absolute left-[5%] z-0 min-[1000px]:max-[1439px]:left-[3%] tablet-portrait:left-[3.5%] tablet-landscape:left-[4%]">
             <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter min-[1000px]:max-[1439px]:text-[9.5vw] tablet-portrait:text-[10.5vw] tablet-landscape:text-[min(9vw,7.5rem)] tablet-landscape:leading-[0.8]">
               <div>КТО</div>
@@ -715,8 +910,72 @@ const MainPage: FC = () => {
             </div>
           </motion.div>
         </div>
+        )}
 
-        <div className="w-full md:hidden">
+        {/* Tablet: свайп-карусель */}
+        {showTabletSwipeSections && (
+          <div className="w-full" data-lenis-prevent>
+            <div
+              ref={aboutTabletCarouselRef}
+              className="overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6%]"
+              style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
+            >
+              <div className="flex gap-3 w-max">
+                {/* 0: инфо */}
+                <div data-about-tablet-slide className="snap-start flex-none" style={{ width: '88vw' }}>
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      scale: activeAboutSlideIndex === 0 ? 1 : 0.98,
+                      opacity: activeAboutSlideIndex === 0 ? 1 : 0.78,
+                    }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <div className="relative h-[min(500px,56vh)] w-full overflow-hidden border border-black/10 bg-white shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]">
+                      <div className="flex h-full w-full flex-col px-7 pb-7 pt-7">
+                        <div className="text-[clamp(2.4rem,7vw,4.4rem)] font-black uppercase leading-[0.86] tracking-tighter text-black">
+                          <div>КТО</div>
+                          <div className="text-[#FF8201]">МЫ?</div>
+                        </div>
+                        <h3 className="mt-6 text-[clamp(1.35rem,3.6vw,2rem)] font-bold uppercase tracking-tight text-black">
+                          Инженерная эстетика оффроуда
+                        </h3>
+                        <p className="mt-4 text-[clamp(0.98rem,2.2vw,1.1rem)] leading-relaxed text-black/60">
+                          Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: от диагностики и ТО до усиления подвески и экспедиционной подготовки.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {aboutImages.map((img, i) => (
+                  <div
+                    key={img + i}
+                    data-about-tablet-slide
+                    className="snap-start flex-none"
+                    style={{ width: '88vw' }}
+                  >
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        scale: activeAboutSlideIndex === i + 1 ? 1 : 0.98,
+                        opacity: activeAboutSlideIndex === i + 1 ? 1 : 0.78,
+                      }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black/5 shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]">
+                        <img src={img} alt={`Оффроуд проект ${i + 1}`} className="absolute inset-0 h-full w-full object-cover" />
+                      </div>
+                    </motion.div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile */}
+        <div className={`${showMobileLikeSections ? 'block' : 'hidden'} w-full`}>
           <div className="sticky top-0 z-30 border-b border-black/[0.06] bg-[#f3f3f1] px-[6%] pb-5 pt-14">
             <div className="text-[14vw] font-black uppercase leading-[0.75] tracking-tighter">
               <div>КТО</div>
@@ -760,8 +1019,13 @@ const MainPage: FC = () => {
         </div>
       </section>
       {/* SECTION 5: SERVICES */}
-      <section ref={servicesStickyRef} className="relative w-full bg-[#f3f3f1] text-black md:h-[300vh]">
-        <div className="sticky top-0 hidden h-screen w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:py-6 tablet-portrait:py-6 tablet-landscape:py-5 tablet-landscape:justify-start tablet-landscape:pt-[clamp(4.5rem,12vh,6rem)] md:flex">
+      <section
+        ref={servicesStickyRef}
+        className={`tablet-adaptive-sticky-section relative w-full bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+      >
+        {/* Desktop sticky */}
+        {showDesktopStickySections && (
+        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:py-6 tablet-portrait:py-6 tablet-landscape:py-5 tablet-landscape:justify-start tablet-landscape:pt-[clamp(4.5rem,12vh,6rem)] md:flex">
           <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10 min-[1000px]:max-[1439px]:mb-6 tablet-portrait:mb-6 tablet-landscape:mb-4">
             <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)] tablet-portrait:text-[clamp(1.65rem,4.2vw,2.35rem)] tablet-landscape:text-[clamp(1.55rem,3vw,2.15rem)]">
               Чем мы занимаемся
@@ -781,8 +1045,86 @@ const MainPage: FC = () => {
             ))}
           </div>
         </div>
+        )}
 
-        <div className="w-full px-[6%] py-20 md:hidden">
+        {/* Tablet: свайп карточек */}
+        {showTabletSwipeSections && (
+          <div className="w-full" data-lenis-prevent>
+            <div className="px-[6%]">
+              <h2 className="text-[clamp(1.75rem,4.2vw,2.35rem)] uppercase tracking-tighter text-[#FF8201]">
+                Чем мы занимаемся
+              </h2>
+            </div>
+            <div
+              ref={servicesTabletCarouselRef}
+              className="mt-8 overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6%]"
+              style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
+            >
+              <div className="flex gap-3 w-max">
+                {/* 0: интро */}
+                <div data-service-tablet-slide className="snap-start flex-none" style={{ width: '88vw' }}>
+                  <motion.div
+                    initial={false}
+                    animate={{
+                      scale: activeServiceSlideIndex === 0 ? 1 : 0.98,
+                      opacity: activeServiceSlideIndex === 0 ? 1 : 0.78,
+                    }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <div className="relative h-[min(500px,56vh)] w-full overflow-hidden border border-black/10 bg-white shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]">
+                      <div className="flex h-full w-full flex-col px-7 pb-7 pt-7">
+                        <div className="text-[clamp(2.2rem,6.4vw,3.8rem)] font-black uppercase leading-[0.9] tracking-tighter text-black">
+                          Чем мы
+                          <span className="block text-[#FF8201]">занимаемся</span>
+                        </div>
+                        <p className="mt-5 text-[clamp(1rem,2.2vw,1.1rem)] leading-relaxed text-black/60">
+                          Листайте вправо, чтобы посмотреть направления сервиса.
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {dynamicServices.map((s, idx) => (
+                  <div
+                    key={s.accordionKey}
+                    data-service-tablet-slide
+                    className="snap-start flex-none"
+                    style={{ width: '88vw' }}
+                  >
+                    <motion.div
+                      initial={false}
+                      animate={{
+                        scale: activeServiceSlideIndex === idx + 1 ? 1 : 0.98,
+                        opacity: activeServiceSlideIndex === idx + 1 ? 1 : 0.78,
+                      }}
+                      transition={{ duration: 0.25 }}
+                    >
+                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]">
+                        <img src={s.image} alt={s.title} className="absolute inset-0 h-full w-full object-cover opacity-85" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+                        <div className="relative flex h-full w-full flex-col justify-end px-7 pb-7">
+                          <div className="text-[clamp(18px,2.8vw,26px)] font-black uppercase tracking-tight text-white">
+                            {s.title}
+                          </div>
+                          <div className="mt-3 text-[clamp(0.95rem,2vw,1.05rem)] leading-relaxed text-white/75">
+                            {s.subtitle}
+                          </div>
+                          <div className="mt-5 text-sm font-bold uppercase tracking-widest text-[#FF8201]">
+                            0{idx + 1}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile */}
+        <div className={`${showMobileLikeSections ? 'block' : 'hidden'} w-full px-[6%] py-20`}>
           <h2 className="text-3xl uppercase tracking-tighter text-[#FF8201] sm:text-4xl">Чем мы занимаемся</h2>
           <div className="mt-10 flex flex-col border-t border-black/10">
             {dynamicServices.map((service, index) => (
@@ -802,9 +1144,13 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 6: TESTIMONIALS */}
-      <section ref={testimonialsRef} className="relative bg-[#020202] md:h-[300vh]">
-        {/* Desktop */}
-        <div className="sticky top-0 hidden h-screen w-full flex-col justify-center overflow-hidden md:flex tablet-landscape:justify-start tablet-landscape:pt-[clamp(3.5rem,10vh,5rem)]">
+      <section
+        ref={testimonialsRef}
+        className={`tablet-adaptive-sticky-section relative bg-[#020202] ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+      >
+        {/* Desktop sticky */}
+        {showDesktopStickySections && (
+        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full flex-col justify-center overflow-hidden md:flex tablet-landscape:justify-start tablet-landscape:pt-[clamp(3.5rem,10vh,5rem)]">
           <div className="mb-16 px-[5%] min-[1000px]:max-[1439px]:mb-12 min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:mb-10 tablet-portrait:px-[4%] tablet-landscape:mb-8 tablet-landscape:px-[4%]">
             <h2 className="text-4xl font-black uppercase tracking-tighter text-white leading-tight md:text-[clamp(1.65rem,3.4vw,2.6rem)] min-[1440px]:text-6xl min-[1440px]:leading-none tablet-portrait:text-[clamp(1.45rem,4vw,2.1rem)] tablet-landscape:text-[clamp(1.4rem,2.6vw,1.95rem)] tablet-landscape:leading-tight">
               Несколько слов <br />
@@ -831,9 +1177,11 @@ const MainPage: FC = () => {
             </a>
           </motion.div>
         </div>
+        )}
 
-        {/* Mobile */}
-        <div className="md:hidden w-full px-[6%] py-20">
+        {/* Tablet + Mobile: свайп */}
+        {(showMobileLikeSections || showTabletSwipeSections) && (
+        <div className="w-full px-[6%] py-20">
           <h2 className="text-3xl font-black uppercase tracking-tighter text-white">
             Несколько слов <br />
             <span className="text-[#FF8201]">от наших клиентов</span>
@@ -842,6 +1190,7 @@ const MainPage: FC = () => {
           <div
             ref={testimonialsCarouselRef}
             className="mt-10 overflow-x-auto snap-x snap-mandatory pb-4 -mx-[6%] px-[6%]"
+            style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
           >
             <div className="flex gap-4 w-max">
               {displayTestimonials.map((testimonial, slideIndex) => (
@@ -879,10 +1228,11 @@ const MainPage: FC = () => {
             все отзывы
           </a>
         </div>
+        )}
       </section>
 
       {/* SECTION 7: CONTACT FORM */}
-      <section className="relative flex w-full flex-col items-center bg-[#020202] py-32 border-t border-white/10 tablet-portrait:py-24 tablet-landscape:py-[clamp(5rem,12vh,7rem)]">
+      <section className="tablet-adaptive-contact-section relative flex w-full flex-col items-center bg-[#020202] py-32 border-t border-white/10 tablet-portrait:py-20 tablet-landscape:py-24">
         <div className="flex w-[90%] flex-col tablet-portrait:w-[92%] tablet-landscape:w-[92%]">
           <motion.h3 
             initial={{ opacity: 0, y: 20 }}
@@ -890,7 +1240,7 @@ const MainPage: FC = () => {
             viewport={{ once: true, margin: "-100px" }}
             className="mb-16 text-3xl font-bold uppercase tracking-tighter text-[#FF8201] md:text-5xl tablet-portrait:mb-12 tablet-portrait:text-[clamp(1.5rem,4vw,2.75rem)] tablet-landscape:mb-10 tablet-landscape:text-[clamp(1.45rem,3.2vw,2.5rem)]"
           >
-            Оставьте заявку и мы вам позвоним
+            Оставьте заявку
           </motion.h3>
           <form
             className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center tablet-portrait:gap-8 tablet-landscape:gap-8 tablet-landscape:items-center"
