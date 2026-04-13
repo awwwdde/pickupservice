@@ -99,7 +99,6 @@ const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 const MainPage: FC = () => {
   const isPrerender = isPrerenderEnv()
   const videoRef = useRef<HTMLVideoElement | null>(null)
-  const parallaxRef = useRef<HTMLDivElement | null>(null)
   const aboutRef = useRef<HTMLDivElement | null>(null)
   const servicesStickyRef = useRef<HTMLDivElement | null>(null)
   const testimonialsRef = useRef<HTMLDivElement | null>(null)
@@ -219,7 +218,7 @@ const MainPage: FC = () => {
   }
 
   // Скролл-анимации
-  const { scrollYProgress } = useScroll({ target: parallaxRef, offset: ['start start', 'end end'] })
+ 
   const { scrollYProgress: aboutProgress } = useScroll({ target: aboutRef, offset: ['start start', 'end end'] })
   const { scrollYProgress: servicesStickyProgress } = useScroll({
     target: servicesStickyRef,
@@ -228,13 +227,10 @@ const MainPage: FC = () => {
   const { scrollYProgress: testimonialsProgress } = useScroll({ target: testimonialsRef })
 
   const springConfig = { stiffness: 50, damping: 20, mass: 1 }
-  const smoothScroll = useSpring(scrollYProgress, springConfig)
   const smoothAbout = useSpring(aboutProgress, springConfig)
   
   /** На узком десктопе (1000–1439px) карточки уже — меньший ход, без «пустоты» справа */
   const testimonialsX = useTransform(testimonialsProgress, [0, 1], ['5%', '-56%'])
-  const firstBlockY = useTransform(smoothScroll, [0, 1], ['60vh', '-60vh'])
-  const secondBlockY = useTransform(smoothScroll, [0, 1], ['80vh', '-80vh'])
   const aboutCardY = useTransform(smoothAbout, [0, 1], ['100vh', '-120vh'])
   const aboutIndexRaw = useTransform(smoothAbout, [0.2, 0.8], [0, aboutImages.length - 1])
 
@@ -509,23 +505,11 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 2: PARALLAX */}
-      <section ref={parallaxRef} className="relative h-[300vh] border-0 border-b-0 bg-[#f3f3f1]">
-        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)]">
+      <section className="relative bg-[#f3f3f1]">
+        <div className="flex h-screen w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)]">
           <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)] min-[1440px]:max-w-[min(980px,94vw)] min-[1440px]:text-[clamp(40px,7vw,104px)]">
             Собираем и обслуживаем <span className="block text-[#FF8201] md:inline">внедорожники</span>
           </div>
-          <motion.div
-            style={{ y: firstBlockY }}
-            className="absolute left-[clamp(16px,6vw,8%)] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl min-[1000px]:max-[1439px]:px-4 min-[1000px]:max-[1439px]:py-3 min-[1000px]:max-[1439px]:text-[min(17px,2.35vw)] min-[1440px]:px-10 min-[1440px]:py-6 min-[1440px]:text-[min(24px,4.5vw)] sm:px-10 sm:py-6"
-          >
-            ПИКАПСЕРВИС
-          </motion.div>
-          <motion.div
-            style={{ y: secondBlockY }}
-            className="absolute right-[clamp(16px,6vw,8%)] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl min-[1000px]:max-[1439px]:max-w-[min(340px,calc(100vw-48px))] min-[1000px]:max-[1439px]:p-5 min-[1000px]:max-[1439px]:text-[min(15px,2.1vw)] min-[1440px]:max-w-[min(520px,36vw)] min-[1440px]:p-9 min-[1440px]:text-[clamp(1.125rem,calc(1.15vw + 0.85rem),1.5rem)] min-[1440px]:leading-relaxed sm:p-10"
-          >
-            Бескомпромиссная подготовка к экспедициям и трофи-рейдам. Ваша уверенность в каждом километре пути.
-          </motion.div>
         </div>
       </section>
 
@@ -679,12 +663,12 @@ const MainPage: FC = () => {
                 </p>
               </div>
 
-              <Link
+              {/* <Link
                 to="/service"
                 className="flex h-[80px] w-full max-w-[300px] cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors duration-300 hover:bg-[#FF8201]"
               >
                 УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
-              </Link>
+              </Link> */}
             </div>
           </motion.div>
         </div>
@@ -721,12 +705,12 @@ const MainPage: FC = () => {
             <p className="text-base leading-relaxed text-black/60">
               Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: диагностика, ТО и модернизация под бездорожье.
             </p>
-              <Link
+              {/* <Link
                 to="/service"
                 className="mt-4 flex h-[70px] w-full cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors active:bg-[#FF8201]"
               >
                 УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
-              </Link>
+              </Link> */}
             
 
           </motion.div>

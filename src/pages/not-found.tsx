@@ -171,7 +171,7 @@ const NotFoundPage: FC = () => {
             to="/portfolio"
             className="group flex items-center justify-center gap-3 px-8 h-14 bg-[#FF8201] text-black text-[11px] uppercase tracking-widest hover:bg-white transition"
           >
-            Портфолио
+            Проекты
             <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition" />
           </Link>
         </motion.div>

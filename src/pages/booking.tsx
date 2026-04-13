@@ -13,13 +13,7 @@ import { isPrerenderEnv } from '../utils/isPrerender'
 
 const ease: [number, number, number, number] = [0.22, 1, 0.36, 1]
 
-const services = [
-  'Внешние модификации',
-  'Техническое обслуживание',
-  'Диагностика',
-  'Детейлинг',
-  'Другое',
-]
+
 
 // Список фото для эффекта
 const trailImages = [
@@ -256,7 +250,7 @@ const BookingPage: FC = () => {
               onChange={e => handleChange('brand', e.target.value)}
             />
             <InputField
-              label="Модель + год"
+              label="Модель и год"
               value={form.model}
               disabled={submitting}
               required
@@ -266,20 +260,6 @@ const BookingPage: FC = () => {
 
           {/* Правая колонка */}
           <div className="flex flex-col gap-12">
-            <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }} className="relative">
-              <select
-                value={form.service}
-                onChange={e => handleChange('service', e.target.value)}
-                disabled={submitting}
-                required
-                className="w-full border-b border-white/20 bg-transparent py-4 text-lg text-white focus:border-[#FF8201] focus:outline-none appearance-none transition-colors disabled:opacity-50"
-              >
-                <option value="" disabled hidden>Выберите услугу</option>
-                {services.map(s => <option key={s} value={s} className="bg-black">{s}</option>)}
-              </select>
-              <span className="absolute right-0 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">↓</span>
-            </motion.div>
-
             <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease }} className="relative cursor-pointer">
               <textarea
                 value={form.message}
@@ -292,7 +272,7 @@ const BookingPage: FC = () => {
                 placeholder="Сообщение"
               />
               <label className={`absolute left-0 transition-all pointer-events-none ${isFocused || form.message ? '-top-4 text-xs text-[#FF8201]' : 'top-4 text-lg text-white/40'}`}>
-                Сообщение
+                Краткое техническое задание
               </label>
             </motion.div>
 

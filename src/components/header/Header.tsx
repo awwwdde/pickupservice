@@ -2,12 +2,13 @@ import type { FC, Dispatch, SetStateAction, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Send } from 'lucide-react'
 import PickupLogo from './PickupLogo.tsx'
 import { isPrerenderEnv } from '../../utils/isPrerender'
+import { fetchContactSettings } from '../../api/backend'
 
 const navLinks = [
-  { to: '/service', label: 'Сервис' },
+  // { to: '/service', label: 'Сервис' },
   { to: '/portfolio', label: 'Портфолио' },
   { to: '/contact', label: 'Контакты' },
   { to: '/booking', label: 'Записаться' },
@@ -33,6 +34,12 @@ const Header: FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [pastHero, setPastHero] = useState(false)
   const isPrerender = isPrerenderEnv()
+  const [contact, setContact] = useState({
+    phoneDisplay: '+7 985 923 47 77',
+    phoneTel: '+79859234777',
+    telegramUrl: 'https://t.me/Pickupservice_Moscow',
+    address: 'Москва, улица Самокатная 3/8, с1А'
+  })
 
   // 1. Hero Visibility Observer
   useEffect(() => {
@@ -53,6 +60,30 @@ const Header: FC = () => {
     observer.observe(hero)
     return () => observer.disconnect()
   }, [location.pathname, isPrerender])
+
+  // Fetch contact settings
+  useEffect(() => {
+    if (isPrerender) return
+    let cancelled = false
+
+    fetchContactSettings()
+      .then((data) => {
+        if (cancelled) return
+        setContact({
+          phoneDisplay: data.phone_display || '+7 985 923 47 77',
+          phoneTel: data.phone_tel || '+79859234777',
+          telegramUrl: data.telegram_url || 'https://t.me/Pickupservice_Moscow',
+          address: 'Москва, улица Самокатная 3/8, с1А'
+        })
+      })
+      .catch(() => {
+        // Keep default values
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isPrerender])
 
   // 2. Dynamic Color Detection
   useEffect(() => {
@@ -109,16 +140,15 @@ const Header: FC = () => {
 
   return (
     <motion.header
-      className="fixed inset-x-0 top-3 z-[999] flex justify-center px-3 sm:top-5"
+      className="fixed inset-x-0 top-3 z-[999] flex justify-center sm:top-5"
       animate={{
-        // Maintain color logic: White text on dark BG, Dark text on light BG
         color: isDarkBackground ? '#ffffff' : '#0a0a0a',
         opacity: pastHero ? 0.95 : 1,
       }}
       transition={colorTransition}
     >
-      <nav className="relative mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-1 sm:gap-6 md:flex-col md:items-center md:gap-3">
-        {/* LOGO */}
+      <nav className="relative w-full flex items-center justify-between" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+        {/* LEFT: LOGO */}
         <Link
           to="/"
           className="flex shrink-0 items-center justify-center text-inherit leading-none"
@@ -127,8 +157,8 @@ const Header: FC = () => {
           <PickupLogo className="h-[3rem] w-auto sm:h-[3.5rem]" />
         </Link>
 
-        {/* DESKTOP LINKS */}
-        <div className="hidden items-center justify-center md:flex">
+        {/* CENTER: NAVIGATION LINKS (DESKTOP) - Absolutely centered */}
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.ul
               className={`${linksPanelClassName} justify-center text-[15px] sm:text-[17px] md:text-[18px]`}
@@ -147,6 +177,39 @@ const Header: FC = () => {
           </AnimatePresence>
         </div>
 
+        {/* RIGHT: CONTACT INFO (DESKTOP) - ROW LAYOUT */}
+        <div className="hidden md:flex flex-shrink-0">
+          <div className={`${linksPanelClassName} flex-row items-center gap-4 text-[15px] sm:text-[17px] md:text-[18px]`}>
+            <a
+              href={`tel:${contact.phoneTel}`}
+              className="font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
+              title="Позвоните нам"
+            >
+              {contact.phoneDisplay}
+            </a>
+            <span className="text-white/70 whitespace-nowrap">
+              {contact.address}
+            </span>
+            {contact.telegramUrl && (
+              <a
+                href={contact.telegramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-8 w-8 items-center justify-center rounded-[0.2rem] bg-[#FF8201] border border-white/15 transition-opacity hover:opacity-70 shadow-xl"
+                title="Telegram"
+              >
+                <Send size={14} className="text-white" />
+              </a>
+            )}
+            <Link
+              to="/booking"
+              className="font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
+            >
+              Записаться
+            </Link>
+          </div>
+        </div>
+
         {/* BURGER BUTTON (MOBILE) */}
         <div className="flex shrink-0 items-center justify-end md:hidden">
           <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] border border-white/15 px-0.5 shadow-xl">
@@ -163,7 +226,6 @@ const Header: FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: easeSwap }}
-            // Fix: Added high z-index and high-contrast background
             className="fixed inset-0 z-[10000] flex flex-col justify-between bg-black/95 p-6 backdrop-blur-2xl md:hidden"
           >
             {/* TOP BAR */}
@@ -183,7 +245,7 @@ const Header: FC = () => {
                   })}
                 </div>
 
-                <button 
+                <button
                   onClick={closeMenu}
                   className="p-1 hover:opacity-70 transition-opacity"
                 >
@@ -222,8 +284,68 @@ const Header: FC = () => {
               ))}
             </motion.div>
 
-            {/* BOTTOM SPACER */}
-            <div className="h-10" />
+            {/* CONTACT INFO - Mobile - PINNED TO BOTTOM */}
+            <motion.div
+              className="flex flex-col items-center gap-4 text-white text-sm border-t border-white/10 pt-6"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                visible: {
+                  transition: {
+                    staggerChildren: 0.1,
+                    delayChildren: 0.4,
+                  },
+                },
+              }}
+            >
+              <motion.a
+                href={`tel:${contact.phoneTel}`}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ duration: 0.5, ease: easeSwap }}
+                className="font-medium hover:opacity-70 transition-opacity"
+              >
+                {contact.phoneDisplay}
+              </motion.a>
+              <motion.span
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ duration: 0.5, ease: easeSwap }}
+                className="text-white/70"
+              >
+                {contact.address}
+              </motion.span>
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ duration: 0.5, ease: easeSwap }}
+                className="flex items-center gap-4 pt-2"
+              >
+                {contact.telegramUrl && (
+                  <a
+                    href={contact.telegramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-10 w-10 items-center justify-center rounded-[0.2rem] bg-[#FF8201] border border-white/15 transition-opacity hover:opacity-70"
+                  >
+                    <Send size={18} className="text-white" />
+                  </a>
+                )}
+                <Link
+                  to="/booking"
+                  className="font-medium hover:opacity-70 transition-opacity"
+                  onClick={closeMenu}
+                >
+                  Записаться
+                </Link>
+              </motion.div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
