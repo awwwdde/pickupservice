@@ -39,7 +39,23 @@ const servicesData = [
     subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
     image: image3
   }
-]
+] as const
+
+type AccordionServiceRow = {
+  accordionKey: string
+  title: string
+  subtitle: string
+  image: string
+}
+
+function staticServiceRows(): AccordionServiceRow[] {
+  return servicesData.map((s, i) => ({
+    accordionKey: `static-${i}`,
+    title: s.title,
+    subtitle: s.subtitle,
+    image: s.image as string
+  }))
+}
 
 const FALLBACK_TRACK_ROW1 = [image5, image6, image7, image8, image9]
 
@@ -60,7 +76,7 @@ const titleLineVariants = {
 const ServicePage: FC = () => {
   const isPrerender = isPrerenderEnv()
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
-  const [serviceItems, setServiceItems] = useState(servicesData)
+  const [serviceItems, setServiceItems] = useState<AccordionServiceRow[]>(staticServiceRows)
   const [trackRow1, setTrackRow1] = useState<string[]>(() => [...FALLBACK_TRACK_ROW1])
   const [trackRow2, setTrackRow2] = useState<string[]>(() => [...FALLBACK_TRACK_ROW1].reverse())
   const stickySectionRef = useRef<HTMLDivElement>(null)
@@ -99,14 +115,19 @@ const ServicePage: FC = () => {
     let cancelled = false
     fetchAccordionItems()
       .then((items: ApiAccordionItem[]) => {
-        if (cancelled || !items.length) return
-        setServiceItems(
-          items.map((item) => ({
+        if (cancelled) return
+        if (!items.length) return
+        const sorted = [...items].sort((a, b) => a.order - b.order || a.id - b.id)
+        const fromApi: AccordionServiceRow[] = sorted.map((item) => {
+          const url = (item.image && String(item.image).trim()) || ''
+          return {
+            accordionKey: `api-${item.id}`,
             title: item.title,
-            subtitle: item.description,
-            image: item.image
-          }))
-        )
+            subtitle: item.description ?? '',
+            image: url || (image1 as string)
+          }
+        })
+        setServiceItems([...staticServiceRows(), ...fromApi])
       })
       .catch(() => {})
 
@@ -356,7 +377,7 @@ const ServicePage: FC = () => {
           <div className="w-[90%] flex flex-col border-t border-black/10">
             {serviceItems.map((service, index) => (
               <ServiceCard
-                key={index}
+                key={service.accordionKey}
                 index={index}
                 title={service.title}
                 subtitle={service.subtitle}
@@ -379,7 +400,7 @@ const ServicePage: FC = () => {
           <div className="flex flex-col border-t border-black/10">
             {serviceItems.map((service, index) => (
               <ServiceCard
-                key={index}
+                key={service.accordionKey}
                 index={index}
                 title={service.title}
                 subtitle={service.subtitle}

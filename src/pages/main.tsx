@@ -32,6 +32,7 @@ import {
 import { Link } from 'react-router-dom'
 import NewsHeroBlock from '../components/news/NewsCard'
 import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
+import { useTabletLayoutMode } from '../hooks/useTabletLayoutMode'
 import { isPrerenderEnv } from '../utils/isPrerender'
 
 const words = ['СОЗДАЕМ', 'РЕМОНТИРУЕМ', 'ОБСЛУЖИВАЕМ']
@@ -69,7 +70,23 @@ const servicesData = [
     subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
     image: image3
   }
-]
+] as const
+
+type AccordionServiceRow = {
+  accordionKey: string
+  title: string
+  subtitle: string
+  image: string
+}
+
+function staticServiceRows(): AccordionServiceRow[] {
+  return servicesData.map((s, i) => ({
+    accordionKey: `static-${i}`,
+    title: s.title,
+    subtitle: s.subtitle,
+    image: s.image as string
+  }))
+}
 
 type HomeTestimonial = { id: string | number; quote: string; name: string; car: string }
 
@@ -114,7 +131,7 @@ const MainPage: FC = () => {
   const [activeServiceIndex, setActiveServiceIndex] = useState(0)
   const [activeTestimonialIndex, setActiveTestimonialIndex] = useState(0)
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
-  const [dynamicServices, setDynamicServices] = useState(servicesData)
+  const [dynamicServices, setDynamicServices] = useState<AccordionServiceRow[]>(staticServiceRows)
   const [displayTestimonials, setDisplayTestimonials] = useState<HomeTestimonial[]>(testimonialsData)
   const [allReviewsUrl, setAllReviewsUrl] = useState('https://yandex.ru/maps/org/pikapservis_msk/121304824267/reviews/?ll=37.679951%2C55.758331&z=16')
   /** ≥1440px — исходная вёрстка проектов (540×620 / 300×440); иначе гибкий ряд без скролла */
@@ -129,6 +146,7 @@ const MainPage: FC = () => {
   })
   const [callbackSubmitting, setCallbackSubmitting] = useState(false)
   const [formToast, setFormToast] = useState<FormToastPayload>(null)
+  const tabletLayoutMode = useTabletLayoutMode()
 
   const dismissFormToast = useCallback(() => setFormToast(null), [])
 
@@ -229,8 +247,16 @@ const MainPage: FC = () => {
   const springConfig = { stiffness: 50, damping: 20, mass: 1 }
   const smoothAbout = useSpring(aboutProgress, springConfig)
   
-  /** На узком десктопе (1000–1439px) карточки уже — меньший ход, без «пустоты» справа */
-  const testimonialsX = useTransform(testimonialsProgress, [0, 1], ['5%', '-56%'])
+  /** Узкий десктоп и планшеты — меньший горизонтальный ход отзывов */
+  const testimonialsXRange: [string, string] =
+    tabletLayoutMode === 'portrait'
+      ? ['3%', '-42%']
+      : tabletLayoutMode === 'landscape'
+        ? ['4%', '-50%']
+        : ['5%', '-56%']
+  const testimonialsX = useTransform(testimonialsProgress, [0, 1], testimonialsXRange)
+  const firstBlockY = useTransform(smoothScroll, [0, 1], ['60vh', '-60vh'])
+  const secondBlockY = useTransform(smoothScroll, [0, 1], ['80vh', '-80vh'])
   const aboutCardY = useTransform(smoothAbout, [0, 1], ['100vh', '-120vh'])
   const aboutIndexRaw = useTransform(smoothAbout, [0.2, 0.8], [0, aboutImages.length - 1])
 
@@ -380,14 +406,19 @@ const MainPage: FC = () => {
 
     fetchAccordionItems()
       .then((items) => {
-        if (cancelled || !items.length) return
-        setDynamicServices(
-          items.map((item) => ({
+        if (cancelled) return
+        if (!items.length) return
+        const sorted = [...items].sort((a, b) => a.order - b.order || a.id - b.id)
+        const fromApi: AccordionServiceRow[] = sorted.map((item) => {
+          const url = (item.image && String(item.image).trim()) || ''
+          return {
+            accordionKey: `api-${item.id}`,
             title: item.title,
-            subtitle: item.description,
-            image: item.image
-          }))
-        )
+            subtitle: item.description ?? '',
+            image: url || (image1 as string)
+          }
+        })
+        setDynamicServices([...staticServiceRows(), ...fromApi])
       })
       .catch(() => {
         // Фолбэк — локальные карточки.
@@ -461,14 +492,14 @@ const MainPage: FC = () => {
         
         <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[clamp(20px,4vw,48px)]">
           <motion.h1
-            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase  min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
+            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] tablet-portrait:!flex-col tablet-portrait:!items-center tablet-portrait:!justify-center tablet-portrait:!text-center tablet-portrait:gap-2 tablet-portrait:text-[clamp(1.2rem,4.8vw,2.65rem)] tablet-landscape:gap-[clamp(0.5rem,1.6vw,1.25rem)] tablet-landscape:text-[clamp(1.15rem,3.4vw,2.85rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease }}
           >
-            <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
+            <div className="flex flex-col items-center gap-2 tablet-portrait:!flex-col tablet-portrait:gap-1.5 md:flex-row md:items-center md:gap-4">
               <span className="leading-none">МЫ</span>
-              <div className="inline-flex h-[1.1em] w-[15ch] max-w-full items-center justify-center overflow-hidden whitespace-nowrap leading-none md:justify-start">
+              <div className="inline-flex h-[1.1em] w-[15ch] max-w-full items-center justify-center overflow-hidden whitespace-nowrap leading-none tablet-portrait:justify-center md:justify-start">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={currentWordIndex}
@@ -483,15 +514,15 @@ const MainPage: FC = () => {
                 </AnimatePresence>
               </div>
             </div>
-            <span className="leading-none md:ml-auto md:flex-shrink-0 md:text-right">ВНЕДОРОЖНИКИ</span>
+            <span className="leading-none tablet-portrait:!ml-0 tablet-portrait:!text-center md:ml-auto md:flex-shrink-0 md:text-right">ВНЕДОРОЖНИКИ</span>
           </motion.h1>
         </div>
 
         <NewsHeroBlock/>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex justify-center">
+        <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex justify-center tablet-portrait:bottom-4 tablet-landscape:bottom-5">
           <motion.div
-            className="glass-header flex items-center gap-2 px-4 py-2 text-[14px]"
+            className="glass-header flex items-center gap-2 px-4 py-2 text-[14px] tablet-portrait:px-3 tablet-portrait:py-1.5 tablet-portrait:text-[13px] tablet-landscape:text-[13px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -505,18 +536,30 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 2: PARALLAX */}
-      <section className="relative bg-[#f3f3f1]">
-        <div className="flex h-screen w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)]">
-          <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)] min-[1440px]:max-w-[min(980px,94vw)] min-[1440px]:text-[clamp(40px,7vw,104px)]">
+      <section ref={parallaxRef} className="relative h-[300vh] border-0 border-b-0 bg-[#f3f3f1]">
+        <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)] tablet-portrait:px-[clamp(14px,3.5vw,28px)] tablet-landscape:px-[clamp(16px,3vw,36px)]">
+          <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)] min-[1440px]:max-w-[min(980px,94vw)] min-[1440px]:text-[clamp(40px,7vw,104px)] tablet-portrait:max-w-[min(640px,88vw)] tablet-portrait:text-[clamp(26px,5.2vw,52px)] tablet-portrait:leading-[0.95] tablet-landscape:max-w-[min(780px,78vw)] tablet-landscape:text-[clamp(28px,4.2vw,64px)]">
             Собираем и обслуживаем <span className="block text-[#FF8201] md:inline">внедорожники</span>
           </div>
+          <motion.div
+            style={{ y: firstBlockY }}
+            className="absolute left-[clamp(16px,6vw,8%)] glass-header px-6 py-4 text-[min(22px,4vw)] font-bold text-[#FF8201] shadow-2xl min-[1000px]:max-[1439px]:px-4 min-[1000px]:max-[1439px]:py-3 min-[1000px]:max-[1439px]:text-[min(17px,2.35vw)] min-[1440px]:px-10 min-[1440px]:py-6 min-[1440px]:text-[min(24px,4.5vw)] sm:px-10 sm:py-6 tablet-portrait:left-[clamp(12px,4vw,6%)] tablet-portrait:px-3.5 tablet-portrait:py-3 tablet-portrait:text-[min(15px,2.8vw)] tablet-landscape:left-[clamp(14px,4vw,7%)] tablet-landscape:px-4 tablet-landscape:py-3 tablet-landscape:text-[min(16px,2.2vw)]"
+          >
+            ПИКАПСЕРВИС
+          </motion.div>
+          <motion.div
+            style={{ y: secondBlockY }}
+            className="absolute right-[clamp(16px,6vw,8%)] glass-header max-w-[min(400px,90vw)] p-6 text-[min(18px,3.8vw)] leading-relaxed text-black/70 shadow-2xl min-[1000px]:max-[1439px]:max-w-[min(340px,calc(100vw-48px))] min-[1000px]:max-[1439px]:p-5 min-[1000px]:max-[1439px]:text-[min(15px,2.1vw)] min-[1440px]:max-w-[min(520px,36vw)] min-[1440px]:p-9 min-[1440px]:text-[clamp(1.125rem,calc(1.15vw + 0.85rem),1.5rem)] min-[1440px]:leading-relaxed sm:p-10 tablet-portrait:right-[clamp(12px,4vw,6%)] tablet-portrait:max-w-[min(300px,calc(100vw-40px))] tablet-portrait:p-4 tablet-portrait:text-[min(14px,2.6vw)] tablet-portrait:leading-snug tablet-landscape:max-w-[min(360px,34vw)] tablet-landscape:p-4 tablet-landscape:text-[min(14px,1.9vw)] tablet-landscape:leading-snug"
+          >
+            Бескомпромиссная подготовка к экспедициям и трофи-рейдам. Ваша уверенность в каждом километре пути.
+          </motion.div>
         </div>
       </section>
 
       {/* SECTION 3: ≥1440px — как изначально (540/300 × 620/440); 768–1439 — flex, чёрный блок уже */}
-      <section className="-mt-px flex justify-center overflow-hidden border-0 bg-[#f3f3f1] py-24 md:py-32 min-[1000px]:max-[1439px]:py-[clamp(4.5rem,8vw,8rem)]">
+      <section className="-mt-px flex justify-center overflow-hidden border-0 bg-[#f3f3f1] py-24 md:py-32 min-[1000px]:max-[1439px]:py-[clamp(4.5rem,8vw,8rem)] tablet-portrait:py-[clamp(3.25rem,10vw,5rem)] tablet-landscape:py-[clamp(3.5rem,7vw,5.5rem)]">
         <div
-          className={`hidden h-[min(620px,72vh)] w-full items-end md:flex ${projectsLargeDesktop ? 'justify-center gap-5 px-[5%]' : 'gap-[clamp(8px,1vw,16px)] px-[clamp(18px,3.5vw,4.5rem)]'}`}
+          className={`hidden h-[min(620px,72vh)] w-full items-end md:flex tablet-portrait:h-[min(520px,58vh)] tablet-landscape:h-[min(540px,62vh)] ${projectsLargeDesktop ? 'justify-center gap-5 px-[5%]' : 'gap-[clamp(8px,1vw,16px)] px-[clamp(18px,3.5vw,4.5rem)] tablet-portrait:gap-[clamp(6px,1.2vw,12px)] tablet-portrait:px-[clamp(14px,3vw,2rem)] tablet-landscape:gap-[clamp(6px,0.9vw,14px)] tablet-landscape:px-[clamp(16px,2.5vw,3rem)]'}`}
           onMouseLeave={() => setActiveProjectIndex(0)}
         >
           {dynamicProjects.map((p, i) => {
@@ -626,16 +669,16 @@ const MainPage: FC = () => {
 
       {/* SECTION 4: ABOUT */}
       <section ref={aboutRef} className="relative bg-[#f3f3f1] text-black md:h-[300vh]">
-        <div className="sticky top-0 hidden h-screen w-full items-center justify-center overflow-hidden px-[5%] min-[1000px]:max-[1439px]:px-[4%] md:flex">
-          <div className="pointer-events-none absolute left-[5%] z-0 min-[1000px]:max-[1439px]:left-[3%]">
-            <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter min-[1000px]:max-[1439px]:text-[9.5vw]">
+        <div className="sticky top-0 hidden h-screen w-full items-center justify-center overflow-hidden px-[5%] min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:px-[4%] tablet-landscape:px-[clamp(3.5%,4vw,5%)] md:flex">
+          <div className="pointer-events-none absolute left-[5%] z-0 min-[1000px]:max-[1439px]:left-[3%] tablet-portrait:left-[3.5%] tablet-landscape:left-[4%]">
+            <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter min-[1000px]:max-[1439px]:text-[9.5vw] tablet-portrait:text-[10.5vw] tablet-landscape:text-[min(9vw,7.5rem)] tablet-landscape:leading-[0.8]">
               <div>КТО</div>
               <div className="text-[#FF8201]">МЫ?</div>
             </div>
           </div>
 
-          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px] min-[1000px]:max-[1439px]:max-w-[min(720px,86vw)]">
-            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5 min-[1000px]:max-[1439px]:max-h-[min(480px,52vh)]">
+          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px] min-[1000px]:max-[1439px]:max-w-[min(720px,86vw)] tablet-portrait:max-w-[min(560px,88vw)] tablet-landscape:max-w-[min(640px,52vw)]">
+            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5 min-[1000px]:max-[1439px]:max-h-[min(480px,52vh)] tablet-portrait:max-h-[min(400px,48vh)] tablet-portrait:h-[50vh] tablet-landscape:h-[min(48vh,420px)] tablet-landscape:max-h-[min(440px,55vh)]">
               {aboutImages.map((img, i) => (
                 <motion.img
                   key={i}
@@ -652,12 +695,12 @@ const MainPage: FC = () => {
               ))}
             </div>
 
-            <div className="mt-12 flex flex-col justify-between gap-6 min-[1000px]:max-[1439px]:mt-8 min-[1000px]:max-[1439px]:gap-5 xl:flex-row xl:items-end">
-              <div className="max-w-[500px] min-[1000px]:max-[1439px]:max-w-[420px]">
-                <h3 className="mb-4 text-4xl font-bold uppercase tracking-tight min-[1000px]:max-[1439px]:mb-3 min-[1000px]:max-[1439px]:text-[1.65rem]">
+            <div className="mt-12 flex flex-col justify-between gap-6 min-[1000px]:max-[1439px]:mt-8 min-[1000px]:max-[1439px]:gap-5 tablet-portrait:mt-8 tablet-portrait:gap-5 tablet-landscape:mt-8 tablet-landscape:flex-row tablet-landscape:items-end tablet-landscape:gap-6 xl:flex-row xl:items-end">
+              <div className="max-w-[500px] min-[1000px]:max-[1439px]:max-w-[420px] tablet-portrait:max-w-[100%] tablet-landscape:max-w-[min(360px,42vw)]">
+                <h3 className="mb-4 text-4xl font-bold uppercase tracking-tight min-[1000px]:max-[1439px]:mb-3 min-[1000px]:max-[1439px]:text-[1.65rem] tablet-portrait:text-[1.5rem] tablet-landscape:text-[clamp(1.35rem,2.4vw,1.65rem)]">
                   Инженерная эстетика оффроуда
                 </h3>
-                <p className="text-lg leading-relaxed text-black/60 min-[1000px]:max-[1439px]:text-base">
+                <p className="text-lg leading-relaxed text-black/60 min-[1000px]:max-[1439px]:text-base tablet-portrait:text-[0.95rem] tablet-portrait:leading-relaxed tablet-landscape:text-[0.95rem]">
                   Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
                   японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: от диагностики и ТО до усиления подвески и экспедиционной подготовки.
                 </p>
@@ -665,7 +708,7 @@ const MainPage: FC = () => {
 
               {/* <Link
                 to="/service"
-                className="flex h-[80px] w-full max-w-[300px] cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors duration-300 hover:bg-[#FF8201]"
+                className="flex h-[80px] w-full max-w-[300px] cursor-pointer items-center justify-center gap-3 bg-black text-[11px] font-bold uppercase tracking-widest text-white transition-colors duration-300 hover:bg-[#FF8201] tablet-portrait:h-[72px] tablet-portrait:max-w-none tablet-landscape:h-[70px] tablet-landscape:max-w-[240px] tablet-landscape:flex-shrink-0"
               >
                 УЗНАТЬ БОЛЬШЕ <Plus className="h-4 w-4" />
               </Link> */}
@@ -718,16 +761,16 @@ const MainPage: FC = () => {
       </section>
       {/* SECTION 5: SERVICES */}
       <section ref={servicesStickyRef} className="relative w-full bg-[#f3f3f1] text-black md:h-[300vh]">
-        <div className="sticky top-0 hidden h-screen w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:py-6 md:flex">
-          <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10 min-[1000px]:max-[1439px]:mb-6">
-            <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]">
+        <div className="sticky top-0 hidden h-screen w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:py-6 tablet-portrait:py-6 tablet-landscape:py-5 tablet-landscape:justify-start tablet-landscape:pt-[clamp(4.5rem,12vh,6rem)] md:flex">
+          <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10 min-[1000px]:max-[1439px]:mb-6 tablet-portrait:mb-6 tablet-landscape:mb-4">
+            <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)] tablet-portrait:text-[clamp(1.65rem,4.2vw,2.35rem)] tablet-landscape:text-[clamp(1.55rem,3vw,2.15rem)]">
               Чем мы занимаемся
             </h2>
           </div>
-          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10">
+          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10 tablet-portrait:w-[92%] tablet-landscape:w-[94%] tablet-landscape:max-h-[min(calc(100vh-12rem),560px)] tablet-landscape:overflow-y-auto tablet-landscape:[scrollbar-width:none] tablet-landscape:[&::-webkit-scrollbar]:hidden">
             {dynamicServices.map((service, index) => (
               <ServiceCard
-                key={index}
+                key={service.accordionKey}
                 index={index}
                 title={service.title}
                 subtitle={service.subtitle}
@@ -744,7 +787,7 @@ const MainPage: FC = () => {
           <div className="mt-10 flex flex-col border-t border-black/10">
             {dynamicServices.map((service, index) => (
               <ServiceCard
-                key={index}
+                key={service.accordionKey}
                 index={index}
                 title={service.title}
                 subtitle={service.subtitle}
@@ -761,14 +804,14 @@ const MainPage: FC = () => {
       {/* SECTION 6: TESTIMONIALS */}
       <section ref={testimonialsRef} className="relative bg-[#020202] md:h-[300vh]">
         {/* Desktop */}
-        <div className="sticky top-0 hidden h-screen w-full flex-col justify-center overflow-hidden md:flex">
-          <div className="mb-16 px-[5%] min-[1000px]:max-[1439px]:mb-12 min-[1000px]:max-[1439px]:px-[4%]">
-            <h2 className="text-4xl font-black uppercase tracking-tighter text-white leading-tight md:text-[clamp(1.65rem,3.4vw,2.6rem)] min-[1440px]:text-6xl min-[1440px]:leading-none">
+        <div className="sticky top-0 hidden h-screen w-full flex-col justify-center overflow-hidden md:flex tablet-landscape:justify-start tablet-landscape:pt-[clamp(3.5rem,10vh,5rem)]">
+          <div className="mb-16 px-[5%] min-[1000px]:max-[1439px]:mb-12 min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:mb-10 tablet-portrait:px-[4%] tablet-landscape:mb-8 tablet-landscape:px-[4%]">
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-white leading-tight md:text-[clamp(1.65rem,3.4vw,2.6rem)] min-[1440px]:text-6xl min-[1440px]:leading-none tablet-portrait:text-[clamp(1.45rem,4vw,2.1rem)] tablet-landscape:text-[clamp(1.4rem,2.6vw,1.95rem)] tablet-landscape:leading-tight">
               Несколько слов <br />
               <span className="text-[#FF8201]">от наших клиентов</span>
             </h2>
           </div>
-          <motion.div style={{ x: testimonialsX }} className="flex w-max gap-10 px-[5%] min-[1000px]:max-[1439px]:gap-6 min-[1000px]:max-[1439px]:px-[4%]">
+          <motion.div style={{ x: testimonialsX }} className="flex w-max gap-10 px-[5%] min-[1000px]:max-[1439px]:gap-6 min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:gap-7 tablet-portrait:px-[4%] tablet-landscape:gap-5 tablet-landscape:px-[4%]">
             {displayTestimonials.map((testimonial) => (
               <TestimonialCard
                 key={testimonial.id}
@@ -781,7 +824,7 @@ const MainPage: FC = () => {
               href={allReviewsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[clamp(1.75rem,5.5vh,3.75rem)] text-white transition-colors hover:text-gray-300 min-[1000px]:max-[1439px]:text-[clamp(1.5rem,4.2vh,2.75rem)]"
+              className="text-[clamp(1.75rem,5.5vh,3.75rem)] text-white transition-colors hover:text-gray-300 min-[1000px]:max-[1439px]:text-[clamp(1.5rem,4.2vh,2.75rem)] tablet-portrait:text-[clamp(1.35rem,3.8vh,2.25rem)] tablet-landscape:self-center tablet-landscape:text-[clamp(1.25rem,3.2vh,2rem)]"
             >
               {' '}
               все отзывы{' '}
@@ -839,18 +882,18 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 7: CONTACT FORM */}
-      <section className="relative flex w-full flex-col items-center bg-[#020202] py-32 border-t border-white/10">
-        <div className="flex w-[90%] flex-col">
+      <section className="relative flex w-full flex-col items-center bg-[#020202] py-32 border-t border-white/10 tablet-portrait:py-24 tablet-landscape:py-[clamp(5rem,12vh,7rem)]">
+        <div className="flex w-[90%] flex-col tablet-portrait:w-[92%] tablet-landscape:w-[92%]">
           <motion.h3 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
-            className="mb-16 text-3xl font-bold uppercase tracking-tighter text-[#FF8201] md:text-5xl"
+            className="mb-16 text-3xl font-bold uppercase tracking-tighter text-[#FF8201] md:text-5xl tablet-portrait:mb-12 tablet-portrait:text-[clamp(1.5rem,4vw,2.75rem)] tablet-landscape:mb-10 tablet-landscape:text-[clamp(1.45rem,3.2vw,2.5rem)]"
           >
             Оставьте заявку и мы вам позвоним
           </motion.h3>
           <form
-            className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center"
+            className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center tablet-portrait:gap-8 tablet-landscape:gap-8 tablet-landscape:items-center"
             onSubmit={handleCallbackSubmit}
           >
             <input
