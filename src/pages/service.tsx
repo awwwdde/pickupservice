@@ -277,6 +277,23 @@ const ServicePage: FC = () => {
             </div>
           </h1>
         </motion.div>
+
+        <motion.div
+          className="pointer-events-none absolute inset-x-0 bottom-6 z-20 px-6 md:bottom-8 md:px-12"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex justify-end">
+            <Link
+              to="/booking"
+              className="pointer-events-auto inline-flex items-center gap-2 bg-[#FF8201] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-black transition-colors duration-300 hover:bg-white md:gap-3 md:px-6 md:py-3 md:text-sm md:tracking-[0.14em]"
+            >
+              Записаться
+              <ArrowRight className="h-4 w-4 md:h-[18px] md:w-[18px]" strokeWidth={2} />
+            </Link>
+          </div>
+        </motion.div>
       </section>
 
       {/* SECTION 2: INTRO */}

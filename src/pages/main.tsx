@@ -673,6 +673,26 @@ const MainPage: FC = () => {
             <span>прокрутите вниз, чтобы узнать больше</span>
           </motion.div>
         </div>
+
+        <motion.div
+          className="pointer-events-none absolute inset-x-0 bottom-16 z-10 px-6 md:bottom-[clamp(8rem,18vh,14rem)] md:px-12 tablet-portrait:bottom-12 tablet-landscape:bottom-10"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex flex-col items-end gap-2">
+            <p className="hidden md:block text-right text-sm font-semibold uppercase tracking-[0.16em] text-white">
+              Готовы обсудить ваш проект? Запишитесь на консультацию
+            </p>
+            <Link
+              to="/booking"
+              className="pointer-events-auto inline-flex items-center gap-2 bg-[#FF8201] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-black transition-colors duration-300 hover:bg-white md:gap-4 md:px-10 md:py-5 md:text-lg md:tracking-[0.12em]"
+            >
+              Записаться
+              <ArrowRight className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2} />
+            </Link>
+          </div>
+        </motion.div>
       </section>
 
       {/* SECTION 2: PARALLAX */}
