@@ -158,7 +158,6 @@ const MainPage: FC = () => {
   const [callbackSubmitting, setCallbackSubmitting] = useState(false)
   const [formToast, setFormToast] = useState<FormToastPayload>(null)
   const tabletLayoutMode = useTabletLayoutMode()
-  const isTablet = tabletLayoutMode !== 'none'
   const showMobileLikeSections = isMobile
 
   const dismissFormToast = useCallback(() => setFormToast(null), [])
