@@ -119,7 +119,6 @@ const Header: FC = () => {
     }
 
     const updateBackground = () => {
-      // CRITICAL: If menu is open, do not recalculate. Keep the last known "good" color.
       if (isMenuOpen) return
 
       const header = document.querySelector('header')
@@ -141,7 +140,7 @@ const Header: FC = () => {
       window.removeEventListener('scroll', updateBackground)
       window.removeEventListener('resize', updateBackground)
     }
-  }, [isMenuOpen, isPrerender]) // Re-run when menu state changes to lock/unlock detection
+  }, [isMenuOpen, isPrerender])
 
   const closeMenu = () => setIsMenuOpen(false)
 
@@ -165,7 +164,9 @@ const Header: FC = () => {
         }}
         transition={colorTransition}
       >
-        <nav className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-[clamp(14px,3vw,28px)] tablet-portrait:px-[clamp(12px,3.5vw,20px)] tablet-landscape:px-[clamp(16px,2.8vw,26px)]">
+        {/* Добавили класс relative, чтобы абсолютный центр работал корректно */}
+        <nav className="relative grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-[clamp(14px,3vw,28px)] tablet-portrait:px-[clamp(12px,3.5vw,20px)] tablet-landscape:px-[clamp(16px,2.8vw,26px)]">
+        
         {/* LEFT: LOGO */}
         <Link
           to="/"
@@ -176,8 +177,8 @@ const Header: FC = () => {
           <PickupLogo className="h-[2.75rem] w-auto sm:h-[3.2rem] tablet-portrait:h-[2.6rem] tablet-landscape:h-[2.75rem]" />
         </Link>
 
-        {/* CENTER: NAVIGATION LINKS (DESKTOP) - Absolutely centered */}
-        <div className="hidden items-center justify-center min-[1100px]:flex">
+        {/* CENTER: NAVIGATION LINKS - Теперь зафиксированы по центру через absolute */}
+        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center min-[1100px]:flex">
           <AnimatePresence mode="wait">
             <motion.ul
               className={`${linksPanelClassName} ${desktopPanelTypographyClassName} justify-center`}
@@ -196,11 +197,9 @@ const Header: FC = () => {
           </AnimatePresence>
         </div>
 
-        {/* RIGHT: CONTACT INFO (DESKTOP) - ROW LAYOUT */}
+        {/* RIGHT: CONTACT INFO */}
         <div className="hidden justify-end min-[1360px]:flex flex-shrink-0">
-          <div
-            className={compactContactPanelClassName}
-          >
+          <div className={compactContactPanelClassName}>
             <a
               href={`tel:${contact.phoneTel}`}
               className="font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
@@ -240,10 +239,12 @@ const Header: FC = () => {
       </nav>
       </motion.header>
 
-      {/* Мобильное полноэкранное меню — в портале, чтобы не ломалось z-index на iPad */}
+      {/* Мобильное меню */}
       <div className="min-[1100px]:hidden">
         <MobileMenuPortal isOpen={isMenuOpen} onClose={closeMenu} contact={contact} />
       </div>
+
+      {/* Дополнительная панель контактов (между 1100px и 1360px) */}
       <div className="pointer-events-none fixed inset-x-0 top-[4.8rem] z-[998] hidden justify-center px-4 min-[1100px]:flex min-[1360px]:hidden">
         <div className={topContactPanelClassName}>
           <a
@@ -276,6 +277,8 @@ const Header: FC = () => {
   )
 }
 
+/* ================= Вспомогательные компоненты ================= */
+
 const MobileMenuPortal: FC<{
   isOpen: boolean
   onClose: () => void
@@ -297,7 +300,6 @@ const MobileMenuPortal: FC<{
           transition={{ duration: 0.4, ease: easeSwap }}
           className="fixed inset-0 z-[20000] flex flex-col justify-between bg-black/95 p-6 backdrop-blur-2xl"
         >
-          {/* TOP BAR */}
           <motion.div
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -305,7 +307,6 @@ const MobileMenuPortal: FC<{
             className="flex justify-between items-center text-white/80"
           >
             <div className="text-sm tracking-widest font-medium">EU</div>
-
             <div className="flex gap-6 items-center">
               <div className="text-sm tabular-nums">
                 {new Date().toLocaleTimeString([], {
@@ -313,14 +314,12 @@ const MobileMenuPortal: FC<{
                   minute: '2-digit',
                 })}
               </div>
-
               <button onClick={onClose} className="p-1 hover:opacity-70 transition-opacity" aria-label="Закрыть меню">
                 <X size={32} strokeWidth={1.5} className="text-white" />
               </button>
             </div>
           </motion.div>
 
-          {/* LINKS */}
           <motion.div
             className="flex flex-col items-center gap-8 text-3xl font-light text-white"
             initial="hidden"
@@ -350,7 +349,6 @@ const MobileMenuPortal: FC<{
             ))}
           </motion.div>
 
-          {/* CONTACT INFO */}
           <motion.div
             className="flex flex-col items-center gap-4 text-white text-sm border-t border-white/10 pt-6"
             initial="hidden"
@@ -415,8 +413,6 @@ const MobileMenuPortal: FC<{
   )
 }
 
-/* ================= SIMPLE NAV LINK ================= */
-
 const SimpleNavLink: FC<{
   to: string
   children: ReactNode
@@ -430,8 +426,6 @@ const SimpleNavLink: FC<{
     {children}
   </Link>
 )
-
-/* ================= BURGER BUTTON ================= */
 
 const BurgerMenuButton: FC<{
   isMenuOpen: boolean

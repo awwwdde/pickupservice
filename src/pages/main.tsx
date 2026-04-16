@@ -685,9 +685,6 @@ const MainPage: FC = () => {
           transition={{ delay: 0.5 }}
         >
           <div className="flex flex-col items-start gap-2">
-            <span className="pointer-events-none text-[11px] font-medium uppercase tracking-[0.18em] text-white/80 md:text-xs">
-              Запишитесь на обслуживание
-            </span>
             <Link
               to="/booking"
               className="pointer-events-auto inline-flex items-center gap-2 bg-[#FF8201] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-black transition-colors duration-300 hover:bg-white md:gap-4 md:px-8 md:py-4 md:text-base md:tracking-[0.12em] lg:px-10 lg:py-5 lg:text-lg"
