@@ -21,6 +21,8 @@ const desktopPanelTypographyClassName =
   'text-[15px] sm:text-[17px] md:text-[18px] min-[1000px]:max-[1279px]:text-[16px] tablet-portrait:text-[15px] tablet-landscape:text-[16px]'
 const compactContactPanelClassName =
   'glass-header inline-flex items-center gap-3 rounded-[0.2rem] border border-white/10 px-3.5 py-1.5 text-[12px] shadow-xl sm:gap-3.5 sm:px-4 sm:py-2 sm:text-[13px] md:text-[14px] min-[1000px]:max-[1279px]:gap-2.5 min-[1000px]:max-[1279px]:px-3 min-[1000px]:max-[1279px]:py-1.5 min-[1000px]:max-[1279px]:text-[12px] tablet-portrait:gap-2 tablet-portrait:px-3 tablet-portrait:py-1.5 tablet-portrait:text-[12px] tablet-landscape:gap-2.5 tablet-landscape:px-3.5 tablet-landscape:py-1.5 tablet-landscape:text-[12px]'
+const topContactPanelClassName =
+  'glass-header inline-flex items-center gap-3 rounded-[0.2rem] border border-white/10 px-3 py-1.5 text-[12px] shadow-xl'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
@@ -143,6 +145,16 @@ const Header: FC = () => {
 
   const closeMenu = () => setIsMenuOpen(false)
 
+  const handleLogoClick: React.MouseEventHandler<HTMLAnchorElement> = (event) => {
+    if (isPrerender) return
+    if (location.pathname === '/') {
+      event.preventDefault()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+  }
+
   return (
     <>
       <motion.header
@@ -153,10 +165,11 @@ const Header: FC = () => {
         }}
         transition={colorTransition}
       >
-        <nav className="relative flex w-full items-center justify-between px-[clamp(14px,3vw,28px)] tablet-portrait:px-[clamp(12px,3.5vw,20px)] tablet-landscape:px-[clamp(16px,2.8vw,26px)]">
+        <nav className="grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-[clamp(14px,3vw,28px)] tablet-portrait:px-[clamp(12px,3.5vw,20px)] tablet-landscape:px-[clamp(16px,2.8vw,26px)]">
         {/* LEFT: LOGO */}
         <Link
           to="/"
+          onClick={handleLogoClick}
           className="flex shrink-0 items-center justify-center text-inherit leading-none"
           aria-label="PickupService"
         >
@@ -164,7 +177,7 @@ const Header: FC = () => {
         </Link>
 
         {/* CENTER: NAVIGATION LINKS (DESKTOP) - Absolutely centered */}
-        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center tablet-landscape:flex xl:flex">
+        <div className="hidden items-center justify-center min-[1100px]:flex">
           <AnimatePresence mode="wait">
             <motion.ul
               className={`${linksPanelClassName} ${desktopPanelTypographyClassName} justify-center`}
@@ -184,7 +197,7 @@ const Header: FC = () => {
         </div>
 
         {/* RIGHT: CONTACT INFO (DESKTOP) - ROW LAYOUT */}
-        <div className="hidden tablet-landscape:flex xl:flex flex-shrink-0">
+        <div className="hidden justify-end min-[1360px]:flex flex-shrink-0">
           <div
             className={compactContactPanelClassName}
           >
@@ -195,7 +208,7 @@ const Header: FC = () => {
             >
               {contact.phoneDisplay}
             </a>
-            <span className="whitespace-nowrap min-[1000px]:max-[1279px]:hidden min-[1280px]:inline tablet-landscape:hidden min-[1280px]:tablet-landscape:inline">
+            <span className="whitespace-nowrap">
               {contact.address}
             </span>
             {contact.telegramUrl && (
@@ -219,7 +232,7 @@ const Header: FC = () => {
         </div>
 
         {/* BURGER BUTTON (MOBILE) */}
-        <div className="flex shrink-0 items-center justify-end tablet-landscape:hidden xl:hidden">
+        <div className="flex shrink-0 items-center justify-end min-[1100px]:hidden">
           <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] border border-white/15 px-0.5 shadow-xl tablet-portrait:h-10 tablet-portrait:w-10">
             <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
           </div>
@@ -228,8 +241,36 @@ const Header: FC = () => {
       </motion.header>
 
       {/* Мобильное полноэкранное меню — в портале, чтобы не ломалось z-index на iPad */}
-      <div className="tablet-landscape:hidden xl:hidden">
+      <div className="min-[1100px]:hidden">
         <MobileMenuPortal isOpen={isMenuOpen} onClose={closeMenu} contact={contact} />
+      </div>
+      <div className="pointer-events-none fixed inset-x-0 top-[4.8rem] z-[998] hidden justify-center px-4 min-[1100px]:flex min-[1360px]:hidden">
+        <div className={topContactPanelClassName}>
+          <a
+            href={`tel:${contact.phoneTel}`}
+            className="pointer-events-auto font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
+            title="Позвоните нам"
+          >
+            {contact.phoneDisplay}
+          </a>
+          {contact.telegramUrl && (
+            <a
+              href={contact.telegramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="pointer-events-auto flex h-5 w-5 flex-shrink-0 items-center justify-center text-inherit transition-opacity hover:opacity-70"
+              title="Telegram"
+            >
+              <Send size={14} />
+            </a>
+          )}
+          <Link
+            to="/booking"
+            className="pointer-events-auto font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
+          >
+            Записаться
+          </Link>
+        </div>
       </div>
     </>
   )

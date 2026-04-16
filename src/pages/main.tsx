@@ -132,7 +132,6 @@ const MainPage: FC = () => {
   const servicesTabletCarouselRef = useRef<HTMLDivElement | null>(null)
 
   const [isMobile, setIsMobile] = useState(false)
-  const isMobileRef = useRef(false)
   const [currentWordIndex, setCurrentWordIndex] = useState(0)
   const [activeProjectIndex, setActiveProjectIndex] = useState(0)
   const [aboutImageIndex, setAboutImageIndex] = useState(0)
@@ -158,7 +157,12 @@ const MainPage: FC = () => {
   const [callbackSubmitting, setCallbackSubmitting] = useState(false)
   const [formToast, setFormToast] = useState<FormToastPayload>(null)
   const tabletLayoutMode = useTabletLayoutMode()
+  const isTablet = tabletLayoutMode !== 'none'
   const showMobileLikeSections = isMobile
+  const showTabletProjects = isTablet
+  const showDesktopProjects = !isMobile && !isTablet
+  const showTabletSwipeSections = isTablet
+  const showDesktopStickySections = !isMobile && !isTablet
 
   const dismissFormToast = useCallback(() => setFormToast(null), [])
 
@@ -188,7 +192,6 @@ const MainPage: FC = () => {
     if (isPrerender) return
     const mq = window.matchMedia('(max-width: 767px)')
     const apply = () => {
-      isMobileRef.current = mq.matches
       setIsMobile(mq.matches)
     }
 
@@ -280,11 +283,13 @@ const MainPage: FC = () => {
   // иначе ряд выглядит криво (особенно при align-items:end).
   const projectsCollapsedHeight =
     tabletLayoutMode === 'portrait' ? '90%' : tabletLayoutMode === 'landscape' ? '86%' : '70.97%'
-
-  const showTabletProjects = false
-  const showDesktopProjects = !isMobile
-  const showTabletSwipeSections = false
-  const showDesktopStickySections = !isMobile
+  const tabletFeatureSlideWidth = tabletLayoutMode === 'portrait' ? '82vw' : 'min(68vw, 560px)'
+  const tabletFeatureCardHeight = tabletLayoutMode === 'portrait' ? 'min(500px,56vh)' : 'min(460px,54vh)'
+  const testimonialSlideWidth = isTablet
+    ? tabletLayoutMode === 'portrait'
+      ? '82vw'
+      : 'min(68vw, 560px)'
+    : 'min(85vw, 380px)'
 
   // iPad/планшеты: активный слайд определяется свайпом как на моб. отзывах
   useEffect(() => {
@@ -400,12 +405,12 @@ const MainPage: FC = () => {
   }, [showTabletSwipeSections])
 
   useMotionValueEvent(aboutIndexRaw, 'change', (latest) => {
-    if (isMobileRef.current) return
+    if (!showDesktopStickySections) return
     setAboutImageIndex(Math.round(latest))
   })
 
   useMotionValueEvent(servicesStickyProgress, 'change', (latest) => {
-    if (isMobileRef.current) return
+    if (!showDesktopStickySections) return
     if (!dynamicServices.length) return
     const index = Math.min(Math.floor(latest * dynamicServices.length), dynamicServices.length - 1)
     setActiveServiceIndex(index)
@@ -618,7 +623,7 @@ const MainPage: FC = () => {
     <div className="tablet-adaptive-main bg-black text-white selection:bg-[#FF8201]">
       
       {/* SECTION 1: HERO */}
-      <section id="site-hero" className="relative h-[100svh] w-full overflow-hidden">
+      <section id="site-hero" className="relative min-h-[100svh] w-full overflow-hidden">
         <video
           ref={videoRef}
           src={herovid}
@@ -629,16 +634,16 @@ const MainPage: FC = () => {
           className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000`}
         />
         
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[clamp(20px,4vw,48px)]">
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center px-[clamp(20px,4vw,48px)] pb-[8.5rem] pt-20 md:pb-[12rem] md:pt-28">
           <motion.h1
-            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] tablet-portrait:!flex-col tablet-portrait:!items-center tablet-portrait:!justify-center tablet-portrait:!text-center tablet-portrait:gap-2 tablet-portrait:text-[clamp(1.2rem,4.8vw,2.65rem)] tablet-landscape:gap-[clamp(0.5rem,1.6vw,1.25rem)] tablet-landscape:text-[clamp(1.15rem,3.4vw,2.85rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
+            className="flex w-full flex-col items-center justify-center gap-3 text-center text-[clamp(1.45rem,5.5vw,4rem)] font-semibold tracking-tighter uppercase min-[1000px]:max-[1439px]:text-[clamp(1.35rem,4.2vw,3.25rem)] md:flex-row md:items-center md:justify-between md:gap-[clamp(0.75rem,2vw,1.75rem)] md:text-left"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease }}
           >
-            <div className="flex flex-col items-center gap-2 tablet-portrait:!flex-col tablet-portrait:gap-1.5 md:flex-row md:items-center md:gap-4">
+            <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-4">
               <span className="leading-none">МЫ</span>
-              <div className="inline-flex h-[1.1em] w-[15ch] max-w-full items-center justify-center overflow-hidden whitespace-nowrap leading-none tablet-portrait:justify-center md:justify-start">
+              <div className="inline-flex h-[1.1em] w-[15ch] max-w-full items-center justify-center overflow-hidden whitespace-nowrap leading-none md:justify-start">
                 <AnimatePresence mode="wait">
                   <motion.span
                     key={currentWordIndex}
@@ -653,15 +658,15 @@ const MainPage: FC = () => {
                 </AnimatePresence>
               </div>
             </div>
-            <span className="leading-none tablet-portrait:!ml-0 tablet-portrait:!text-center md:ml-auto md:flex-shrink-0 md:text-right">ВНЕДОРОЖНИКИ</span>
+            <span className="leading-none md:ml-auto md:flex-shrink-0 md:text-right">ВНЕДОРОЖНИКИ</span>
           </motion.h1>
         </div>
 
         <NewsHeroBlock/>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-6 z-10 flex justify-center tablet-portrait:bottom-4 tablet-landscape:bottom-5">
+        <div className="pointer-events-none absolute inset-x-0 bottom-4 z-10 flex justify-center px-4 md:bottom-6">
           <motion.div
-            className="glass-header flex items-center gap-2 px-4 py-2 text-[14px] tablet-portrait:px-3 tablet-portrait:py-1.5 tablet-portrait:text-[13px] tablet-landscape:text-[13px]"
+            className="glass-header flex items-center gap-2 px-3 py-1.5 text-[13px] sm:px-4 sm:py-2 sm:text-[14px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
@@ -674,18 +679,18 @@ const MainPage: FC = () => {
         </div>
 
         <motion.div
-          className="pointer-events-none absolute inset-x-0 bottom-16 z-10 px-6 md:bottom-[clamp(8rem,18vh,14rem)] md:px-12 tablet-portrait:bottom-12 tablet-landscape:bottom-10"
+          className="pointer-events-none absolute inset-x-0 bottom-18 z-10 px-6 sm:bottom-20 md:bottom-[clamp(7rem,16vh,10rem)] md:px-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
         >
-          <div className="flex flex-col items-end gap-2">
-            <p className="hidden md:block text-right text-sm font-semibold uppercase tracking-[0.16em] text-white">
-              Готовы обсудить ваш проект? Запишитесь на консультацию
-            </p>
+          <div className="flex flex-col items-start gap-2">
+            <span className="pointer-events-none text-[11px] font-medium uppercase tracking-[0.18em] text-white/80 md:text-xs">
+              Запишитесь на обслуживание
+            </span>
             <Link
               to="/booking"
-              className="pointer-events-auto inline-flex items-center gap-2 bg-[#FF8201] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-black transition-colors duration-300 hover:bg-white md:gap-4 md:px-10 md:py-5 md:text-lg md:tracking-[0.12em]"
+              className="pointer-events-auto inline-flex items-center gap-2 bg-[#FF8201] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-black transition-colors duration-300 hover:bg-white md:gap-4 md:px-8 md:py-4 md:text-base md:tracking-[0.12em] lg:px-10 lg:py-5 lg:text-lg"
             >
               Записаться
               <ArrowRight className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2} />
@@ -694,9 +699,9 @@ const MainPage: FC = () => {
         </motion.div>
       </section>
 
-      {/* SECTION 2: PARALLAX */}
-      <section  className="relative h-[300vh] border-0 border-b-0 bg-[#f3f3f1]">
-        <div className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)] tablet-portrait:px-[clamp(14px,3.5vw,28px)] tablet-landscape:px-[clamp(16px,3vw,36px)]">
+      {/* SECTION 2: "МЫ ДЕЛАЕМ ВЕЩИ" без блокировки скролла */}
+      <section className="relative border-0 border-b-0 bg-[#f3f3f1] py-24 md:py-32 tablet-portrait:py-16 tablet-landscape:py-20">
+        <div className="flex min-h-[60svh] w-full items-center justify-center px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)] tablet-portrait:px-[clamp(14px,3.5vw,28px)] tablet-landscape:px-[clamp(16px,3vw,36px)]">
           <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)] min-[1440px]:max-w-[min(980px,94vw)] min-[1440px]:text-[clamp(40px,7vw,104px)] tablet-portrait:max-w-[min(640px,88vw)] tablet-portrait:text-[clamp(26px,5.2vw,52px)] tablet-portrait:leading-[0.95] tablet-landscape:max-w-[min(780px,78vw)] tablet-landscape:text-[clamp(28px,4.2vw,64px)]">
             МЫ ДЕЛАЕМ <span className="block text-[#FF8201] md:inline">ВЕЩИ</span>
           </div>
@@ -704,11 +709,11 @@ const MainPage: FC = () => {
       </section>
 
       {/* SECTION 3: ≥1440px — как изначально (540/300 × 620/440); 768–1439 — flex, чёрный блок уже */}
-      <section className="tablet-adaptive-projects-section -mt-px flex justify-center overflow-hidden border-0 bg-[#f3f3f1] py-24 md:py-32 min-[1000px]:max-[1439px]:py-[clamp(4.5rem,8vw,8rem)] tablet-portrait:py-12 tablet-landscape:py-14">
+      <section className="-mt-px flex justify-center overflow-hidden border-0 bg-[#f3f3f1] py-24 md:py-32">
         {/* Desktop (не планшет): hover-ряд */}
         {showDesktopProjects && (
           <div
-            className={`tablet-adaptive-projects-row hidden h-[min(620px,72vh)] w-full items-end md:flex ${projectsLargeDesktop ? 'justify-center gap-5 px-[5%]' : 'gap-[clamp(8px,1vw,16px)] px-[clamp(18px,3.5vw,4.5rem)]'}`}
+            className={`hidden h-[min(620px,72vh)] w-full items-end md:flex ${projectsLargeDesktop ? 'justify-center gap-5 px-[5%]' : 'gap-[clamp(8px,1vw,16px)] px-[clamp(18px,3.5vw,4.5rem)]'}`}
             onMouseLeave={() => setActiveProjectIndex(0)}
           >
             {dynamicProjects.map((p, i) => {
@@ -747,7 +752,7 @@ const MainPage: FC = () => {
                     className={`relative flex h-full w-full flex-col ${projectsLargeDesktop ? 'p-[30px]' : 'px-[clamp(18px,3.2vw,30px)] pb-[clamp(18px,3.2vw,30px)] pt-[clamp(18px,3.2vw,30px)]'}`}
                   >
                     <motion.h2
-                      className="mb-3 font-serif leading-[1.1] min-[1000px]:max-[1439px]:mb-2.5 md:mb-4"
+                      className="mb-4 font-serif leading-[1.1]"
                       animate={{
                         fontSize: projectsLargeDesktop
                           ? activeProjectIndex === i
@@ -767,7 +772,7 @@ const MainPage: FC = () => {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0 }}
-                          className="text-pretty text-[clamp(13px,calc(1.1vw + 0.65rem),15px)] leading-relaxed text-[#a0a0a0] min-[1000px]:max-[1439px]:leading-snug"
+                          className="text-pretty text-[clamp(13px,calc(1.1vw + 0.65rem),15px)] leading-relaxed text-[#a0a0a0]"
                         >
                           {p.description}
                         </motion.p>
@@ -793,7 +798,7 @@ const MainPage: FC = () => {
         {showTabletProjects && (
           <div
             ref={projectsTabletCarouselRef}
-            className="w-full overflow-x-auto snap-x snap-mandatory pb-4 px-[6%] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className="w-full overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
             style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
             data-lenis-prevent
           >
@@ -803,7 +808,7 @@ const MainPage: FC = () => {
                   key={i}
                   data-project-slide
                   className="snap-start flex-none"
-                  style={{ width: '88vw' }}
+                  style={{ width: tabletFeatureSlideWidth }}
                 >
                   <motion.div
                     initial={false}
@@ -814,7 +819,7 @@ const MainPage: FC = () => {
                     transition={{ duration: 0.25 }}
                   >
                     {p.type === 'info' ? (
-                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]">
+                      <div className="relative w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]" style={{ height: tabletFeatureCardHeight }}>
                         <div className="relative flex h-full w-full flex-col px-6 pb-6 pt-6 tablet-portrait:px-7 tablet-portrait:pb-7 tablet-landscape:px-7 tablet-landscape:pb-7">
                           <div className="mb-4 font-serif text-[clamp(30px,4.6vw,44px)] leading-[1.05] text-white">
                             {p.title}
@@ -831,7 +836,7 @@ const MainPage: FC = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]">
+                      <div className="relative w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]" style={{ height: tabletFeatureCardHeight }}>
                         <img
                           src={p.image || ''}
                           alt=""
@@ -879,20 +884,20 @@ const MainPage: FC = () => {
       {/* SECTION 4: ABOUT */}
       <section
         ref={aboutRef}
-        className={`tablet-adaptive-sticky-section relative bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+        className={`relative bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''}`}
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
-        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full items-center justify-center overflow-hidden px-[5%] min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:px-[4%] tablet-landscape:px-[clamp(3.5%,4vw,5%)] md:flex">
-          <div className="pointer-events-none absolute left-[5%] z-0 min-[1000px]:max-[1439px]:left-[3%] tablet-portrait:left-[3.5%] tablet-landscape:left-[4%]">
-            <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter min-[1000px]:max-[1439px]:text-[9.5vw] tablet-portrait:text-[10.5vw] tablet-landscape:text-[min(9vw,7.5rem)] tablet-landscape:leading-[0.8]">
+        <div className="sticky top-0 hidden h-[100svh] w-full items-center justify-center overflow-hidden px-[5%] md:flex">
+          <div className="pointer-events-none absolute left-[5%] z-0">
+            <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter">
               <div>КТО</div>
               <div className="text-[#FF8201]">МЫ?</div>
             </div>
           </div>
 
-          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px] min-[1000px]:max-[1439px]:max-w-[min(720px,86vw)] tablet-portrait:max-w-[min(560px,88vw)] tablet-landscape:max-w-[min(640px,52vw)]">
-            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5 min-[1000px]:max-[1439px]:max-h-[min(480px,52vh)] tablet-portrait:max-h-[min(400px,48vh)] tablet-portrait:h-[50vh] tablet-landscape:h-[min(48vh,420px)] tablet-landscape:max-h-[min(440px,55vh)]">
+          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px]">
+            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5">
               {aboutImages.map((img, i) => (
                 <motion.img
                   key={i}
@@ -909,12 +914,12 @@ const MainPage: FC = () => {
               ))}
             </div>
 
-            <div className="mt-12 flex flex-col justify-between gap-6 min-[1000px]:max-[1439px]:mt-8 min-[1000px]:max-[1439px]:gap-5 tablet-portrait:mt-8 tablet-portrait:gap-5 tablet-landscape:mt-8 tablet-landscape:flex-row tablet-landscape:items-end tablet-landscape:gap-6 xl:flex-row xl:items-end">
-              <div className="max-w-[500px] min-[1000px]:max-[1439px]:max-w-[420px] tablet-portrait:max-w-[100%] tablet-landscape:max-w-[min(360px,42vw)]">
-                <h3 className="mb-4 text-4xl font-bold uppercase tracking-tight min-[1000px]:max-[1439px]:mb-3 min-[1000px]:max-[1439px]:text-[1.65rem] tablet-portrait:text-[1.5rem] tablet-landscape:text-[clamp(1.35rem,2.4vw,1.65rem)]">
+            <div className="mt-12 flex flex-col justify-between gap-6 xl:flex-row xl:items-end">
+              <div className="max-w-[500px]">
+                <h3 className="mb-4 text-4xl font-bold uppercase tracking-tight">
                   Инженерная эстетика оффроуда
                 </h3>
-                <p className="text-lg leading-relaxed text-black/60 min-[1000px]:max-[1439px]:text-base tablet-portrait:text-[0.95rem] tablet-portrait:leading-relaxed tablet-landscape:text-[0.95rem]">
+                <p className="text-lg leading-relaxed text-black/60">
                   Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и
                   японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: от диагностики и ТО до усиления подвески и экспедиционной подготовки.
                 </p>
@@ -936,12 +941,12 @@ const MainPage: FC = () => {
           <div className="w-full" data-lenis-prevent>
             <div
               ref={aboutTabletCarouselRef}
-              className="overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6%]"
+              className="overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
               style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
             >
               <div className="flex gap-3 w-max">
                 {/* 0: инфо */}
-                <div data-about-tablet-slide className="snap-start flex-none" style={{ width: '88vw' }}>
+                <div data-about-tablet-slide className="snap-start flex-none" style={{ width: tabletFeatureSlideWidth }}>
                   <motion.div
                     initial={false}
                     animate={{
@@ -950,7 +955,7 @@ const MainPage: FC = () => {
                     }}
                     transition={{ duration: 0.25 }}
                   >
-                    <div className="relative h-[min(500px,56vh)] w-full overflow-hidden border border-black/10 bg-white shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]">
+                    <div className="relative w-full overflow-hidden border border-black/10 bg-white shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]" style={{ height: tabletFeatureCardHeight }}>
                       <div className="flex h-full w-full flex-col px-7 pb-7 pt-7">
                         <div className="text-[clamp(2.4rem,7vw,4.4rem)] font-black uppercase leading-[0.86] tracking-tighter text-black">
                           <div>КТО</div>
@@ -972,7 +977,7 @@ const MainPage: FC = () => {
                     key={img + i}
                     data-about-tablet-slide
                     className="snap-start flex-none"
-                    style={{ width: '88vw' }}
+                    style={{ width: tabletFeatureSlideWidth }}
                   >
                     <motion.div
                       initial={false}
@@ -982,7 +987,7 @@ const MainPage: FC = () => {
                       }}
                       transition={{ duration: 0.25 }}
                     >
-                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black/5 shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]">
+                      <div className="relative w-full overflow-hidden bg-black/5 shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]" style={{ height: tabletFeatureCardHeight }}>
                         <img src={img} alt={`Оффроуд проект ${i + 1}`} className="absolute inset-0 h-full w-full object-cover" />
                       </div>
                     </motion.div>
@@ -1050,7 +1055,7 @@ const MainPage: FC = () => {
               Чем мы занимаемся
             </h2>
           </div>
-          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10 tablet-portrait:w-[92%] tablet-landscape:w-[94%] tablet-landscape:max-h-[min(calc(100vh-12rem),560px)] tablet-landscape:overflow-y-auto tablet-landscape:[scrollbar-width:none] tablet-landscape:[&::-webkit-scrollbar]:hidden">
+          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10 tablet-portrait:w-[92%] tablet-landscape:w-[94%] tablet-landscape:max-h-[min(calc(100vh-12rem),560px)] tablet-landscape:overflow-y-auto">
             {dynamicServices.map((service, index) => (
               <ServiceCard
                 key={service.accordionKey}
@@ -1076,12 +1081,12 @@ const MainPage: FC = () => {
             </div>
             <div
               ref={servicesTabletCarouselRef}
-              className="mt-8 overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden px-[6%]"
+              className="mt-8 overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
               style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
             >
               <div className="flex gap-3 w-max">
                 {/* 0: интро */}
-                <div data-service-tablet-slide className="snap-start flex-none" style={{ width: '88vw' }}>
+                <div data-service-tablet-slide className="snap-start flex-none" style={{ width: tabletFeatureSlideWidth }}>
                   <motion.div
                     initial={false}
                     animate={{
@@ -1090,7 +1095,7 @@ const MainPage: FC = () => {
                     }}
                     transition={{ duration: 0.25 }}
                   >
-                    <div className="relative h-[min(500px,56vh)] w-full overflow-hidden border border-black/10 bg-white shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]">
+                    <div className="relative w-full overflow-hidden border border-black/10 bg-white shadow-[0_18px_50px_-14px_rgba(0,0,0,0.18)]" style={{ height: tabletFeatureCardHeight }}>
                       <div className="flex h-full w-full flex-col px-7 pb-7 pt-7">
                         <div className="text-[clamp(2.2rem,6.4vw,3.8rem)] font-black uppercase leading-[0.9] tracking-tighter text-black">
                           Чем мы
@@ -1109,7 +1114,7 @@ const MainPage: FC = () => {
                     key={s.accordionKey}
                     data-service-tablet-slide
                     className="snap-start flex-none"
-                    style={{ width: '88vw' }}
+                    style={{ width: tabletFeatureSlideWidth }}
                   >
                     <motion.div
                       initial={false}
@@ -1119,7 +1124,7 @@ const MainPage: FC = () => {
                       }}
                       transition={{ duration: 0.25 }}
                     >
-                      <div className="relative h-[min(500px,56vh)] w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]">
+                      <div className="relative w-full overflow-hidden bg-black shadow-[0_18px_50px_-14px_rgba(0,0,0,0.22)]" style={{ height: tabletFeatureCardHeight }}>
                         <img src={s.image} alt={s.title} className="absolute inset-0 h-full w-full object-cover opacity-85" />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
                         <div className="relative flex h-full w-full flex-col justify-end px-7 pb-7">
@@ -1217,7 +1222,7 @@ const MainPage: FC = () => {
                   key={testimonial.id}
                   data-testimonial-slide
                   className="snap-start flex-none"
-                  style={{ width: 'min(85vw, 380px)' }}
+                  style={{ width: testimonialSlideWidth }}
                 >
                   <motion.div
                     initial={false}

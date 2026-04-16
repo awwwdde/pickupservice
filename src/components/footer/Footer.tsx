@@ -24,31 +24,7 @@ const Footer: FC = () => {
     <footer className="bg-[#0a0a0a] text-white pt-20 pb-10 px-6 md:px-12 overflow-hidden font-sans">
       <div className="max-w-10xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-20">
-          <div>
-            <h3 className="text-xl mb-6 font-medium">Социальные сети</h3>
-            <ul className="space-y-4">
-              {socialLinks.map((link) => (
-                <li key={link.name}>
-                  <motion.a
-                    href={link.href}
-                    className="text-gray-400 hover:text-white transition-colors duration-300"
-                    whileHover={{ x: 5 }}
-                  >
-                    {link.name}
-                  </motion.a>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-xl mb-6 font-medium">Часы работы</h3>
-            <ul className="space-y-4 text-gray-400 text-sm md:text-base">
-              {workingHours.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="flex flex-col items-start md:items-end lg:items-start">
+        <div className="flex flex-col items-start md:items-end lg:items-start">
             <motion.button
               whileHover={{ scale: 1 }}
               whileTap={{ scale: 1 }}
@@ -80,6 +56,30 @@ const Footer: FC = () => {
                 <span>Москва, улица Самокатная 3/8, с1А</span>
               </div>
             </div>
+          </div>
+          <div>
+            <h3 className="text-xl mb-6 font-medium">Социальные сети</h3>
+            <ul className="space-y-4">
+              {socialLinks.map((link) => (
+                <li key={link.name}>
+                  <motion.a
+                    href={link.href}
+                    className="text-gray-400 hover:text-white transition-colors duration-300"
+                    whileHover={{ x: 5 }}
+                  >
+                    {link.name}
+                  </motion.a>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h3 className="text-xl mb-6 font-medium">Часы работы</h3>
+            <ul className="space-y-4 text-gray-400 text-sm md:text-base">
+              {workingHours.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
