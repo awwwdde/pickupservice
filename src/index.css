@@ -1,14 +1,15 @@
 @import 'tailwindcss';
 
-/* Планшет: книжная / альбомная ориентация (главная и её блоки) */
+/* Планшет: книжная ориентация (touch-only) */
 @custom-variant tablet-portrait {
   @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
     @slot;
   }
 }
 
+/* Любой экран 1025–1279px → планшетный стиль (включая узкие ноутбуки) */
 @custom-variant tablet-landscape {
-  @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  @media (min-width: 1025px) and (max-width: 1279px) {
     @slot;
   }
 }
@@ -23,8 +24,6 @@
     inset 0 0 0.2rem #fff3;
   backface-visibility: hidden;
 }
-
-
 
 .header-block {
   height: 4rem;

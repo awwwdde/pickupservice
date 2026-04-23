@@ -5,6 +5,7 @@ export type TabletLayoutMode = 'none' | 'portrait' | 'landscape'
 
 /**
  * Книжный / альбомный планшет (согласовано с @custom-variant в index.css).
+ * ≥1280px → 'none' (PC-версия), <1280px → 'landscape', touch portrait → 'portrait'
  */
 export function useTabletLayoutMode(): TabletLayoutMode {
   const isPrerender = isPrerenderEnv()
@@ -15,9 +16,8 @@ export function useTabletLayoutMode(): TabletLayoutMode {
     const portraitMq = window.matchMedia(
       '(min-width: 768px) and (max-width: 1024px) and (orientation: portrait) and (hover: none) and (pointer: coarse)',
     )
-    const landscapeMq = window.matchMedia(
-      '(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse)',
-    )
+    // Любой экран 768–1279px (включая ноутбуки) → планшетный режим
+    const landscapeMq = window.matchMedia('(min-width: 768px) and (max-width: 1279px)')
     const sync = () => {
       if (portraitMq.matches) setMode('portrait')
       else if (landscapeMq.matches) setMode('landscape')
