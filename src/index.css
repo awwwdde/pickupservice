@@ -2,13 +2,13 @@
 
 /* Планшет: книжная / альбомная ориентация (главная и её блоки) */
 @custom-variant tablet-portrait {
-  @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) and (hover: none) and (pointer: coarse) {
     @slot;
   }
 }
 
 @custom-variant tablet-landscape {
-  @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+  @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     @slot;
   }
 }

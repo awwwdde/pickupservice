@@ -620,7 +620,7 @@ const MainPage: FC = () => {
   }, [isPrerender])
 
   return (
-    <div className="tablet-adaptive-main bg-black text-white selection:bg-[#FF8201]">
+    <div className="tablet-adaptive-main overflow-x-clip bg-black text-white selection:bg-[#FF8201]">
       
       {/* SECTION 1: HERO */}
       <section id="site-hero" className="relative min-h-[100svh] w-full overflow-hidden">
@@ -698,7 +698,7 @@ const MainPage: FC = () => {
 
       {/* SECTION 2: "МЫ ДЕЛАЕМ ВЕЩИ" без блокировки скролла */}
       <section className="relative border-0 border-b-0 bg-[#f3f3f1] py-24 md:py-32 tablet-portrait:py-16 tablet-landscape:py-20">
-        <div className="flex min-h-[60svh] w-full items-center justify-center px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)] tablet-portrait:px-[clamp(14px,3.5vw,28px)] tablet-landscape:px-[clamp(16px,3vw,36px)]">
+      <div className="flex min-h-[60svh] w-full items-center justify-center px-[clamp(16px,3.5vw,40px)] text-black sm:px-10 min-[1000px]:max-[1439px]:px-[clamp(16px,3vw,32px)] tablet-portrait:px-[clamp(14px,3.5vw,28px)] tablet-landscape:px-[clamp(16px,3vw,36px)]">
           <div className="max-w-[min(920px,92vw)] text-center text-[clamp(34px,6.5vw,96px)] font-bold italic uppercase leading-[0.9] tracking-tighter min-[1000px]:max-[1439px]:max-w-[min(720px,90vw)] min-[1000px]:max-[1439px]:text-[clamp(28px,calc(4.8vw + 0.5rem),72px)] min-[1440px]:max-w-[min(980px,94vw)] min-[1440px]:text-[clamp(40px,7vw,104px)] tablet-portrait:max-w-[min(640px,88vw)] tablet-portrait:text-[clamp(26px,5.2vw,52px)] tablet-portrait:leading-[0.95] tablet-landscape:max-w-[min(780px,78vw)] tablet-landscape:text-[clamp(28px,4.2vw,64px)]">
             МЫ ДЕЛАЕМ <span className="block text-[#FF8201] md:inline">ВЕЩИ</span>
           </div>
@@ -795,7 +795,7 @@ const MainPage: FC = () => {
         {showTabletProjects && (
           <div
             ref={projectsTabletCarouselRef}
-            className="w-full overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
+            className="w-full tablet-adaptive-carousel overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
             style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
             data-lenis-prevent
           >
@@ -881,7 +881,7 @@ const MainPage: FC = () => {
       {/* SECTION 4: ABOUT */}
       <section
         ref={aboutRef}
-        className={`relative bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''}`}
+        className={`relative overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''}`}
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
@@ -938,7 +938,7 @@ const MainPage: FC = () => {
           <div className="w-full" data-lenis-prevent>
             <div
               ref={aboutTabletCarouselRef}
-              className="overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
+              className="tablet-adaptive-carousel overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
               style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
             >
               <div className="flex gap-3 w-max">
@@ -1042,7 +1042,7 @@ const MainPage: FC = () => {
       {/* SECTION 5: SERVICES */}
       <section
         ref={servicesStickyRef}
-        className={`tablet-adaptive-sticky-section relative w-full bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+        className={`tablet-adaptive-sticky-section relative w-full overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
@@ -1078,7 +1078,7 @@ const MainPage: FC = () => {
             </div>
             <div
               ref={servicesTabletCarouselRef}
-              className="mt-8 overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
+              className="mt-8 tablet-adaptive-carousel overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
               style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
             >
               <div className="flex gap-3 w-max">
@@ -1167,7 +1167,7 @@ const MainPage: FC = () => {
       {/* SECTION 6: TESTIMONIALS */}
       <section
         ref={testimonialsRef}
-        className={`tablet-adaptive-sticky-section relative bg-[#020202] ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+        className={`tablet-adaptive-sticky-section relative overflow-x-clip bg-[#020202] ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
@@ -1210,7 +1210,7 @@ const MainPage: FC = () => {
 
           <div
             ref={testimonialsCarouselRef}
-            className="mt-10 overflow-x-auto snap-x snap-mandatory pb-4 -mx-[6%] px-[6%]"
+            className="mt-10 tablet-adaptive-carousel overflow-x-auto snap-x snap-mandatory pb-4 -mx-[6%] px-[6%]"
             style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
           >
             <div className="flex gap-4 w-max">

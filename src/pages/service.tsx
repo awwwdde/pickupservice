@@ -326,10 +326,10 @@ const ServicePage: FC = () => {
       {/* SECTION 3: IMAGE TRACK */}
       <section ref={imageTrackRef} className="bg-[#fcfcfc] pb-[clamp(3rem,8vw,13rem)] overflow-hidden">
         {/* Desktop */}
-        <div className="hidden md:flex flex-col gap-8 md:gap-12">
-          <motion.div style={{ x: row1X }} className="flex gap-8 md:gap-12 whitespace-nowrap">
+        <div className="hidden md:flex flex-col gap-8 md:gap-12 tablet-portrait:gap-8 tablet-landscape:gap-9">
+          <motion.div style={{ x: row1X }} className="flex gap-8 md:gap-12 tablet-portrait:gap-8 tablet-landscape:gap-9 whitespace-nowrap">
             {trackRow1.map((src, i) => (
-              <div key={i} className="w-[clamp(260px,40vw,720px)] h-[clamp(180px,35vw,560px)] flex-shrink-0 overflow-hidden bg-neutral-200">
+              <div key={i} className="w-[clamp(260px,40vw,720px)] h-[clamp(180px,35vw,560px)] tablet-portrait:w-[clamp(240px,42vw,440px)] tablet-portrait:h-[clamp(180px,36vw,340px)] tablet-landscape:w-[clamp(260px,36vw,540px)] tablet-landscape:h-[clamp(200px,32vw,420px)] flex-shrink-0 overflow-hidden bg-neutral-200">
                 <motion.img
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.8, ease: customEase }}
@@ -340,9 +340,9 @@ const ServicePage: FC = () => {
               </div>
             ))}
           </motion.div>
-          <motion.div style={{ x: row2X }} className="flex gap-8 md:gap-12 whitespace-nowrap">
+          <motion.div style={{ x: row2X }} className="flex gap-8 md:gap-12 tablet-portrait:gap-8 tablet-landscape:gap-9 whitespace-nowrap">
             {trackRow2.map((src, i) => (
-              <div key={i} className="w-[clamp(260px,40vw,720px)] h-[clamp(180px,35vw,560px)] flex-shrink-0 overflow-hidden bg-neutral-200">
+              <div key={i} className="w-[clamp(260px,40vw,720px)] h-[clamp(180px,35vw,560px)] tablet-portrait:w-[clamp(240px,42vw,440px)] tablet-portrait:h-[clamp(180px,36vw,340px)] tablet-landscape:w-[clamp(260px,36vw,540px)] tablet-landscape:h-[clamp(200px,32vw,420px)] flex-shrink-0 overflow-hidden bg-neutral-200">
                 <motion.img
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.8, ease: customEase }}
@@ -379,11 +379,11 @@ const ServicePage: FC = () => {
       </section>
 
       {/* SECTION 4: STICKY BLOCKS */}
-      <section ref={stickySectionRef} className="relative bg-[#fcfcfc] text-black border-t border-neutral-200 md:h-[300vh]">
+      <section ref={stickySectionRef} className="relative bg-[#fcfcfc] text-black border-t border-neutral-200 md:h-[300vh] tablet-portrait:h-[260vh] tablet-landscape:h-[280vh]">
         {/* Desktop */}
-        <div className="hidden md:flex sticky top-0 h-[100svh] w-full flex-col items-center justify-center overflow-hidden">
-          <div className="w-[90%] mb-[clamp(1.5rem,4vw,4rem)] grid grid-cols-1 md:grid-cols-[1fr,auto] gap-4 items-end">
-            <h2 className="text-[clamp(2rem,5vw,5rem)] font-black uppercase tracking-[-0.04em] text-black leading-[0.88]">
+        <div className="hidden md:flex sticky top-0 h-[100svh] w-full flex-col items-center justify-center overflow-hidden tablet-landscape:justify-start tablet-landscape:pt-[clamp(4rem,10vh,5.5rem)]">
+          <div className="w-[90%] mb-[clamp(1.5rem,4vw,4rem)] tablet-portrait:mb-[clamp(1.25rem,3vw,2rem)] tablet-landscape:mb-[clamp(1rem,2.5vw,1.75rem)] grid grid-cols-1 md:grid-cols-[1fr,auto] gap-4 items-end">
+            <h2 className="text-[clamp(2rem,5vw,5rem)] tablet-portrait:text-[clamp(1.75rem,4.5vw,2.75rem)] tablet-landscape:text-[clamp(1.75rem,3.6vw,2.75rem)] font-black uppercase tracking-[-0.04em] text-black leading-[0.88]">
               Направления <br /> <span className="text-[#FF8201]">сервиса</span>
             </h2>
             <div className="font-mono text-[clamp(0.6rem,1.2vw,0.875rem)] uppercase tracking-[0.2em] text-neutral-400 mb-2">
@@ -391,7 +391,7 @@ const ServicePage: FC = () => {
             </div>
           </div>
 
-          <div className="w-[90%] flex flex-col border-t border-black/10">
+          <div className="w-[90%] tablet-portrait:w-[92%] tablet-landscape:w-[94%] flex flex-col border-t border-black/10 tablet-landscape:max-h-[calc(100vh-10rem)] tablet-landscape:overflow-y-auto">
             {serviceItems.map((service, index) => (
               <ServiceCard
                 key={service.accordionKey}

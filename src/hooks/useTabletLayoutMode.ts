@@ -13,10 +13,10 @@ export function useTabletLayoutMode(): TabletLayoutMode {
   useEffect(() => {
     if (isPrerender) return
     const portraitMq = window.matchMedia(
-      '(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)',
+      '(min-width: 768px) and (max-width: 1024px) and (orientation: portrait) and (hover: none) and (pointer: coarse)',
     )
     const landscapeMq = window.matchMedia(
-      '(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape)',
+      '(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) and (hover: none) and (pointer: coarse)',
     )
     const sync = () => {
       if (portraitMq.matches) setMode('portrait')

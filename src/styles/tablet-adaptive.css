@@ -1,3 +1,23 @@
 .tablet-adaptive-main {
   isolation: isolate;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+.tablet-adaptive-main,
+.tablet-adaptive-sticky-section,
+.tablet-adaptive-contact-section {
+  overscroll-behavior-x: contain;
+}
+
+.tablet-adaptive-carousel {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.tablet-adaptive-carousel::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }

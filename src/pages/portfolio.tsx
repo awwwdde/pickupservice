@@ -119,13 +119,13 @@ const ProjectsPage: FC = () => {
     <main className="bg-[#020202] text-white antialiased selection:bg-white selection:text-black">
       
       {/* 1. HEADER С АНИМАЦИЕЙ КАК В КОНТАКТАХ */}
-      <header className="w-[90%] mx-auto pt-40 pb-20 border-b border-white/10">
+      <header className="w-[90%] mx-auto pt-40 pb-20 tablet-portrait:pt-32 tablet-portrait:pb-16 tablet-landscape:pt-36 tablet-landscape:pb-20 border-b border-white/10">
         <motion.div
           initial={{ y: 60, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          <h1 className="text-[11vw] font-bold uppercase tracking-tighter leading-[0.75]">
+          <h1 className="text-[11vw] font-bold uppercase tracking-tighter leading-[0.75] tablet-portrait:text-[13vw] tablet-landscape:text-[10.5vw]">
             Наши <br />
             <span className="text-neutral-500 italic font-light tracking-tight">Проекты.</span>
           </h1>
@@ -133,31 +133,31 @@ const ProjectsPage: FC = () => {
       </header>
 
       {/* 2. ГОРИЗОНТАЛЬНЫЙ СКРОЛЛ (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
-      <section ref={horizontalRef} className="relative md:h-[400vh]">
+      <section ref={horizontalRef} className="relative md:h-[400vh] tablet-portrait:h-[340vh] tablet-landscape:h-[380vh]">
         {/* Desktop */}
         {/* ИСПРАВЛЕНИЕ: Заменили flex на md:flex, чтобы избежать конфликта с hidden на мобилках */}
         <div className="hidden md:flex md:sticky top-0 h-screen items-center overflow-hidden">
           <motion.div
             ref={trackRef}
             style={{ x }}
-            className="flex h-[70vh] px-[5vw] gap-8"
+            className="flex h-[70vh] tablet-portrait:h-[60vh] tablet-landscape:h-[68vh] px-[5vw] gap-8 tablet-portrait:gap-6 tablet-landscape:gap-7"
           >
             {featured.map((project) => (
               <Link
                 key={project.id}
                 to={`/portfolio/${project.id}`}
-                className="block relative flex-shrink-0 w-[80vw] md:w-[65vw] h-full overflow-hidden group"
+                className="block relative flex-shrink-0 w-[80vw] md:w-[65vw] tablet-portrait:w-[78vw] tablet-landscape:w-[62vw] h-full overflow-hidden group"
               >
                 <img
                   src={project.image}
                   alt={project.title}
                   className="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-1000 ease-out"
                 />
-                <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 z-10">
-                  <div className="relative flex justify-between items-end">
+                <div className="absolute inset-x-0 bottom-0 p-8 md:p-12 tablet-portrait:p-8 tablet-landscape:p-10 z-10">
+                  <div className="relative flex justify-between items-end gap-6">
                     <div className="max-w-md">
                       <p className="font-mono text-[10px] uppercase tracking-widest mb-3 opacity-60">// Избранный кейс</p>
-                      <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-tighter leading-none">{project.title}</h2>
+                      <h2 className="text-3xl md:text-5xl tablet-portrait:text-[clamp(1.75rem,3.6vw,2.5rem)] tablet-landscape:text-[clamp(1.85rem,3.2vw,2.75rem)] font-bold uppercase tracking-tighter leading-none">{project.title}</h2>
                     </div>
                     <div className="text-right hidden md:block">
                       <span className="font-mono text-xs uppercase border border-white/20 px-3 py-1 rounded-full">{project.model}</span>
@@ -205,9 +205,9 @@ const ProjectsPage: FC = () => {
       </section>
 
       {/* 3. АСИММЕТРИЧНАЯ СЕТКА (БЕЗ ВХОДНЫХ АНИМАЦИЙ) */}
-      <section className="w-[90%] mx-auto py-24 md:py-60">
-        <div className="flex justify-between items-end mb-32 border-b border-white/10 pb-10">
-          <h2 className="text-5xl font-bold uppercase tracking-tighter">Все проекты</h2>
+      <section className="w-[90%] mx-auto py-24 md:py-60 tablet-portrait:py-32 tablet-landscape:py-40">
+        <div className="flex justify-between items-end mb-32 tablet-portrait:mb-20 tablet-landscape:mb-24 border-b border-white/10 pb-10 tablet-portrait:pb-8 tablet-landscape:pb-8">
+          <h2 className="text-5xl font-bold uppercase tracking-tighter tablet-portrait:text-[clamp(2rem,5vw,3.25rem)] tablet-landscape:text-[clamp(2.25rem,4vw,3.5rem)]">Все проекты</h2>
           <span className="font-mono text-[10px] uppercase tracking-widest opacity-30">
             / Total:{' '}
             {totalFromBackend < 100
@@ -216,22 +216,22 @@ const ProjectsPage: FC = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-16 md:gap-y-32 md:gap-x-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-y-16 md:gap-y-32 md:gap-x-20 tablet-portrait:gap-y-20 tablet-portrait:gap-x-12 tablet-landscape:gap-y-24 tablet-landscape:gap-x-16">
           {others.map((project, index) => (
             <div
               key={project.id}
-              className={`relative aspect-[4/5] group overflow-hidden ${index % 2 !== 0 ? 'md:mt-48' : ''}`}
+              className={`relative aspect-[4/5] group overflow-hidden ${index % 2 !== 0 ? 'md:mt-48 tablet-portrait:mt-24 tablet-landscape:mt-32' : ''}`}
             >
               <Link to={`/portfolio/${project.id}`} className="block w-full h-full relative">
-                <img 
-                  src={project.image} 
-                  alt={project.title} 
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 ease-out" 
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 ease-out"
                 />
-                <div className="absolute bottom-0 left-0 w-full p-8 bg-black/40 backdrop-blur-md border-t border-white/10">
+                <div className="absolute bottom-0 left-0 w-full p-8 tablet-portrait:p-6 tablet-landscape:p-7 bg-black/40 backdrop-blur-md border-t border-white/10">
                   <div className="flex flex-col">
-                    <h3 className="text-2xl font-bold uppercase tracking-tight group-hover:italic transition-all duration-300">{project.title}</h3>
-                    <div className="flex justify-between items-center mt-4">
+                    <h3 className="text-2xl font-bold uppercase tracking-tight group-hover:italic transition-all duration-300 tablet-portrait:text-xl tablet-landscape:text-[1.35rem]">{project.title}</h3>
+                    <div className="flex justify-between items-center mt-4 tablet-portrait:mt-3 tablet-landscape:mt-3">
                        <p className="font-mono text-[10px] opacity-60 uppercase">{project.model}</p>
                        <span className="text-xs group-hover:translate-x-2 transition-transform duration-300">→</span>
                     </div>
