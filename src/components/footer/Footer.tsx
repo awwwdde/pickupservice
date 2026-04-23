@@ -43,12 +43,12 @@ const Footer: FC = () => {
               
               <div className="flex items-center gap-3 group cursor-pointer">
                 <Plus size={14} className="text-gray-600 group-hover:rotate-90 transition-transform" />
-                <a href="tel:84959991122" className="hover:text-gray-300 transition-colors">8 (985) 923-47-77</a>
+                <a href="tel:84959991122" className="hover:text-gray-300 transition-colors">+7 (985) 923-47-77</a>
               </div>
               
               <div className="flex items-center gap-3 group cursor-pointer">
                 <Plus size={14} className="text-gray-600 group-hover:rotate-90 transition-transform" />
-                <a href="mailto:pickupservice@moscow.com" className="hover:text-gray-300 transition-colors">pickupservice@moscow.com</a>
+                <a href="mailto:info@pickupservice.moscow" className="hover:text-gray-300 transition-colors">info@pickupservice.moscow</a>
               </div>
 
               <div className="flex items-center gap-3 group cursor-pointer">
