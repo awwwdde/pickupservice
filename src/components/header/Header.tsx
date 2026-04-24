@@ -2,38 +2,28 @@ import type { FC, Dispatch, SetStateAction, ReactNode } from 'react'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, X, Send } from 'lucide-react'
+import { Menu, X, MapPin } from 'lucide-react'
 import { createPortal } from 'react-dom'
 import PickupLogo from './PickupLogo.tsx'
 import { isPrerenderEnv } from '../../utils/isPrerender'
 import { fetchContactSettings } from '../../api/backend'
 
 const navLinks = [
-  // { to: '/service', label: 'Сервис' },
   { to: '/portfolio', label: 'Проекты' },
   { to: '/contact', label: 'Контакты' },
-  { to: '/booking', label: 'Записаться' },
 ] as const
 
-const linksPanelClassName =
-  'glass-header inline-flex items-center gap-4 rounded-[0.2rem] border border-white/10 px-5 py-2 shadow-xl sm:gap-5 sm:px-6 sm:py-2.5 tablet-portrait:gap-3.5 tablet-portrait:px-4 tablet-portrait:py-2 tablet-landscape:gap-4 tablet-landscape:px-5 tablet-landscape:py-2'
-const desktopPanelTypographyClassName =
-  'text-[15px] sm:text-[17px] md:text-[18px] min-[1000px]:max-[1279px]:text-[16px] tablet-portrait:text-[15px] tablet-landscape:text-[16px]'
-const compactContactPanelClassName =
-  'glass-header inline-flex items-center gap-3 rounded-[0.2rem] border border-white/10 px-3.5 py-1.5 text-[12px] shadow-xl sm:gap-3.5 sm:px-4 sm:py-2 sm:text-[13px] md:text-[14px] min-[1000px]:max-[1279px]:gap-2.5 min-[1000px]:max-[1279px]:px-3 min-[1000px]:max-[1279px]:py-1.5 min-[1000px]:max-[1279px]:text-[12px] tablet-portrait:gap-2 tablet-portrait:px-3 tablet-portrait:py-1.5 tablet-portrait:text-[12px] tablet-landscape:gap-2.5 tablet-landscape:px-3.5 tablet-landscape:py-1.5 tablet-landscape:text-[12px]'
-const topContactPanelClassName =
-  'glass-header inline-flex items-center gap-3 rounded-[0.2rem] border border-white/10 px-3 py-1.5 text-[12px] shadow-xl'
+const addressPanelClassName =
+  'inline-flex items-center gap-2 py-2 text-[12px] sm:text-[13px]'
+const centerPanelClassName =
+  'glass-header inline-flex items-center gap-4 rounded-[0.2rem] px-5 py-2 text-[13px] font-medium shadow-xl'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
-const desktopLinksVariants = {
-  initial: { opacity: 0, x: 14, filter: 'blur(4px)' },
-  animate: { opacity: 1, x: 0, filter: 'blur(0px)' },
-  exit: { opacity: 0, x: -10, filter: 'blur(3px)' },
-}
-
-const swapTransition = { duration: 0.58, ease: easeSwap }
 const colorTransition = { duration: 0.55, ease: easeSwap }
+const yandexMapUrl = 'https://yandex.ru/maps/?text=Москва%2C%20улица%20Самокатная%203%2F8%2C%20с1А'
+const telegramIconUrl = 'https://icons.getbootstrap.com/assets/icons/telegram.svg'
+const maxIconUrl = 'https://upload.wikimedia.org/wikipedia/commons/1/12/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_MAX.svg'
 
 const Header: FC = () => {
   const location = useLocation()
@@ -45,6 +35,7 @@ const Header: FC = () => {
     phoneDisplay: '+7 985 923 47 77',
     phoneTel: '+79859234777',
     telegramUrl: 'https://t.me/Pickupservice_Moscow',
+    maxUrl: 'https://max.ru/join/59jJOJzaZzcmPjaHHXVgMIzq9YUShK916qO09lWobWE',
     address: 'Москва, улица Самокатная 3/8, с1А'
   })
 
@@ -80,6 +71,7 @@ const Header: FC = () => {
           phoneDisplay: data.phone_display || '+7 985 923 47 77',
           phoneTel: data.phone_tel || '+79859234777',
           telegramUrl: data.telegram_url || 'https://t.me/Pickupservice_Moscow',
+          maxUrl: 'https://max.ru/join/59jJOJzaZzcmPjaHHXVgMIzq9YUShK916qO09lWobWE',
           address: 'Москва, улица Самокатная 3/8, с1А'
         })
       })
@@ -143,6 +135,7 @@ const Header: FC = () => {
   }, [isMenuOpen, isPrerender])
 
   const closeMenu = () => setIsMenuOpen(false)
+  const circleBg = pastHero ? '#FF8201' : isDarkBackground ? 'rgba(255, 255, 255, 0.14)' : 'rgba(10, 10, 10, 0.14)'
 
   const handleLogoClick: React.MouseEventHandler<HTMLAnchorElement> = (event) => {
     if (isPrerender) return
@@ -164,42 +157,57 @@ const Header: FC = () => {
         }}
         transition={colorTransition}
       >
-        {/* Добавили класс relative, чтобы абсолютный центр работал корректно */}
         <nav className="relative grid w-full grid-cols-[auto_1fr_auto] items-center gap-3 px-[clamp(14px,3vw,28px)] tablet-portrait:px-[clamp(12px,3.5vw,20px)] tablet-landscape:px-[clamp(16px,2.8vw,26px)]">
-        
-        {/* LEFT: LOGO */}
-        <Link
-          to="/"
-          onClick={handleLogoClick}
-          className="flex shrink-0 items-center justify-center text-inherit leading-none"
-          aria-label="PickupService"
-        >
-          <PickupLogo className="h-[2.75rem] w-auto sm:h-[3.2rem] tablet-portrait:h-[2.6rem] tablet-landscape:h-[2.75rem]" />
-        </Link>
-
-        {/* CENTER: NAVIGATION LINKS - Теперь зафиксированы по центру через absolute */}
-        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center justify-center min-[1100px]:flex">
-          <AnimatePresence mode="wait">
-            <motion.ul
-              className={`${linksPanelClassName} ${desktopPanelTypographyClassName} justify-center`}
-              variants={desktopLinksVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={swapTransition}
-            >
-              {navLinks.map((link) => (
-                <li key={link.to}>
-                  <SimpleNavLink to={link.to}>{link.label}</SimpleNavLink>
-                </li>
-              ))}
-            </motion.ul>
-          </AnimatePresence>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            onClick={handleLogoClick}
+            className="flex shrink-0 items-center justify-center text-inherit leading-none"
+            aria-label="PickupService"
+          >
+            <PickupLogo className="h-[3rem] w-auto sm:h-[3.45rem] tablet-portrait:h-[2.8rem] tablet-landscape:h-[3rem]" />
+          </Link>
+          <a
+            href={yandexMapUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`${addressPanelClassName} hidden min-[1300px]:inline-flex`}
+            title="Открыть адрес в Яндекс Картах"
+          >
+            <MapPin size={14} />
+            <span className="whitespace-nowrap">{contact.address}</span>
+          </a>
         </div>
 
-        {/* RIGHT: CONTACT INFO */}
-        <div className="hidden justify-end min-[1360px]:flex flex-shrink-0">
-          <div className={compactContactPanelClassName}>
+        <div className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 min-[1100px]:flex items-center justify-center">
+          <div className={centerPanelClassName}>
+            {navLinks.map((link) => (
+              <SimpleNavLink key={link.to} to={link.to} className="font-medium uppercase tracking-[0.08em]">
+                {link.label}
+              </SimpleNavLink>
+            ))}
+            <motion.a
+              href={contact.telegramUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+              animate={{ backgroundColor: circleBg }}
+              transition={colorTransition}
+              title="Telegram"
+            >
+              <img src={telegramIconUrl} alt="Telegram" className="h-4 w-4 grayscale contrast-200" />
+            </motion.a>
+            <motion.a
+              href={contact.maxUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+              animate={{ backgroundColor: circleBg }}
+              transition={colorTransition}
+              title="MAX"
+            >
+              <img src={maxIconUrl} alt="MAX" className="h-4 w-4 grayscale contrast-200" />
+            </motion.a>
             <a
               href={`tel:${contact.phoneTel}`}
               className="font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
@@ -207,71 +215,19 @@ const Header: FC = () => {
             >
               {contact.phoneDisplay}
             </a>
-            <span className="whitespace-nowrap">
-              {contact.address}
-            </span>
-            {contact.telegramUrl && (
-              <a
-                href={contact.telegramUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex h-5 w-5 flex-shrink-0 items-center justify-center text-inherit transition-opacity hover:opacity-70"
-                title="Telegram"
-              >
-                <Send size={14} />
-              </a>
-            )}
-            <Link
-              to="/booking"
-              className="font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
-            >
-              Записаться
-            </Link>
           </div>
         </div>
 
-        {/* BURGER BUTTON (MOBILE) */}
         <div className="flex shrink-0 items-center justify-end min-[1100px]:hidden">
-          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] border border-white/15 px-0.5 shadow-xl tablet-portrait:h-10 tablet-portrait:w-10">
+          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] px-0.5 shadow-xl tablet-portrait:h-10 tablet-portrait:w-10">
             <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
           </div>
         </div>
       </nav>
       </motion.header>
 
-      {/* Мобильное меню */}
       <div className="min-[1100px]:hidden">
         <MobileMenuPortal isOpen={isMenuOpen} onClose={closeMenu} contact={contact} />
-      </div>
-
-      {/* Дополнительная панель контактов (между 1100px и 1360px) */}
-      <div className="pointer-events-none fixed inset-x-0 top-[4.8rem] z-[998] hidden justify-center px-4 min-[1100px]:flex min-[1360px]:hidden">
-        <div className={topContactPanelClassName}>
-          <a
-            href={`tel:${contact.phoneTel}`}
-            className="pointer-events-auto font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
-            title="Позвоните нам"
-          >
-            {contact.phoneDisplay}
-          </a>
-          {contact.telegramUrl && (
-            <a
-              href={contact.telegramUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pointer-events-auto flex h-5 w-5 flex-shrink-0 items-center justify-center text-inherit transition-opacity hover:opacity-70"
-              title="Telegram"
-            >
-              <Send size={14} />
-            </a>
-          )}
-          <Link
-            to="/booking"
-            className="pointer-events-auto font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
-          >
-            Записаться
-          </Link>
-        </div>
       </div>
     </>
   )
@@ -286,6 +242,7 @@ const MobileMenuPortal: FC<{
     phoneDisplay: string
     phoneTel: string
     telegramUrl: string
+    maxUrl: string
     address: string
   }
 }> = ({ isOpen, onClose, contact }) => {
@@ -306,7 +263,7 @@ const MobileMenuPortal: FC<{
             transition={{ duration: 0.4, ease: easeSwap }}
             className="flex justify-between items-center text-white/80"
           >
-            <div className="text-sm tracking-widest font-medium">EU</div>
+            <div className="text-sm tracking-widest font-medium">PS</div>
             <div className="flex gap-6 items-center">
               <div className="text-sm tabular-nums">
                 {new Date().toLocaleTimeString([], {
@@ -373,16 +330,19 @@ const MobileMenuPortal: FC<{
             >
               {contact.phoneDisplay}
             </motion.a>
-            <motion.span
+            <motion.a
+              href={yandexMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               variants={{
                 hidden: { opacity: 0, y: 20 },
                 visible: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.5, ease: easeSwap }}
-              className="text-white/70"
+              className="text-center text-white/70"
             >
               {contact.address}
-            </motion.span>
+            </motion.a>
             <motion.div
               variants={{
                 hidden: { opacity: 0, y: 20 },
@@ -391,19 +351,22 @@ const MobileMenuPortal: FC<{
               transition={{ duration: 0.5, ease: easeSwap }}
               className="flex items-center gap-4 pt-2"
             >
-              {contact.telegramUrl && (
-                <a
-                  href={contact.telegramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-10 w-10 items-center justify-center rounded-[0.2rem] bg-[#FF8201] border border-white/15 transition-opacity hover:opacity-70"
-                >
-                  <Send size={18} className="text-white" />
-                </a>
-              )}
-              <Link to="/booking" className="font-medium hover:opacity-70 transition-opacity" onClick={onClose}>
-                Записаться
-              </Link>
+              <a
+                href={contact.telegramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-70"
+              >
+                <img src={telegramIconUrl} alt="Telegram" className="h-5 w-5 grayscale contrast-200" />
+              </a>
+              <a
+                href={contact.maxUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-70"
+              >
+                <img src={maxIconUrl} alt="MAX" className="h-5 w-5 grayscale contrast-200" />
+              </a>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -417,11 +380,12 @@ const SimpleNavLink: FC<{
   to: string
   children: ReactNode
   onClick?: () => void
-}> = ({ to, children, onClick }) => (
+  className?: string
+}> = ({ to, children, onClick, className }) => (
   <Link
     to={to}
     onClick={onClick}
-    className="whitespace-nowrap text-inherit transition-opacity duration-200 hover:opacity-70"
+    className={`whitespace-nowrap text-inherit transition-opacity duration-200 hover:opacity-70 ${className ?? ''}`}
   >
     {children}
   </Link>

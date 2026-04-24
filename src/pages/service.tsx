@@ -1,7 +1,6 @@
 import { type FC, useEffect, useRef, useState } from 'react'
 import { motion, useScroll, useMotionValueEvent, useTransform, cubicBezier } from 'framer-motion'
 import Lenis from 'lenis'
-import { ArrowRight } from 'lucide-react'
 
 import { ServiceCard } from '../components/accordeoncard/ServiceCard' 
 import {
@@ -20,7 +19,6 @@ import image6 from '../assets/img/image6.png'
 import image7 from '../assets/img/image7.png'
 import image8 from '../assets/img/image8.png'
 import image9 from '../assets/img/image9.png'
-import { Link } from 'react-router-dom'
 import { isPrerenderEnv } from '../utils/isPrerender'
 
 const servicesData = [
@@ -278,22 +276,6 @@ const ServicePage: FC = () => {
           </h1>
         </motion.div>
 
-        <motion.div
-          className="pointer-events-none absolute inset-x-0 bottom-6 z-20 px-6 md:bottom-8 md:px-12"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <div className="flex justify-end">
-            <Link
-              to="/booking"
-              className="pointer-events-auto inline-flex items-center gap-2 bg-[#FF8201] px-4 py-2.5 text-[12px] font-semibold uppercase tracking-[0.16em] text-black transition-colors duration-300 hover:bg-white md:gap-3 md:px-6 md:py-3 md:text-sm md:tracking-[0.14em]"
-            >
-              Записаться
-              <ArrowRight className="h-4 w-4 md:h-[18px] md:w-[18px]" strokeWidth={2} />
-            </Link>
-          </div>
-        </motion.div>
       </section>
 
       {/* SECTION 2: INTRO */}
@@ -442,39 +424,13 @@ const ServicePage: FC = () => {
                 className="text-center mb-[clamp(2rem,6vw,6rem)]"
             >
                 <h3 className="text-[clamp(2rem,5vw,5rem)] font-black uppercase tracking-[-0.04em] text-black mb-[clamp(0.75rem,2vw,1.5rem)] leading-[0.88]">Готовы к проектам?</h3>
-                <p className="text-[clamp(1rem,2.4vw,1.5rem)] text-neutral-500 max-w-2xl mx-auto font-medium tracking-tight">Оставьте заявку, и мы свяжемся с вами, чтобы обсудить подготовку вашего внедорожника.</p>
+                <p className="text-[clamp(1rem,2.4vw,1.5rem)] text-neutral-500 max-w-2xl mx-auto font-medium tracking-tight">Свяжитесь с нами по телефону или в мессенджерах и обсудим подготовку вашего внедорожника.</p>
             </motion.div>
-          <Link to='/booking'>
-            <motion.button
-            whileHover="hover"
-            initial="rest"
-            animate="rest"
-            className="group relative flex h-[clamp(72px,14vw,140px)] w-full max-w-5xl cursor-pointer items-center justify-between overflow-hidden bg-black px-[clamp(1.25rem,4vw,3rem)]"
-            >
-            <motion.div 
-              variants={{
-                rest: { scaleY: 0 },
-                hover: { scaleY: 1 }
-              }}
-              transition={{ duration: 0.6, ease: customEase }}
-              className="absolute inset-0 bg-[#FF8201] origin-bottom"
-            />
-           
-            <span className="relative z-10 text-[clamp(1.5rem,3vw,3rem)] font-black uppercase tracking-[-0.04em] text-white whitespace-nowrap">
-              Записаться
+          <div className="w-full max-w-5xl border border-black/10 bg-white px-[clamp(1.25rem,4vw,3rem)] py-[clamp(1.25rem,2vw,2rem)] text-center">
+            <span className="text-[clamp(1.1rem,2vw,1.6rem)] font-black uppercase tracking-[-0.03em] text-black">
+              Свяжитесь с нами: +7 (985) 923-47-77
             </span>
-            <motion.div
-                variants={{
-                    rest: { x: 0 },
-                    hover: { x: 20 }
-                }}
-                transition={{ duration: 0.6, ease: customEase }}
-                className="relative z-10 flex items-center justify-center rounded-full p-4 flex-shrink-0"
-            >
-                <ArrowRight className="h-[clamp(1.5rem,4vw,3rem)] w-[clamp(1.5rem,4vw,3rem)] text-white" strokeWidth={1.5} />
-            </motion.div>
-          </motion.button>
-          </Link>
+          </div>
         </div>
       </section>
     </div>

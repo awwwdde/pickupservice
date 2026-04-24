@@ -1,11 +1,8 @@
-import { type FC, type FormEvent, useCallback, useEffect, useState } from 'react'
+import { type FC, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight } from 'lucide-react'
 import Lenis from 'lenis'
-import { InputField } from '../components/inputfields/InputField'
 import { useParams } from 'react-router-dom'
-import { fetchProjectById, submitCallbackRequest } from '../api/backend'
-import { FormToast, type FormToastPayload } from '../components/utils/FormToast'
+import { fetchProjectById } from '../api/backend'
 import { isPrerenderEnv } from '../utils/isPrerender'
 
 import image1 from '../assets/img/image1.png'
@@ -42,15 +39,6 @@ const ProjectPage: FC = () => {
   const { id } = useParams()
   const isPrerender = isPrerenderEnv()
   const [projectData, setProjectData] = useState(PROJECT_CONTENT)
-  const [callbackForm, setCallbackForm] = useState({
-    name: '',
-    phone: '',
-    website: '',
-  })
-  const [callbackSubmitting, setCallbackSubmitting] = useState(false)
-  const [formToast, setFormToast] = useState<FormToastPayload>(null)
-
-  const dismissFormToast = useCallback(() => setFormToast(null), [])
 
   useEffect(() => {
     if (isPrerender) return
@@ -73,36 +61,6 @@ const ProjectPage: FC = () => {
       lenis.destroy()
     }
   }, [isPrerender])
-
-  const handleCallbackChange = (key: 'name' | 'phone' | 'website', value: string) => {
-    setFormToast(null)
-    setCallbackForm((prev) => ({ ...prev, [key]: value }))
-  }
-
-  const handleCallbackSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    if (callbackSubmitting) return
-    setFormToast(null)
-    setCallbackSubmitting(true)
-    try {
-      await submitCallbackRequest({
-        name: callbackForm.name.trim(),
-        phone: callbackForm.phone.trim(),
-        website: callbackForm.website,
-      })
-      setFormToast({
-        variant: 'success',
-        message: 'Заявка отправлена. Мы свяжемся с вами в ближайшее время.',
-      })
-      setCallbackForm({ name: '', phone: '', website: '' })
-    } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : 'Не удалось отправить заявку. Проверьте соединение и попробуйте снова.'
-      setFormToast({ variant: 'error', message: msg })
-    } finally {
-      setCallbackSubmitting(false)
-    }
-  }
 
   useEffect(() => {
     if (isPrerender) return
@@ -223,55 +181,13 @@ const ProjectPage: FC = () => {
       <section className="py-28 sm:py-32 md:py-40 tablet-portrait:py-28 tablet-landscape:py-32 bg-black text-white flex flex-col items-center border-t border-white/5">
         <div className="w-[90%] tablet-portrait:w-[92%] tablet-landscape:w-[92%] flex flex-col items-center text-center">
            <h3 className="text-[8vw] font-black uppercase tracking-tighter mb-16 tablet-portrait:mb-12 tablet-landscape:mb-14 leading-none tablet-portrait:text-[clamp(2rem,7vw,4.5rem)] tablet-landscape:text-[clamp(2.5rem,6vw,5.5rem)]">
-             Ваш джип готов <br /> к <span className="text-[#FF8201]">превращению?</span>
+             Ваш джип готов <br /> <span className="text-[#FF8201]">обновиться?</span>
            </h3>
-          <form
-            className="flex w-full flex-col items-end gap-10 md:flex-row md:items-center tablet-portrait:gap-8 tablet-landscape:gap-8 tablet-landscape:flex-row tablet-landscape:items-center"
-            onSubmit={handleCallbackSubmit}
-          >
-            <input
-              type="text"
-              name="website"
-              tabIndex={-1}
-              autoComplete="off"
-              aria-hidden
-              value={callbackForm.website}
-              onChange={(e) => handleCallbackChange('website', e.target.value)}
-              className="absolute -left-[9999px] h-px w-px opacity-0"
-            />
-            <div className="flex w-full flex-1 gap-10 flex-col md:flex-row tablet-portrait:flex-row tablet-portrait:gap-8 tablet-landscape:gap-8">
-              <InputField
-                label="Ваше Имя"
-                type="text"
-                required
-                disabled={callbackSubmitting}
-                value={callbackForm.name}
-                onChange={(e) => handleCallbackChange('name', e.target.value)}
-              />
-              <InputField
-                label="Телефон"
-                type="tel"
-                required
-                disabled={callbackSubmitting}
-                value={callbackForm.phone}
-                onChange={(e) => handleCallbackChange('phone', e.target.value)}
-              />
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="submit"
-              disabled={callbackSubmitting}
-              className="group flex h-[80px] w-full max-w-[300px] tablet-portrait:h-[72px] tablet-landscape:h-[72px] tablet-landscape:max-w-[240px] flex-shrink-0 cursor-pointer items-center justify-center gap-4 bg-[#FF8201] text-xs font-bold uppercase tracking-widest text-black transition-colors hover:bg-white"
-            >
-              {callbackSubmitting ? 'Отправка…' : 'Отправить заявку'}
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-2" />
-            </motion.button>
-          </form>
+          <p className="max-w-3xl text-[clamp(1rem,2vw,1.25rem)] leading-relaxed text-white/70">
+            Свяжитесь с нами по телефону или в Telegram/MAX, чтобы обсудить детали проекта и график работ.
+          </p>
         </div>
       </section>
-
-      <FormToast toast={formToast} onDismiss={dismissFormToast} durationMs={5000} />
     </div>
   )
 }
