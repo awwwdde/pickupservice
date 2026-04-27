@@ -181,11 +181,8 @@ const ProjectPage: FC = () => {
       <section className="py-28 sm:py-32 md:py-40 tablet-portrait:py-28 tablet-landscape:py-32 bg-black text-white flex flex-col items-center border-t border-white/5">
         <div className="w-[90%] tablet-portrait:w-[92%] tablet-landscape:w-[92%] flex flex-col items-center text-center">
            <h3 className="text-[8vw] font-black uppercase tracking-tighter mb-16 tablet-portrait:mb-12 tablet-landscape:mb-14 leading-none tablet-portrait:text-[clamp(2rem,7vw,4.5rem)] tablet-landscape:text-[clamp(2.5rem,6vw,5.5rem)]">
-             Ваш джип готов <br /> <span className="text-[#FF8201]">обновиться?</span>
+            Готов <br /> <span className="text-[#FF8201]">обновиться?</span>
            </h3>
-          <p className="max-w-3xl text-[clamp(1rem,2vw,1.25rem)] leading-relaxed text-white/70">
-            Свяжитесь с нами по телефону или в Telegram/MAX, чтобы обсудить детали проекта и график работ.
-          </p>
         </div>
       </section>
     </div>

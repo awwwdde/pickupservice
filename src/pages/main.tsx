@@ -1188,19 +1188,6 @@ const MainPage: FC = () => {
         </div>
         )}
       </section>
-
-      {/* SECTION 7: CONTACT INFO */}
-      <section className="tablet-adaptive-contact-section relative flex w-full flex-col items-center bg-[#020202] py-24 border-t border-white/10 tablet-portrait:py-18 tablet-landscape:py-20">
-        <div className="flex w-[90%] flex-col gap-6 text-center tablet-portrait:w-[92%] tablet-landscape:w-[92%]">
-          <h3 className="text-3xl font-bold uppercase tracking-tighter text-[#FF8201] md:text-5xl">
-            Работаем по предварительному согласованию
-          </h3>
-          <p className="mx-auto max-w-4xl text-base leading-relaxed text-white/70 md:text-xl">
-            Для обсуждения проекта свяжитесь с нами по телефону или в мессенджерах. Подберем решение под ваш формат эксплуатации и бюджет.
-          </p>
-        </div>
-      </section>
-
     </div>
   )
 }

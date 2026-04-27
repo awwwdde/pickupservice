@@ -17,6 +17,8 @@ const addressPanelClassName =
   'inline-flex items-center gap-2 py-2 text-[12px] sm:text-[13px]'
 const centerPanelClassName =
   'glass-header inline-flex items-center gap-4 rounded-[0.2rem] px-5 py-2 text-[13px] font-medium shadow-xl'
+const rightPanelClassName =
+  'glass-header inline-flex items-center gap-2 rounded-[0.2rem] px-3 py-2 text-[13px] font-medium shadow-xl'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
@@ -186,6 +188,11 @@ const Header: FC = () => {
                 {link.label}
               </SimpleNavLink>
             ))}
+          </div>
+        </div>
+
+        <div className="hidden shrink-0 items-center justify-end min-[1100px]:flex">
+          <div className={rightPanelClassName}>
             <motion.a
               href={contact.telegramUrl}
               target="_blank"
@@ -210,7 +217,7 @@ const Header: FC = () => {
             </motion.a>
             <a
               href={`tel:${contact.phoneTel}`}
-              className="font-medium transition-opacity hover:opacity-70 whitespace-nowrap"
+              className="font-medium whitespace-nowrap transition-opacity hover:opacity-70"
               title="Позвоните нам"
             >
               {contact.phoneDisplay}
