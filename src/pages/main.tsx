@@ -852,7 +852,7 @@ const MainPage: FC = () => {
         {/* Desktop sticky */}
         {showDesktopStickySections && (
         <div className="sticky top-0 hidden h-[100svh] w-full items-center justify-center overflow-hidden px-[5%] md:flex">
-          <div className="pointer-events-none absolute left-[5%] top-[11%] z-0 max-w-[31vw]">
+          <div className="pointer-events-none absolute left-[5%] top-[11%] z-20 max-w-[31vw] min-[1000px]:max-[1439px]:max-w-[36vw]">
             <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter">
               <div>КТО</div>
               <div className="text-[#FF8201]">МЫ?</div>
@@ -865,7 +865,10 @@ const MainPage: FC = () => {
             </p>
           </div>
 
-          <motion.div style={{ y: aboutCardY }} className="relative z-10 ml-auto w-full max-w-[1100px]">
+          <motion.div
+            style={{ y: aboutCardY }}
+            className="relative z-10 ml-auto w-full max-w-[1100px] min-[1000px]:max-[1439px]:w-[min(58vw,780px)] min-[1000px]:max-[1439px]:max-w-[780px]"
+          >
             <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5">
               {aboutImages.map((img, i) => (
                 <motion.img
