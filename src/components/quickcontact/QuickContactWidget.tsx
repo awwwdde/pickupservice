@@ -95,7 +95,7 @@ const QuickContactWidget: FC = () => {
                 title="Позвонить"
               >
                 <Phone className="h-4 w-4" />
-                {contact.phoneDisplay}
+                Позвонить
               </a>
 
               <div className="mt-4 grid grid-cols-1 gap-2.5">
