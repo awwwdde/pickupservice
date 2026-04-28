@@ -26,11 +26,6 @@ const SEO_BY_ROUTE: Record<string, SeoConfig> = {
     description:
       'Автосервис для пикапов и внедорожников в Москве: ремонт Toyota Hilux, Land Cruiser, Prado, Nissan Patrol и Navara, Mitsubishi Pajero, Ford Ranger, УАЗ; тюнинг 4x4, ТО, диагностика, экспедиционная подготовка, трофи, лебёдки, силовые бамперы, шноркели, подвеска. 4x4 experience на русском и английском.'
   },
-  '/service': {
-    title: 'Услуги ПикапСервис — ремонт, тюнинг и доработка внедорожников и пикапов',
-    description:
-      'Услуги: ремонт и тюнинг внедорожников и пикапов, ТО и диагностика полного привода, усиление подвески и лифт, лебёдки и силовые бамперы, шноркели, защита, экспедиционная подготовка, детейлинг, подготовка к трофи и бездорожью.'
-  },
   '/portfolio': {
     title: 'Портфолио ПикапСервис — проекты по подготовке внедорожников и пикапов',
     description:
@@ -90,20 +85,44 @@ export default function SeoHead() {
   const { pathname } = useLocation()
 
   useEffect(() => {
+    const isPortfolioDetailsRoute = pathname.startsWith('/portfolio/')
+    const isKnownRoute =
+      pathname === '/' ||
+      pathname === '/portfolio' ||
+      pathname === '/contact' ||
+      isPortfolioDetailsRoute
+
     const config =
       SEO_BY_ROUTE[pathname] ??
-      (pathname.startsWith('/portfolio/')
+      (isPortfolioDetailsRoute
         ? {
             title: 'Проект ПикапСервис — кейс по ремонту и тюнингу внедорожника',
             description:
               'Проект автосервиса ПикапСервис: ремонт или тюнинг внедорожника или пикапа, этапы работ, доработки для экспедиции или трофи, фото и описание результата.'
           }
-        : DEFAULT_SEO)
+        : {
+            title: '404 — ПикапСервис-МСК',
+            description: 'Страница не найдена.'
+          })
 
-    const canonicalUrl = `${BASE_URL}${pathname === '/' ? '/' : pathname}`
+    const canonicalUrl = isKnownRoute
+      ? `${BASE_URL}${pathname === '/' ? '/' : pathname}`
+      : `${BASE_URL}/404`
 
     document.title = config.title
     setMeta('description', config.description)
+    setMeta(
+      'robots',
+      isKnownRoute
+        ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
+        : 'noindex,nofollow'
+    )
+    setMeta(
+      'googlebot',
+      isKnownRoute
+        ? 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1'
+        : 'noindex,nofollow'
+    )
     setOg('og:title', config.title)
     setOg('og:description', config.description)
     setOg('og:url', canonicalUrl)
@@ -117,15 +136,13 @@ export default function SeoHead() {
     const keywords =
       pathname === '/'
         ? 'ПикапсервисМСК, Пикап Сервис МСК, pickupservice.moscow, pickup service moscow, 4x4 experience, 4x4 experience москва, off-road service moscow, repair pickup truck moscow, suv tuning moscow, ремонт пикапов, тюнинг внедорожников, сервис джипов 4x4, Toyota Hilux Land Cruiser Prado, Nissan Patrol Navara, Mitsubishi Pajero, Ford Ranger, УАЗ, экспедиционная подготовка, трофи рейд бездорожье, лебёдка шноркель бампер, лифт подвеска, диагностика ТО'
-        : pathname === '/service'
-          ? 'услуги автосервиса внедорожников, ремонт пикапа Москва, тюнинг 4x4, 4x4 workshop moscow, offroad preparation, ТО полный привод, диагностика ходовой, усиление подвески, лебёдка установка, шноркель силовой бампер, защита картера, экспедиция трофи, детейлинг внедорожник'
-          : pathname === '/portfolio'
+        : pathname === '/portfolio'
             ? 'портфолио тюнинг внедорожников, проекты пикапов, ремонт джипов примеры, expedition project cars, doborudovanie 4x4, экспедиционные машины, доработки 4x4 фото, трофи подготовка кейсы'
             : pathname === '/contact'
               ? 'ПикапсервисМСК адрес телефон, автосервис внедорожников Москва контакты, как добраться, yandex maps pickupservice'
-              : pathname.startsWith('/portfolio/')
+              : isPortfolioDetailsRoute
                 ? 'проект ремонт внедорожник, тюнинг кейс, подготовка экспедиция, трофи доработки, offroad build case'
-                : 'ПикапсервисМСК, ремонт внедорожников Москва, тюнинг пикапов, сервис 4x4, pickupservice.moscow'
+                : '404, страница не найдена'
     setMeta('keywords', keywords)
   }, [pathname])
 

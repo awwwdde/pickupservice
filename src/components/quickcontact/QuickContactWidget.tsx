@@ -123,14 +123,52 @@ const QuickContactWidget: FC = () => {
       </AnimatePresence>
 
       <div className="fixed bottom-5 right-5 z-[1210] sm:bottom-7 sm:right-7">
-        <button
+        <motion.button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="flex h-16 w-28 cursor-pointer items-center justify-center bg-transparent transition-transform hover:scale-105"
+          className="relative flex h-16 w-28 cursor-pointer items-center justify-center bg-transparent"
           aria-label="Открыть быстрое окно контактов"
+          animate={{
+            scale: [1, 1.04, 1],
+          }}
+          transition={{
+            duration: 1.8,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+          whileHover={{
+            scale: 1.08,
+          }}
+          whileTap={{
+            scale: 0.98,
+          }}
         >
-          <span
-            className="block h-12 w-full bg-[#FF8201]"
+          <motion.span
+            className="pointer-events-none absolute inset-0 rounded-full bg-[#FF8201]/35 blur-xl"
+            animate={{
+              opacity: [0.35, 0.75, 0.35],
+              scale: [0.9, 1.15, 0.9],
+            }}
+            transition={{
+              duration: 1.8,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+          <motion.span
+            className="relative block h-12 w-full bg-[#FF8201]"
+            animate={{
+              filter: [
+                'drop-shadow(0 0 0 rgba(255,130,1,0))',
+                'drop-shadow(0 0 18px rgba(255,130,1,0.8))',
+                'drop-shadow(0 0 0 rgba(255,130,1,0))',
+              ],
+            }}
+            transition={{
+              duration: 1.8,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
             style={{
               WebkitMaskImage: `url(${bookingIcon})`,
               maskImage: `url(${bookingIcon})`,
@@ -142,7 +180,7 @@ const QuickContactWidget: FC = () => {
               maskSize: 'contain',
             }}
           />
-        </button>
+        </motion.button>
       </div>
     </>
   )
