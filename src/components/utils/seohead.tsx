@@ -14,11 +14,6 @@ type SeoConfig = {
   description: string
 }
 
-const DEFAULT_SEO: SeoConfig = {
-  title: 'ПикапсервисМСК — ремонт и тюнинг пикапов и внедорожников',
-  description:
-    'ПикапсервисМСК в Москве: ремонт и тюнинг пикапов, джипов и внедорожников (Toyota, Nissan, Mitsubishi, Ford, УАЗ). 4x4 experience: off-road service, expedition build, suspension lift, winch, snorkel, armor.'
-}
 
 const SEO_BY_ROUTE: Record<string, SeoConfig> = {
   '/': {
