@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Phone, Send, X } from 'lucide-react'
 import { fetchContactSettings } from '../../api/backend'
 import bookingIcon from '../../assets/записаться.svg'
+import PickupLogo from '../header/PickupLogo'
 
 const QuickContactWidget: FC = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -74,12 +75,8 @@ const QuickContactWidget: FC = () => {
                 <X className="h-4 w-4" />
               </button>
 
-              <div className="mb-4 flex justify-center">
-                <img
-                  src="/pickup.png"
-                  alt="ПикапСервис"
-                  className="h-16 w-16 rounded-full border border-white/20 object-cover"
-                />
+              <div className="mb-5 flex justify-center text-white">
+                <PickupLogo className="h-8 w-auto" />
               </div>
 
               <div className="text-center">

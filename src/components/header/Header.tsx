@@ -14,11 +14,11 @@ const navLinks = [
 ] as const
 
 const addressPanelClassName =
-  'inline-flex items-center gap-2 py-2 text-[12px] sm:text-[13px]'
+  'inline-flex items-center gap-2 py-2.5 text-[12px] sm:text-[13px] tablet-landscape:text-[14px] lg:text-[14px]'
 const centerPanelClassName =
-  'glass-header inline-flex items-center gap-4 rounded-[0.2rem] px-5 py-2 text-[13px] font-medium shadow-xl'
+  'glass-header inline-flex items-center gap-4 rounded-[0.2rem] px-5 py-2 text-[13px] font-medium shadow-xl tablet-portrait:px-6 tablet-portrait:py-2.5 tablet-landscape:px-6 tablet-landscape:py-2.5 tablet-landscape:text-[14px] lg:px-6 lg:py-2.5 lg:text-[14px]'
 const rightPanelClassName =
-  'glass-header inline-flex items-center gap-2 rounded-[0.2rem] px-3 py-2 text-[13px] font-medium shadow-xl'
+  'glass-header inline-flex items-center gap-2 rounded-[0.2rem] px-4 py-2 text-[13px] font-medium shadow-xl tablet-portrait:py-2.5 tablet-landscape:py-2.5 tablet-landscape:text-[14px] lg:py-2.5 lg:text-[14px]'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
@@ -167,7 +167,7 @@ const Header: FC = () => {
             className="flex shrink-0 items-center justify-center text-inherit leading-none"
             aria-label="PickupService"
           >
-            <PickupLogo className="h-[3rem] w-auto sm:h-[3.45rem] tablet-portrait:h-[2.8rem] tablet-landscape:h-[3rem]" />
+            <PickupLogo className="h-[3rem] w-auto sm:h-[3.45rem] tablet-portrait:h-[3.2rem] tablet-landscape:h-[3.45rem] lg:h-[3.7rem]" />
           </Link>
           <a
             href={yandexMapUrl}
@@ -226,7 +226,7 @@ const Header: FC = () => {
         </div>
 
         <div className="flex shrink-0 items-center justify-end min-[1100px]:hidden">
-          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] px-0.5 shadow-xl tablet-portrait:h-10 tablet-portrait:w-10">
+          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] px-0.5 shadow-xl tablet-portrait:h-11 tablet-portrait:w-11 tablet-landscape:h-12 tablet-landscape:w-12">
             <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
           </div>
         </div>
