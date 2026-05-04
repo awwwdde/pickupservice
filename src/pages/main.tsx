@@ -597,7 +597,7 @@ const MainPage: FC = () => {
     <div className="tablet-adaptive-main overflow-x-clip bg-black text-white selection:bg-[#FF8201]">
       
       {/* SECTION 1: HERO */}
-      <section id="site-hero" className="relative min-h-[100svh] w-full overflow-hidden">
+      <section id="site-hero" className="relative min-h-[100svh] w-full overflow-hidden pt-14 min-[1100px]:pt-16 min-[1300px]:pt-0">
         <video
           ref={videoRef}
           src={herovid}
@@ -851,8 +851,8 @@ const MainPage: FC = () => {
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
-        <div className="sticky top-0 hidden h-[100svh] w-full items-center justify-center overflow-hidden px-[5%] md:flex">
-          <div className="pointer-events-none absolute left-[5%] top-[11%] z-20 max-w-[31vw] min-[1000px]:max-[1439px]:max-w-[36vw]">
+        <div className="sticky top-0 hidden h-[100svh] w-full items-center justify-center overflow-hidden px-[5%] pt-[clamp(4rem,10vh,5rem)] md:flex">
+          <div className="pointer-events-none absolute left-[5%] top-[11%] z-20 max-w-[31vw] min-[1000px]:max-[1439px]:max-w-[40vw]">
             <div className="text-[12vw] font-black uppercase leading-[0.75] tracking-tighter">
               <div>КТО</div>
               <div className="text-[#FF8201]">МЫ?</div>
@@ -867,9 +867,9 @@ const MainPage: FC = () => {
 
           <motion.div
             style={{ y: aboutCardY }}
-            className="relative z-10 ml-auto w-full max-w-[1100px] min-[1000px]:max-[1439px]:w-[min(58vw,780px)] min-[1000px]:max-[1439px]:max-w-[780px]"
+            className="relative z-10 ml-auto w-full max-w-[1100px] min-[1000px]:max-[1439px]:w-[min(46vw,620px)] min-[1000px]:max-[1439px]:max-w-[620px]"
           >
-            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5">
+            <div className="relative h-[60vh] max-h-[600px] w-full overflow-hidden bg-black/5 min-[1000px]:max-[1439px]:h-[52vh] min-[1000px]:max-[1439px]:max-h-[500px]">
               {aboutImages.map((img, i) => (
                 <motion.img
                   key={i}
@@ -982,17 +982,17 @@ const MainPage: FC = () => {
       {/* SECTION 5: SERVICES */}
       <section
         ref={servicesStickyRef}
-        className={`tablet-adaptive-sticky-section relative w-full overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+        className={`tablet-adaptive-sticky-section relative w-full overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh] min-[1000px]:max-[1439px]:h-[380vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
-        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:py-6 tablet-portrait:py-6 tablet-landscape:py-5 tablet-landscape:justify-start tablet-landscape:pt-[clamp(4.5rem,12vh,6rem)] md:flex">
+        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:top-[4.75rem] min-[1000px]:max-[1439px]:h-[calc(100svh-4.75rem)] min-[1000px]:max-[1439px]:py-6 tablet-portrait:py-6 tablet-landscape:justify-start tablet-landscape:pt-[clamp(4.5rem,12vh,6rem)] md:flex">
           <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10 min-[1000px]:max-[1439px]:mb-6 tablet-portrait:mb-6 tablet-landscape:mb-4">
             <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)] tablet-portrait:text-[clamp(1.65rem,4.2vw,2.35rem)] tablet-landscape:text-[clamp(1.55rem,3vw,2.15rem)]">
               Чем мы занимаемся
             </h2>
           </div>
-          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10 tablet-portrait:w-[92%] tablet-landscape:w-[94%] tablet-landscape:max-h-[min(calc(100vh-12rem),560px)] tablet-landscape:overflow-y-auto">
+          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10 tablet-portrait:w-[92%] tablet-landscape:w-[94%]">
             {dynamicServices.map((service, index) => (
               <ServiceCard
                 key={service.accordionKey}
@@ -1002,6 +1002,7 @@ const MainPage: FC = () => {
                 image={service.image}
                 isActive={activeServiceIndex === index}
                 onClick={() => setActiveServiceIndex(index)}
+                compactDesktop={!projectsLargeDesktop}
               />
             ))}
           </div>
@@ -1111,7 +1112,7 @@ const MainPage: FC = () => {
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
-        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full flex-col justify-center overflow-hidden md:flex tablet-landscape:justify-start tablet-landscape:pt-[clamp(3.5rem,10vh,5rem)]">
+        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full flex-col justify-center overflow-hidden pt-[clamp(5rem,12vh,6rem)] md:flex tablet-landscape:justify-start tablet-landscape:pt-[clamp(5rem,12vh,6rem)]">
           <div className="mb-16 px-[5%] min-[1000px]:max-[1439px]:mb-12 min-[1000px]:max-[1439px]:px-[4%] tablet-portrait:mb-10 tablet-portrait:px-[4%] tablet-landscape:mb-8 tablet-landscape:px-[4%]">
             <h2 className="text-4xl font-black uppercase tracking-tighter text-white leading-tight md:text-[clamp(1.65rem,3.4vw,2.6rem)] min-[1440px]:text-6xl min-[1440px]:leading-none tablet-portrait:text-[clamp(1.45rem,4vw,2.1rem)] tablet-landscape:text-[clamp(1.4rem,2.6vw,1.95rem)] tablet-landscape:leading-tight">
               Несколько слов <br />

@@ -14,6 +14,8 @@ interface ServiceCardProps {
   onClick: () => void
   /** На мобильной — все карточки сразу раскрыты, без аккордеона */
   alwaysExpanded?: boolean
+  /** Узкий desktop 1000-1439: более компактные высоты */
+  compactDesktop?: boolean
 }
 
 export const ServiceCard: FC<ServiceCardProps> = ({
@@ -24,6 +26,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
   isActive,
   onClick,
   alwaysExpanded = false,
+  compactDesktop = false,
 }) => {
   const open = alwaysExpanded || isActive
   const tabletMode = useTabletLayoutMode()
@@ -32,14 +35,18 @@ export const ServiceCard: FC<ServiceCardProps> = ({
     tabletMode === 'portrait'
       ? 'min(340px,52vh)'
       : tabletMode === 'landscape'
-        ? 'min(300px,44vh)'
-        : 'min(400px,60vh)'
+        ? 'min(260px,38vh)'
+        : compactDesktop
+          ? 'min(300px,42vh)'
+          : 'min(400px,60vh)'
   const rowClosedHeight =
     tabletMode === 'portrait'
       ? 'min(112px,17vh)'
       : tabletMode === 'landscape'
-        ? 'min(100px,15vh)'
-        : 'min(130px,20vh)'
+        ? 'min(85px,12vh)'
+        : compactDesktop
+          ? 'min(92px,13vh)'
+          : 'min(130px,20vh)'
   const imageColWidth = tabletMode === 'portrait' ? '38%' : tabletMode === 'landscape' ? '32%' : '35%'
 
   return (
@@ -101,7 +108,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       </motion.div>
 
       <div className="relative z-10 hidden flex-1 flex-col justify-center px-6 sm:px-10 min-[1000px]:max-[1439px]:px-6 tablet-portrait:px-5 tablet-landscape:px-5 md:flex">
-        <h3 className="text-4xl font-black uppercase tracking-tighter text-black md:text-[clamp(1.75rem,3.5vw,3.25rem)] min-[1440px]:text-6xl tablet-portrait:text-[clamp(1.35rem,3.8vw,2rem)] tablet-landscape:text-[clamp(1.25rem,2.8vw,1.75rem)]">
+        <h3 className="text-3xl font-black uppercase tracking-tighter text-black md:text-[clamp(1.55rem,3.1vw,2.8rem)] min-[1440px]:text-5xl tablet-portrait:text-[clamp(1.25rem,3.4vw,1.8rem)] tablet-landscape:text-[clamp(1.15rem,2.5vw,1.6rem)]">
           {title}
         </h3>
 
@@ -121,7 +128,7 @@ export const ServiceCard: FC<ServiceCardProps> = ({
       </div>
 
       <div className="relative z-10 flex flex-1 flex-col justify-start px-5 pb-4 md:hidden">
-        <h3 className="w-full break-words text-lg font-black uppercase leading-tight tracking-tighter text-black sm:text-xl">
+        <h3 className="w-full break-words text-base font-black uppercase leading-tight tracking-tighter text-black sm:text-lg">
           {title}
         </h3>
 

@@ -14,11 +14,11 @@ const navLinks = [
 ] as const
 
 const addressPanelClassName =
-  'inline-flex min-w-[300px] items-center gap-2 rounded-[0.2rem] px-5 py-2.5 text-[13px] font-medium sm:text-[14px] tablet-landscape:min-w-[340px] tablet-landscape:text-[15px] lg:min-w-[360px] lg:text-[15px]'
+  'inline-flex items-center gap-2 py-2.5 text-[12px] sm:text-[13px] tablet-landscape:text-[14px] lg:text-[14px]'
 const centerPanelClassName =
   'inline-flex items-center gap-4 rounded-[0.2rem] px-5 py-2 text-[13px] font-medium tablet-portrait:px-6 tablet-portrait:py-2.5 tablet-landscape:px-6 tablet-landscape:py-2.5 tablet-landscape:text-[14px] lg:px-6 lg:py-2.5 lg:text-[14px]'
 const rightPanelClassName =
-  'inline-flex min-w-[250px] items-center justify-between gap-3 rounded-[0.2rem] px-5 py-2 text-[13px] font-medium tablet-portrait:py-2.5 tablet-landscape:min-w-[270px] tablet-landscape:py-2.5 tablet-landscape:text-[14px] lg:min-w-[290px] lg:py-2.5 lg:text-[15px]'
+  'inline-flex items-center gap-2 rounded-[0.2rem] px-4 py-2 text-[13px] font-medium tablet-portrait:py-2.5 tablet-landscape:py-2.5 tablet-landscape:text-[14px] lg:py-2.5 lg:text-[14px]'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
@@ -226,7 +226,7 @@ const Header: FC = () => {
         </div>
 
         <div className="flex shrink-0 items-center justify-end min-[1100px]:hidden">
-          <div className="flex h-11 w-11 items-center justify-center rounded-[0.2rem] px-0.5 tablet-portrait:h-11 tablet-portrait:w-11 tablet-landscape:h-12 tablet-landscape:w-12">
+          <div className="glass-header flex h-11 w-11 items-center justify-center rounded-[0.2rem] px-0.5 shadow-xl tablet-portrait:h-11 tablet-portrait:w-11 tablet-landscape:h-12 tablet-landscape:w-12">
             <BurgerMenuButton isMenuOpen={isMenuOpen} setIsMenuOpen={setIsMenuOpen} />
           </div>
         </div>
