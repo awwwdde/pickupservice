@@ -84,6 +84,13 @@ const ServicePage: FC = () => {
   const isMobileRef = useRef(false)
 
   useEffect(() => {
+    setActiveServiceIndex((prev) => {
+      if (!serviceItems.length) return 0
+      return Math.min(prev, serviceItems.length - 1)
+    })
+  }, [serviceItems.length])
+
+  useEffect(() => {
     if (isPrerender) return
     const lenis = new Lenis({
       duration: 1.35,
@@ -112,9 +119,13 @@ const ServicePage: FC = () => {
     if (isPrerender) return
     let cancelled = false
     fetchAccordionItems()
-      .then((items: ApiAccordionItem[]) => {
+      .then((items: ApiAccordionItem[] | null) => {
         if (cancelled) return
-        if (!items.length) return
+        if (items === null) return
+        if (!items.length) {
+          setServiceItems([])
+          return
+        }
         const sorted = [...items].sort((a, b) => a.order - b.order || a.id - b.id)
         const fromApi: AccordionServiceRow[] = sorted.map((item) => {
           const url = (item.image && String(item.image).trim()) || ''
@@ -125,7 +136,8 @@ const ServicePage: FC = () => {
             image: url || (image1 as string)
           }
         })
-        setServiceItems([...staticServiceRows(), ...fromApi])
+        /** Только данные с бэка; статика — если API пустой/недоступен. */
+        setServiceItems(fromApi)
       })
       .catch(() => {})
 
@@ -383,6 +395,7 @@ const ServicePage: FC = () => {
                 image={service.image}
                 isActive={activeServiceIndex === index}
                 onClick={() => setActiveServiceIndex(index)}
+                compactDesktop={serviceItems.length > 4}
               />
             ))}
           </div>
@@ -407,6 +420,7 @@ const ServicePage: FC = () => {
                 isActive={activeServiceIndex === index}
                 onClick={() => setActiveServiceIndex(index)}
                 alwaysExpanded
+                compactDesktop={serviceItems.length > 4}
               />
             ))}
           </div>

@@ -102,12 +102,17 @@ export async function fetchProjectById(id: string): Promise<ApiProjectDetail> {
   }
 }
 
-export async function fetchAccordionItems(): Promise<ApiAccordionItem[]> {
-  if (SKIP_OPTIONAL_API) return []
+/**
+ * Пункты аккордеона «Чем мы занимаемся» / страница «Сервис».
+ * - `null` — эндпоинт отключён (VITE_SKIP_OPTIONAL_API), недоступен или ошибка сети → на странице остаётся статический запас.
+ * - `[]` — с бэка пришёл пустой список (например, нет опубликованных записей) → показываем только его.
+ */
+export async function fetchAccordionItems(): Promise<ApiAccordionItem[] | null> {
+  if (SKIP_OPTIONAL_API) return null
   const payload = await getJsonOptional<ApiAccordionItem[] | { results?: ApiAccordionItem[] }>(
     '/api/projects/accordion/'
   )
-  if (!payload) return []
+  if (!payload) return null
   return asList(payload).map((item) => ({ ...item, image: toAbsoluteMediaUrl(item.image) }))
 }
 

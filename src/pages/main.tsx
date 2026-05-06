@@ -56,24 +56,37 @@ const projectsData = [
 const servicesData = [
   {
     title: 'Техническое обслуживание',
-    subtitle: 'Индивидуальные проекты, переоборудование салона, установка дополнительного света, спальников и экспедиционных багажников.',
+    subtitle: 'Тюнинг и подготовка внедорожников и пикапов под любые задачи: от лёгких экспедиций до экстремальных  приключений.',
     image: image1
   },
   {
     title: 'Полный цикл обслуживания и ремонта',
-    subtitle: 'Комплексное ТО, глубокая диагностика ходовой части и двигателя, замена масел и фильтров для японских внедорожников.',
+    subtitle: 'Ремонт и обслуживание всех узлов автомобиля с учётом особенностей эксплуатации в тяжёлых условиях.',
     image: image2
   },
   {
       title: 'Малярные, жестяные и сварочные работы',
-      subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
+      subtitle: 'Установка дополнительного оборудования: лебёдки, силовые бамперы, защита агрегатов, экспедиционные багажники.',
       image: image3
   },
   {    
     title: 'Подготовка к экспедициям и трофи-рейдам',
-    subtitle: 'Усиление подвески, установка лебедок, шноркелей и силовых бамперов для самых экстремальных и суровых условий эксплуатации.',
+    subtitle: 'Диагностика и настройка подвески, трансмиссии и двигателя для максимальной эффективности на бездорожье.',
     image: image3
   }
+  ,
+  {    
+    title: 'Консультация и подбор',
+    subtitle: 'Консультации и подбор комплектующих для вашего стиля езды.',
+    image: image3
+  }
+] as const
+
+const whyChooseUsBullets = [
+  'Команда профессионалов с многолетним опытом в офф-роуд индустрии.',
+  'Современное оборудование и индивидуальный подход к каждому проекту.',
+  'Гарантия качества на все виды работ и запчастей.',
+  'Возможность тест-драйва и проверки техники после обслуживания.',
 ] as const
 
 type AccordionServiceRow = {
@@ -122,6 +135,7 @@ const MainPage: FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const aboutRef = useRef<HTMLDivElement | null>(null)
   const servicesStickyRef = useRef<HTMLDivElement | null>(null)
+  const whyChooseUsRef = useRef<HTMLDivElement | null>(null)
   const testimonialsRef = useRef<HTMLDivElement | null>(null)
   const aboutCarouselRef = useRef<HTMLDivElement | null>(null)
   const testimonialsCarouselRef = useRef<HTMLDivElement | null>(null)
@@ -141,6 +155,8 @@ const MainPage: FC = () => {
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
   const [dynamicServices, setDynamicServices] = useState<AccordionServiceRow[]>(staticServiceRows)
   const [displayTestimonials, setDisplayTestimonials] = useState<HomeTestimonial[]>(testimonialsData)
+  const [revealedWhyCount, setRevealedWhyCount] = useState(0)
+  const [showWhyFinalText, setShowWhyFinalText] = useState(false)
   const [allReviewsUrl, setAllReviewsUrl] = useState('https://yandex.ru/maps/org/pikapservis_msk/121304824267/reviews/?ll=37.679951%2C55.758331&z=16')
   /** ≥1440px — исходная вёрстка проектов (540×620 / 300×440); иначе гибкий ряд без скролла */
   const [projectsLargeDesktop, setProjectsLargeDesktop] = useState(
@@ -155,6 +171,13 @@ const MainPage: FC = () => {
   const showDesktopProjects = !isMobile && !isTablet
   const showTabletSwipeSections = isTablet
   const showDesktopStickySections = !isMobile && !isTablet
+
+  useEffect(() => {
+    setActiveServiceIndex((prev) => {
+      if (!dynamicServices.length) return 0
+      return Math.min(prev, dynamicServices.length - 1)
+    })
+  }, [dynamicServices.length])
 
   useEffect(() => {
     if (isPrerender) return
@@ -215,6 +238,10 @@ const MainPage: FC = () => {
   const { scrollYProgress: aboutProgress } = useScroll({ target: aboutRef, offset: ['start start', 'end end'] })
   const { scrollYProgress: servicesStickyProgress } = useScroll({
     target: servicesStickyRef,
+    offset: ['start start', 'end end'],
+  })
+  const { scrollYProgress: whyChooseUsProgress } = useScroll({
+    target: whyChooseUsRef,
     offset: ['start start', 'end end'],
   })
   const { scrollYProgress: testimonialsProgress } = useScroll({ target: testimonialsRef })
@@ -361,7 +388,7 @@ const MainPage: FC = () => {
       container.removeEventListener('scroll', onScroll)
       if (rafId != null) cancelAnimationFrame(rafId)
     }
-  }, [showTabletSwipeSections])
+  }, [showTabletSwipeSections, dynamicServices.length])
 
   useEffect(() => {
     if (!showDesktopStickySections) return
@@ -388,6 +415,14 @@ const MainPage: FC = () => {
     if (!dynamicServices.length) return
     const index = Math.min(Math.floor(latest * dynamicServices.length), dynamicServices.length - 1)
     setActiveServiceIndex(index)
+  })
+
+  useMotionValueEvent(whyChooseUsProgress, 'change', (latest) => {
+    if (!showDesktopStickySections) return
+    const next = Math.max(0, Math.min(whyChooseUsBullets.length, Math.floor(latest * 7)))
+    setRevealedWhyCount((prev) => (next > prev ? next : prev))
+    const shouldShowFinal = next >= whyChooseUsBullets.length
+    setShowWhyFinalText((prev) => (prev || shouldShowFinal))
   })
 
   // На mobile индексация задается скроллом swipe-галереи, а не scroll-driven анимациями.
@@ -525,7 +560,11 @@ const MainPage: FC = () => {
     fetchAccordionItems()
       .then((items) => {
         if (cancelled) return
-        if (!items.length) return
+        if (items === null) return
+        if (!items.length) {
+          setDynamicServices([])
+          return
+        }
         const sorted = [...items].sort((a, b) => a.order - b.order || a.id - b.id)
         const fromApi: AccordionServiceRow[] = sorted.map((item) => {
           const url = (item.image && String(item.image).trim()) || ''
@@ -536,7 +575,8 @@ const MainPage: FC = () => {
             image: url || (image1 as string)
           }
         })
-        setDynamicServices([...staticServiceRows(), ...fromApi])
+        /** Только данные с бэка: статический `servicesData` — запас, если API пустой/недоступен. */
+        setDynamicServices(fromApi)
       })
       .catch(() => {
         // Фолбэк — локальные карточки.
@@ -857,11 +897,12 @@ const MainPage: FC = () => {
               <div>КТО</div>
               <div className="text-[#FF8201]">МЫ?</div>
             </div>
-            <h3 className="mt-6 text-4xl font-bold uppercase tracking-tight">
-              Инженерная эстетика оффроуда
+            <h3 className="mt-8 text-4xl font-bold uppercase tracking-tight">
+                Технический центр Pickupservice.moscow — ваш надёжный партнёр в мире бездорожья
+
             </h3>
             <p className="mt-4 text-lg leading-relaxed text-black/60">
-              Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: от диагностики и ТО до усиления подвески и экспедиционной подготовки.
+            Наш центр — это не просто сервис, а настоящая база для подготовки и обслуживания внедорожников. Мы предлагаем полный спектр услуг для тех, кто не боится покорять самые сложные маршруты и ценит надёжность техники.
             </p>
           </div>
 
@@ -915,10 +956,10 @@ const MainPage: FC = () => {
                           <div className="text-[#FF8201]">МЫ?</div>
                         </div>
                         <h3 className="mt-6 text-[clamp(1.35rem,3.6vw,2rem)] font-bold uppercase tracking-tight text-black">
-                          Инженерная эстетика оффроуда
+                          Технический центр Pickupservice.moscow — ваш надёжный партнёр в мире бездорожья
                         </h3>
                         <p className="mt-4 text-[clamp(0.98rem,2.2vw,1.1rem)] leading-relaxed text-black/60">
-                          Мы создаем не просто машины, а надежных компаньонов для самых смелых маршрутов. Опыт, надежность и японское качество в каждой детали. Делаем ремонт и тюнинг внедорожников: от диагностики и ТО до усиления подвески и экспедиционной подготовки.
+                          Наш центр — это не просто сервис, а настоящая база для подготовки и обслуживания внедорожников. Мы предлагаем полный спектр услуг для тех, кто не боится покорять самые сложные маршруты и ценит надёжность техники.
                         </p>
                       </div>
                     </div>
@@ -958,9 +999,11 @@ const MainPage: FC = () => {
               <div>КТО</div>
               <div className="text-[#FF8201]">МЫ?</div>
             </div>
-            <h3 className="mt-4 text-2xl font-bold uppercase tracking-tight">Инженерная эстетика оффроуда</h3>
+            <h3 className="mt-4 text-2xl font-bold uppercase tracking-tight">
+              Технический центр Pickupservice.moscow — ваш надёжный партнёр в мире бездорожья
+              </h3>
             <p className="mt-3 text-base leading-relaxed text-black/60">
-              Мы создаем не просто машины, а надежных компаньонов для смелых маршрутов. Делаем диагностику, ТО и тюнинг под бездорожье.
+            Наш центр — это не просто сервис, а настоящая база для подготовки и обслуживания внедорожников. Мы предлагаем полный спектр услуг для тех, кто не боится покорять самые сложные маршруты и ценит надёжность техники.
             </p>
           </div>
           <div className="space-y-5 px-[6%] pb-6 pt-8">
@@ -982,17 +1025,17 @@ const MainPage: FC = () => {
       {/* SECTION 5: SERVICES */}
       <section
         ref={servicesStickyRef}
-        className={`tablet-adaptive-sticky-section relative w-full overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[300vh] min-[1000px]:max-[1439px]:h-[380vh]' : ''} tablet-portrait:py-12 tablet-landscape:py-14`}
+        className={`tablet-adaptive-sticky-section relative w-full overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[340vh] min-[1000px]:max-[1439px]:h-[430vh]' : ''} tablet-portrait:py-12 tablet-portrait:pb-16 tablet-landscape:py-14 tablet-landscape:pb-20`}
       >
         {/* Desktop sticky */}
         {showDesktopStickySections && (
-        <div className="tablet-adaptive-sticky-inner sticky top-0 hidden h-[100svh] w-full flex-col items-center justify-center overflow-hidden py-8 min-[1000px]:max-[1439px]:top-[4.75rem] min-[1000px]:max-[1439px]:h-[calc(100svh-4.75rem)] min-[1000px]:max-[1439px]:py-6 tablet-portrait:py-6 tablet-landscape:justify-start tablet-landscape:pt-[clamp(4.5rem,12vh,6rem)] md:flex">
+        <div className="tablet-adaptive-sticky-inner sticky top-[5.25rem] hidden h-[calc(100svh-5.25rem)] w-full flex-col items-center justify-start overflow-hidden pt-6 pb-8 min-[1000px]:max-[1439px]:py-6 tablet-portrait:py-6 tablet-landscape:justify-start tablet-landscape:pt-[clamp(4.5rem,12vh,6rem)] md:flex">
           <div className="mb-8 flex w-[90%] flex-col gap-2 sm:mb-10 min-[1000px]:max-[1439px]:mb-6 tablet-portrait:mb-6 tablet-landscape:mb-4">
-            <h2 className="text-4xl uppercase tracking-tighter text-[#FF8201] sm:text-5xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)] tablet-portrait:text-[clamp(1.65rem,4.2vw,2.35rem)] tablet-landscape:text-[clamp(1.55rem,3vw,2.15rem)]">
+            <h2 className="text-3xl font-black uppercase tracking-tighter leading-[1.05] text-[#FF8201] sm:text-4xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]">
               Чем мы занимаемся
             </h2>
           </div>
-          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10 tablet-portrait:w-[92%] tablet-landscape:w-[94%]">
+          <div className="flex w-[90%] min-[1000px]:max-[1439px]:w-[92%] flex-col border-t border-black/10 pb-12 tablet-portrait:w-[92%] tablet-landscape:w-[94%]">
             {dynamicServices.map((service, index) => (
               <ServiceCard
                 key={service.accordionKey}
@@ -1002,7 +1045,7 @@ const MainPage: FC = () => {
                 image={service.image}
                 isActive={activeServiceIndex === index}
                 onClick={() => setActiveServiceIndex(index)}
-                compactDesktop={!projectsLargeDesktop}
+                compactDesktop={!projectsLargeDesktop || dynamicServices.length > 4}
               />
             ))}
           </div>
@@ -1013,13 +1056,13 @@ const MainPage: FC = () => {
         {showTabletSwipeSections && (
           <div className="w-full" data-lenis-prevent>
             <div className="px-[6%]">
-              <h2 className="text-[clamp(1.75rem,4.2vw,2.35rem)] uppercase tracking-tighter text-[#FF8201]">
+              <h2 className="text-3xl font-black uppercase tracking-tighter leading-[1.05] text-[#FF8201] sm:text-4xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]">
                 Чем мы занимаемся
               </h2>
             </div>
             <div
               ref={servicesTabletCarouselRef}
-              className="mt-8 tablet-adaptive-carousel overflow-x-auto snap-x snap-mandatory pb-4 px-[6%]"
+              className="mt-8 tablet-adaptive-carousel overflow-x-auto snap-x snap-mandatory pb-10 px-[6%]"
               style={{ scrollPaddingLeft: '6%', scrollPaddingRight: '6%' }}
             >
               <div className="flex gap-3 w-max">
@@ -1086,8 +1129,10 @@ const MainPage: FC = () => {
         )}
 
         {/* Mobile */}
-        <div className={`${showMobileLikeSections ? 'block' : 'hidden'} w-full px-[6%] py-20`}>
-          <h2 className="text-3xl uppercase tracking-tighter text-[#FF8201] sm:text-4xl">Чем мы занимаемся</h2>
+        <div className={`${showMobileLikeSections ? 'block' : 'hidden'} w-full px-[6%] pt-20 pb-28`}>
+          <h2 className="text-3xl font-black uppercase tracking-tighter leading-[1.05] text-[#FF8201] sm:text-4xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]">
+            Чем мы занимаемся
+          </h2>
           <div className="mt-10 flex flex-col border-t border-black/10">
             {dynamicServices.map((service, index) => (
               <ServiceCard
@@ -1103,6 +1148,117 @@ const MainPage: FC = () => {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* SECTION: ПОЧЕМУ ВЫБИРАЮТ НАС */}
+      <section
+        aria-labelledby="why-choose-us-heading"
+        ref={whyChooseUsRef}
+        className={`relative overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[360vh] min-[1000px]:max-[1439px]:h-[390vh] md:py-0' : ''} py-[clamp(3rem,8vw,6.5rem)] tablet-portrait:py-14 tablet-landscape:py-16`}
+      >
+        {showDesktopStickySections && (
+          <div className="sticky top-[5.25rem] hidden h-[calc(100svh-5.25rem)] w-full items-start overflow-visible pt-[clamp(0.75rem,2vh,1.25rem)] md:flex">
+            <div className="mx-auto w-[90%] min-[1000px]:max-[1439px]:w-[92%] tablet-portrait:w-[92%] tablet-landscape:w-[94%]">
+              <div>
+                <h2
+                  id="why-choose-us-heading"
+                  className="relative z-20 text-3xl font-black uppercase tracking-tighter leading-[1.05] text-[#FF8201] sm:text-4xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]"
+                >
+                  Почему выбирают нас?
+                </h2>
+
+                <div className="mt-6 md:mt-7">
+                  <div className="flex flex-col gap-3 md:gap-4">
+                    {whyChooseUsBullets.map((text, index) => {
+                      const isRightColumn = index % 2 === 1
+                      return (
+                        <motion.div
+                          key={text}
+                          initial={{ opacity: 0, x: isRightColumn ? 70 : -70, y: 26 }}
+                          animate={index < revealedWhyCount ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: isRightColumn ? 70 : -70, y: 26 }}
+                          transition={{ duration: 0.62, ease }}
+                          className={`relative overflow-hidden rounded-[1rem] border border-black/10 bg-gradient-to-br from-white to-[#f7f7f4] p-5 md:min-h-[150px] md:w-[min(54%,34rem)] md:p-6 ${
+                            isRightColumn ? 'md:self-end' : 'md:self-start'
+                          }`}
+                        >
+                          <span className="absolute left-0 top-0 h-[3px] w-20 bg-[#FF8201]" aria-hidden />
+                          <span
+                            className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[#FF8201]/10 blur-2xl"
+                            aria-hidden
+                          />
+                          <p className="text-[clamp(1.06rem,1.5vw,1.22rem)] font-semibold leading-relaxed text-black/85">
+                            {text}
+                          </p>
+                        </motion.div>
+                      )
+                    })}
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={showWhyFinalText ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
+                    transition={{ duration: 0.45, ease }}
+                    className="mt-6 rounded-[1rem] border border-black/10 bg-white/75 p-5 md:mt-8 md:p-6"
+                  >
+                    <p className="text-[clamp(1rem,1.45vw,1.12rem)] leading-relaxed text-black/65">
+                      Мы знаем, что для настоящего внедорожника нет непреодолимых препятствий. Доверьте подготовку и
+                      ремонт своей техники тем, кто живёт бездорожьем!
+                    </p>
+                    <p className="mt-4 text-[clamp(1.06rem,1.7vw,1.24rem)] font-semibold leading-snug text-black/90">
+                      Приезжайте, чтобы убедиться: с нами ваши приключения будут только яркими!
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {(showMobileLikeSections || showTabletSwipeSections) && (
+          <div className="mx-auto w-[90%] min-[1000px]:max-[1439px]:w-[92%] tablet-portrait:w-[92%] tablet-landscape:w-[94%]">
+            <h2
+              id="why-choose-us-heading"
+              className="text-3xl font-black uppercase tracking-tighter leading-[1.05] text-[#FF8201] sm:text-4xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]"
+            >
+              Почему выбирают нас?
+            </h2>
+
+            <div className="mt-10 md:mt-12">
+              <div className="flex flex-col gap-5 md:gap-6">
+                {whyChooseUsBullets.map((text, index) => {
+                  const isRightColumn = index % 2 === 1
+                  return (
+                    <div
+                      key={text}
+                      className={`relative overflow-hidden rounded-[1rem] border border-black/10 bg-gradient-to-br from-white to-[#f7f7f4] p-6 md:min-h-[220px] md:w-[min(58%,38rem)] md:p-9 ${
+                        isRightColumn ? 'md:self-end' : 'md:self-start'
+                      }`}
+                    >
+                      <span className="absolute left-0 top-0 h-[3px] w-20 bg-[#FF8201]" aria-hidden />
+                      <span
+                        className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[#FF8201]/10 blur-2xl"
+                        aria-hidden
+                      />
+                      <p className="text-[clamp(1.06rem,1.7vw,1.28rem)] font-semibold leading-relaxed text-black/85">
+                        {text}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+
+              <div className="mt-10 rounded-[1rem] border border-black/10 bg-white/75 p-6 md:mt-14 md:p-8">
+                <p className="text-[clamp(1rem,1.45vw,1.12rem)] leading-relaxed text-black/65">
+                  Мы знаем, что для настоящего внедорожника нет непреодолимых препятствий. Доверьте подготовку и
+                  ремонт своей техники тем, кто живёт бездорожьем!
+                </p>
+                <p className="mt-4 text-[clamp(1.06rem,1.7vw,1.24rem)] font-semibold leading-snug text-black/90">
+                  Приезжайте, чтобы убедиться: с нами ваши приключения будут только яркими!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* SECTION 6: TESTIMONIALS */}

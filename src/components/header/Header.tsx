@@ -14,11 +14,11 @@ const navLinks = [
 ] as const
 
 const addressPanelClassName =
-  'inline-flex items-center gap-2 py-2.5 text-[12px] sm:text-[13px] tablet-landscape:text-[14px] lg:text-[14px]'
+  'inline-flex items-center gap-2 py-2.5 text-[14px] font-medium tablet-landscape:text-[15px] lg:text-[15px]'
 const centerPanelClassName =
-  'inline-flex items-center gap-4 rounded-[0.2rem] px-5 py-2 text-[13px] font-medium tablet-portrait:px-6 tablet-portrait:py-2.5 tablet-landscape:px-6 tablet-landscape:py-2.5 tablet-landscape:text-[14px] lg:px-6 lg:py-2.5 lg:text-[14px]'
+  'inline-flex items-center gap-4 rounded-[0.2rem] px-5 py-2 text-[14px] font-medium tablet-portrait:px-6 tablet-portrait:py-2.5 tablet-landscape:px-6 tablet-landscape:py-2.5 tablet-landscape:text-[15px] lg:px-6 lg:py-2.5 lg:text-[15px]'
 const rightPanelClassName =
-  'inline-flex items-center gap-2 rounded-[0.2rem] px-4 py-2 text-[13px] font-medium tablet-portrait:py-2.5 tablet-landscape:py-2.5 tablet-landscape:text-[14px] lg:py-2.5 lg:text-[14px]'
+  'inline-flex items-center gap-2 rounded-[0.2rem] px-4 py-2 text-[14px] font-medium tablet-portrait:py-2.5 tablet-landscape:py-2.5 tablet-landscape:text-[15px] lg:py-2.5 lg:text-[15px]'
 
 const easeSwap = [0.33, 1, 0.68, 1] as const
 
@@ -176,7 +176,7 @@ const Header: FC = () => {
             className={`${addressPanelClassName} hidden min-[1300px]:inline-flex`}
             title="Открыть адрес в Яндекс Картах"
           >
-            <MapPin size={14} />
+            <MapPin size={18} />
             <span className="whitespace-nowrap">{contact.address}</span>
           </a>
         </div>
@@ -197,23 +197,31 @@ const Header: FC = () => {
               href={contact.telegramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-colors tablet-landscape:h-11 tablet-landscape:w-11"
               animate={{ backgroundColor: circleBg }}
               transition={colorTransition}
               title="Telegram"
             >
-              <img src={telegramIconUrl} alt="Telegram" className="h-4 w-4 grayscale contrast-200" />
+              <img
+                src={telegramIconUrl}
+                alt="Telegram"
+                className="h-6 w-6 grayscale contrast-200 tablet-landscape:h-7 tablet-landscape:w-7"
+              />
             </motion.a>
             <motion.a
               href={contact.maxUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-8 w-8 items-center justify-center rounded-full transition-colors"
+              className="flex h-10 w-10 items-center justify-center rounded-full transition-colors tablet-landscape:h-11 tablet-landscape:w-11"
               animate={{ backgroundColor: circleBg }}
               transition={colorTransition}
               title="MAX"
             >
-              <img src={maxIconUrl} alt="MAX" className="h-4 w-4 grayscale contrast-200" />
+              <img
+                src={maxIconUrl}
+                alt="MAX"
+                className="h-6 w-6 grayscale contrast-200 tablet-landscape:h-7 tablet-landscape:w-7"
+              />
             </motion.a>
             <a
               href={`tel:${contact.phoneTel}`}
@@ -314,7 +322,7 @@ const MobileMenuPortal: FC<{
           </motion.div>
 
           <motion.div
-            className="flex flex-col items-center gap-4 text-white text-sm border-t border-white/10 pt-6"
+            className="flex flex-col items-center gap-4 text-white text-base border-t border-white/10 pt-6"
             initial="hidden"
             animate="visible"
             variants={{
@@ -333,7 +341,7 @@ const MobileMenuPortal: FC<{
                 visible: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.5, ease: easeSwap }}
-              className="font-medium hover:opacity-70 transition-opacity"
+              className="font-medium text-lg hover:opacity-70 transition-opacity"
             >
               {contact.phoneDisplay}
             </motion.a>
@@ -346,7 +354,7 @@ const MobileMenuPortal: FC<{
                 visible: { opacity: 1, y: 0 },
               }}
               transition={{ duration: 0.5, ease: easeSwap }}
-              className="text-center text-white/70"
+              className="text-center text-white/70 text-base"
             >
               {contact.address}
             </motion.a>
