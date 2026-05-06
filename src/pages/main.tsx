@@ -82,13 +82,6 @@ const servicesData = [
   }
 ] as const
 
-const whyChooseUsBullets = [
-  'Команда профессионалов с многолетним опытом в офф-роуд индустрии.',
-  'Современное оборудование и индивидуальный подход к каждому проекту.',
-  'Гарантия качества на все виды работ и запчастей.',
-  'Возможность тест-драйва и проверки техники после обслуживания.',
-] as const
-
 type AccordionServiceRow = {
   accordionKey: string
   title: string
@@ -135,7 +128,6 @@ const MainPage: FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const aboutRef = useRef<HTMLDivElement | null>(null)
   const servicesStickyRef = useRef<HTMLDivElement | null>(null)
-  const whyChooseUsRef = useRef<HTMLDivElement | null>(null)
   const testimonialsRef = useRef<HTMLDivElement | null>(null)
   const aboutCarouselRef = useRef<HTMLDivElement | null>(null)
   const testimonialsCarouselRef = useRef<HTMLDivElement | null>(null)
@@ -155,8 +147,6 @@ const MainPage: FC = () => {
   const [dynamicProjects, setDynamicProjects] = useState(projectsData)
   const [dynamicServices, setDynamicServices] = useState<AccordionServiceRow[]>(staticServiceRows)
   const [displayTestimonials, setDisplayTestimonials] = useState<HomeTestimonial[]>(testimonialsData)
-  const [revealedWhyCount, setRevealedWhyCount] = useState(0)
-  const [showWhyFinalText, setShowWhyFinalText] = useState(false)
   const [allReviewsUrl, setAllReviewsUrl] = useState('https://yandex.ru/maps/org/pikapservis_msk/121304824267/reviews/?ll=37.679951%2C55.758331&z=16')
   /** ≥1440px — исходная вёрстка проектов (540×620 / 300×440); иначе гибкий ряд без скролла */
   const [projectsLargeDesktop, setProjectsLargeDesktop] = useState(
@@ -238,10 +228,6 @@ const MainPage: FC = () => {
   const { scrollYProgress: aboutProgress } = useScroll({ target: aboutRef, offset: ['start start', 'end end'] })
   const { scrollYProgress: servicesStickyProgress } = useScroll({
     target: servicesStickyRef,
-    offset: ['start start', 'end end'],
-  })
-  const { scrollYProgress: whyChooseUsProgress } = useScroll({
-    target: whyChooseUsRef,
     offset: ['start start', 'end end'],
   })
   const { scrollYProgress: testimonialsProgress } = useScroll({ target: testimonialsRef })
@@ -415,14 +401,6 @@ const MainPage: FC = () => {
     if (!dynamicServices.length) return
     const index = Math.min(Math.floor(latest * dynamicServices.length), dynamicServices.length - 1)
     setActiveServiceIndex(index)
-  })
-
-  useMotionValueEvent(whyChooseUsProgress, 'change', (latest) => {
-    if (!showDesktopStickySections) return
-    const next = Math.max(0, Math.min(whyChooseUsBullets.length, Math.floor(latest * 7)))
-    setRevealedWhyCount((prev) => (next > prev ? next : prev))
-    const shouldShowFinal = next >= whyChooseUsBullets.length
-    setShowWhyFinalText((prev) => (prev || shouldShowFinal))
   })
 
   // На mobile индексация задается скроллом swipe-галереи, а не scroll-driven анимациями.
@@ -1148,117 +1126,6 @@ const MainPage: FC = () => {
             ))}
           </div>
         </div>
-      </section>
-
-      {/* SECTION: ПОЧЕМУ ВЫБИРАЮТ НАС */}
-      <section
-        aria-labelledby="why-choose-us-heading"
-        ref={whyChooseUsRef}
-        className={`relative overflow-x-clip bg-[#f3f3f1] text-black ${showDesktopStickySections ? 'md:h-[360vh] min-[1000px]:max-[1439px]:h-[390vh] md:py-0' : ''} py-[clamp(3rem,8vw,6.5rem)] tablet-portrait:py-14 tablet-landscape:py-16`}
-      >
-        {showDesktopStickySections && (
-          <div className="sticky top-[5.25rem] hidden h-[calc(100svh-5.25rem)] w-full items-start overflow-visible pt-[clamp(0.75rem,2vh,1.25rem)] md:flex">
-            <div className="mx-auto w-[90%] min-[1000px]:max-[1439px]:w-[92%] tablet-portrait:w-[92%] tablet-landscape:w-[94%]">
-              <div>
-                <h2
-                  id="why-choose-us-heading"
-                  className="relative z-20 text-3xl font-black uppercase tracking-tighter leading-[1.05] text-[#FF8201] sm:text-4xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]"
-                >
-                  Почему выбирают нас?
-                </h2>
-
-                <div className="mt-6 md:mt-7">
-                  <div className="flex flex-col gap-3 md:gap-4">
-                    {whyChooseUsBullets.map((text, index) => {
-                      const isRightColumn = index % 2 === 1
-                      return (
-                        <motion.div
-                          key={text}
-                          initial={{ opacity: 0, x: isRightColumn ? 70 : -70, y: 26 }}
-                          animate={index < revealedWhyCount ? { opacity: 1, x: 0, y: 0 } : { opacity: 0, x: isRightColumn ? 70 : -70, y: 26 }}
-                          transition={{ duration: 0.62, ease }}
-                          className={`relative overflow-hidden rounded-[1rem] border border-black/10 bg-gradient-to-br from-white to-[#f7f7f4] p-5 md:min-h-[150px] md:w-[min(54%,34rem)] md:p-6 ${
-                            isRightColumn ? 'md:self-end' : 'md:self-start'
-                          }`}
-                        >
-                          <span className="absolute left-0 top-0 h-[3px] w-20 bg-[#FF8201]" aria-hidden />
-                          <span
-                            className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[#FF8201]/10 blur-2xl"
-                            aria-hidden
-                          />
-                          <p className="text-[clamp(1.06rem,1.5vw,1.22rem)] font-semibold leading-relaxed text-black/85">
-                            {text}
-                          </p>
-                        </motion.div>
-                      )
-                    })}
-                  </div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 18 }}
-                    animate={showWhyFinalText ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 }}
-                    transition={{ duration: 0.45, ease }}
-                    className="mt-6 rounded-[1rem] border border-black/10 bg-white/75 p-5 md:mt-8 md:p-6"
-                  >
-                    <p className="text-[clamp(1rem,1.45vw,1.12rem)] leading-relaxed text-black/65">
-                      Мы знаем, что для настоящего внедорожника нет непреодолимых препятствий. Доверьте подготовку и
-                      ремонт своей техники тем, кто живёт бездорожьем!
-                    </p>
-                    <p className="mt-4 text-[clamp(1.06rem,1.7vw,1.24rem)] font-semibold leading-snug text-black/90">
-                      Приезжайте, чтобы убедиться: с нами ваши приключения будут только яркими!
-                    </p>
-                  </motion.div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {(showMobileLikeSections || showTabletSwipeSections) && (
-          <div className="mx-auto w-[90%] min-[1000px]:max-[1439px]:w-[92%] tablet-portrait:w-[92%] tablet-landscape:w-[94%]">
-            <h2
-              id="why-choose-us-heading"
-              className="text-3xl font-black uppercase tracking-tighter leading-[1.05] text-[#FF8201] sm:text-4xl md:text-[clamp(1.85rem,3.2vw,2.85rem)] min-[1440px]:text-[clamp(2.5rem,4.5vw,4rem)]"
-            >
-              Почему выбирают нас?
-            </h2>
-
-            <div className="mt-10 md:mt-12">
-              <div className="flex flex-col gap-5 md:gap-6">
-                {whyChooseUsBullets.map((text, index) => {
-                  const isRightColumn = index % 2 === 1
-                  return (
-                    <div
-                      key={text}
-                      className={`relative overflow-hidden rounded-[1rem] border border-black/10 bg-gradient-to-br from-white to-[#f7f7f4] p-6 md:min-h-[220px] md:w-[min(58%,38rem)] md:p-9 ${
-                        isRightColumn ? 'md:self-end' : 'md:self-start'
-                      }`}
-                    >
-                      <span className="absolute left-0 top-0 h-[3px] w-20 bg-[#FF8201]" aria-hidden />
-                      <span
-                        className="absolute -right-8 -top-8 h-20 w-20 rounded-full bg-[#FF8201]/10 blur-2xl"
-                        aria-hidden
-                      />
-                      <p className="text-[clamp(1.06rem,1.7vw,1.28rem)] font-semibold leading-relaxed text-black/85">
-                        {text}
-                      </p>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div className="mt-10 rounded-[1rem] border border-black/10 bg-white/75 p-6 md:mt-14 md:p-8">
-                <p className="text-[clamp(1rem,1.45vw,1.12rem)] leading-relaxed text-black/65">
-                  Мы знаем, что для настоящего внедорожника нет непреодолимых препятствий. Доверьте подготовку и
-                  ремонт своей техники тем, кто живёт бездорожьем!
-                </p>
-                <p className="mt-4 text-[clamp(1.06rem,1.7vw,1.24rem)] font-semibold leading-snug text-black/90">
-                  Приезжайте, чтобы убедиться: с нами ваши приключения будут только яркими!
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* SECTION 6: TESTIMONIALS */}
