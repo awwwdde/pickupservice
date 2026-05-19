@@ -283,6 +283,28 @@ class ContactSettings(models.Model):
         return "Контакты и карта"
 
 
+class PrivacyPolicy(models.Model):
+    """Единственная запись: текст политики конфиденциальности для /privacy."""
+
+    title = models.CharField(
+        "Заголовок страницы",
+        max_length=255,
+        default="Политика конфиденциальности",
+    )
+    content = models.TextField(
+        "Текст политики",
+        help_text="Абзацы разделяйте пустой строкой. Поддерживаются переносы строк.",
+    )
+    updated_at = models.DateTimeField("Обновлено", auto_now=True)
+
+    class Meta:
+        verbose_name = "Политика конфиденциальности"
+        verbose_name_plural = "Политика конфиденциальности"
+
+    def __str__(self) -> str:
+        return self.title
+
+
 class Testimonial(models.Model):
     """Отзыв клиента для блока на главной странице."""
 

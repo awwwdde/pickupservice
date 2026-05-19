@@ -30,6 +30,11 @@ const SEO_BY_ROUTE: Record<string, SeoConfig> = {
     title: 'Контакты ПикапСервис-МСК Москва — адрес, телефон, как добраться',
     description:
       'Контакты автосервиса ПикапсервисМСК в Москве: телефон, почта, адрес на карте. Диагностика, ремонт и тюнинг пикапов и внедорожников.'
+  },
+  '/privacy': {
+    title: 'Политика конфиденциальности — ПикапСервис-МСК',
+    description:
+      'Политика конфиденциальности сайта PickupService: порядок обработки персональных данных пользователей.'
   }
 }
 
@@ -85,6 +90,7 @@ export default function SeoHead() {
       pathname === '/' ||
       pathname === '/portfolio' ||
       pathname === '/contact' ||
+      pathname === '/privacy' ||
       isPortfolioDetailsRoute
 
     const config =
@@ -135,6 +141,8 @@ export default function SeoHead() {
             ? 'портфолио тюнинг внедорожников, проекты пикапов, ремонт джипов примеры, expedition project cars, doborudovanie 4x4, экспедиционные машины, доработки 4x4 фото, трофи подготовка кейсы'
             : pathname === '/contact'
               ? 'ПикапсервисМСК адрес телефон, автосервис внедорожников Москва контакты, как добраться, yandex maps pickupservice'
+              : pathname === '/privacy'
+                ? 'политика конфиденциальности pickupservice, обработка персональных данных'
               : isPortfolioDetailsRoute
                 ? 'проект ремонт внедорожник, тюнинг кейс, подготовка экспедиция, трофи доработки, offroad build case'
                 : '404, страница не найдена'

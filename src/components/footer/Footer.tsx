@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Footer: FC = () => {
@@ -77,10 +78,25 @@ const Footer: FC = () => {
       >
         Мы делаем вещи
       </motion.h2>
-      <div className="mt-4 pt-8 flex flex-col gap-3 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left text-[clamp(9px,1.2vw,10px)] uppercase tracking-widest text-gray-600">
+      <div className="mt-4 pt-8 flex flex-col gap-4 text-center sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:text-left text-[clamp(9px,1.2vw,10px)] uppercase tracking-widest text-gray-600">
         <p>© {currentYear} ПИКАПСЕРВИС. ВСЕ ПРАВА ЗАЩИЩЕНЫ</p>
-        <p>Разработано
-          <a href="https://bitluna.ru" target="_blank" rel="noopener noreferrer" className="text-white hover:text-gray-300 transition-colors"> KiTLuna </a>
+        <Link
+          to="/privacy"
+          className="text-gray-500 transition-colors hover:text-[#FF8201]"
+        >
+          Политика конфиденциальности
+        </Link>
+        <p>
+          Разработано
+          <a
+            href="https://bitluna.ru"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-gray-300 transition-colors"
+          >
+            {' '}
+            KiTLuna{' '}
+          </a>
         </p>
       </div>
     </footer>

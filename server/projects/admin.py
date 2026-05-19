@@ -20,6 +20,7 @@ from .models import (
     CallbackRequest,
     TelegramOutboxMessage,
     ContactSettings,
+    PrivacyPolicy,
     Testimonial,
     TestimonialsSettings,
     YandexSyncLog,
@@ -581,6 +582,19 @@ class YandexSyncLogAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         return True
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
+
+@admin.register(PrivacyPolicy)
+class PrivacyPolicyAdmin(admin.ModelAdmin):
+    list_display = ("title", "updated_at")
+    readonly_fields = ("updated_at",)
+    fields = ("title", "content", "updated_at")
+
+    def has_add_permission(self, request):
+        return not PrivacyPolicy.objects.exists()
 
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser

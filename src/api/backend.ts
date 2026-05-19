@@ -132,6 +132,20 @@ export async function fetchContactSettings(): Promise<ApiContactSettings> {
   return await getJson<ApiContactSettings>('/api/projects/contact/')
 }
 
+export interface ApiPrivacyPolicy {
+  title: string
+  content: string
+  updated_at?: string
+}
+
+export async function fetchPrivacyPolicy(): Promise<ApiPrivacyPolicy | null> {
+  try {
+    return await getJson<ApiPrivacyPolicy>('/api/projects/privacy-policy/')
+  } catch {
+    return null
+  }
+}
+
 export interface ApiTestimonial {
   id: number
   quote: string

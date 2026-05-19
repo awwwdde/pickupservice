@@ -15,6 +15,7 @@ from .models import (
     Novelty,
     ServiceGalleryImage,
     ContactSettings,
+    PrivacyPolicy,
     Testimonial,
     TestimonialsSettings,
     BookingRequest,
@@ -30,6 +31,7 @@ from .serializers import (
     BookingRequestCreateSerializer,
     CallbackRequestCreateSerializer,
     ContactSettingsSerializer,
+    PrivacyPolicySerializer,
     TestimonialSerializer,
     TestimonialsSettingsSerializer,
 )
@@ -252,6 +254,21 @@ class ContactSettingsView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         serializer = ContactSettingsSerializer(instance)
+        return Response(serializer.data)
+
+
+class PrivacyPolicyView(APIView):
+    authentication_classes: list = []
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        instance = PrivacyPolicy.objects.first()
+        if instance is None:
+            return Response(
+                {"detail": "Политика конфиденциальности не задана."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = PrivacyPolicySerializer(instance)
         return Response(serializer.data)
 
 

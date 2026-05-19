@@ -10,6 +10,8 @@ import Footer from './components/footer/Footer.tsx'
 import ScrollTop from './components/utils/scrolltop.tsx'
 import SeoHead from './components/utils/seohead.tsx'
 import QuickContactWidget from './components/quickcontact/QuickContactWidget.tsx'
+import CookieConsent from './components/cookie/CookieConsent.tsx'
+import Privacy from './pages/privacy.tsx'
 
 function App() {
   return (
@@ -24,10 +26,12 @@ function App() {
           <Route path="/portfolio" element={<Portfolio />} />
           <Route path="/portfolio/:id" element={<Project />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       <QuickContactWidget />
+      <CookieConsent />
       <Footer />
     </div>
   )

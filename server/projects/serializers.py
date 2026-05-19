@@ -10,6 +10,7 @@ from .models import (
     BookingRequest,
     CallbackRequest,
     ContactSettings,
+    PrivacyPolicy,
     Testimonial,
     TestimonialsSettings,
 )
@@ -124,6 +125,14 @@ class ContactSettingsSerializer(serializers.ModelSerializer):
             "map_embed_url",
             "coordinates_label",
         )
+
+
+class PrivacyPolicySerializer(serializers.ModelSerializer):
+    """Публичное чтение политики конфиденциальности."""
+
+    class Meta:
+        model = PrivacyPolicy
+        fields = ("title", "content", "updated_at")
 
 
 class TestimonialSerializer(serializers.ModelSerializer):

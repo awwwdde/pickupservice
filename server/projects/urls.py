@@ -9,6 +9,7 @@ from .views import (
     TestimonialViewSet,
     TestimonialsSettingsView,
     ContactSettingsView,
+    PrivacyPolicyView,
     BookingRequestView,
     CallbackRequestView,
 )
@@ -19,6 +20,7 @@ router.register("", ProjectViewSet, basename="project")
 
 urlpatterns = [
     path("contact/", ContactSettingsView.as_view(), name="contact-settings"),
+    path("privacy-policy/", PrivacyPolicyView.as_view(), name="privacy-policy"),
     path("booking/", BookingRequestView.as_view(), name="booking-request"),
     path("callback/", CallbackRequestView.as_view(), name="callback-request"),
     # до router: иначе ProjectViewSet с префиксом "" перехватит эти пути как pk проекта
